@@ -23,7 +23,6 @@ config.make
 ########
 cmake_install.cmake
 cmake_uninstall.cmake
-CMakeFiles
 CMakeCache.txt
 CPackConfig.cmake
 CPackSourceConfig.cmake
@@ -110,3 +109,5 @@ cmake-build/
 # Temporary files #
 ###################
 *.bak
+
+*.o-i386
