@@ -8,10 +8,6 @@ rd Source\LibJPEG\Debug /s /q
 rd Source\LibJPEG\Release /s /q
 rd Source\LibPNG\Debug /s /q
 rd Source\LibPNG\Release /s /q
-rd Source\LibMNG\Debug /s /q
-rd Source\LibMNG\Release /s /q
-rd Source\LibTIFF\Debug /s /q
-rd Source\LibTIFF\Release /s /q
 rd Source\LibTIFF4\Debug /s /q
 rd Source\LibTIFF4\Release /s /q
 rd Source\Zlib\Debug /s /q
@@ -32,8 +28,6 @@ rd x64 /s /q
 rd Source\FreeImageLib\x64 /s /q
 rd Source\LibJPEG\x64 /s /q
 rd Source\LibPNG\x64 /s /q
-rd Source\LibMNG\x64 /s /q
-rd Source\LibTIFF\x64 /s /q
 rd Source\LibTIFF4\x64 /s /q
 rd Source\ZLib\x64 /s /q
 rd Source\OpenEXR\x64 /s /q
