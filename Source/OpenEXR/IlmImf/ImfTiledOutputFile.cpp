@@ -363,7 +363,7 @@ TiledOutputFile::Data::nextTileCoord (const TileCoord &a)
                         b.lx = 0;
                         b.ly++;
 
-			#ifdef DEBUG
+			#ifdef OPENEXR_DEBUG
 			    assert (b.ly <= numYLevels);
 			#endif
                     }
@@ -405,7 +405,7 @@ TiledOutputFile::Data::nextTileCoord (const TileCoord &a)
                         b.lx = 0;
                         b.ly++;
 
-			#ifdef DEBUG
+			#ifdef OPENEXR_DEBUG
 			    assert (b.ly <= numYLevels);
 			#endif
                     }
@@ -445,7 +445,7 @@ writeTileData (TiledOutputFile::Data *ofd,
 
     ofd->tileOffsets (dx, dy, lx, ly) = currentPosition;
 
-    #ifdef DEBUG
+    #ifdef OPENEXR_DEBUG
 	assert (ofd->os->tellp() == currentPosition);
     #endif
 
@@ -623,7 +623,7 @@ convertToXdr (TiledOutputFile::Data *ofd,
 	}
     }
 
-    #ifdef DEBUG
+    #ifdef OPENEXR_DEBUG
 
 	assert (writePtr == readPtr);
 
