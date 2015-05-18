@@ -21,6 +21,7 @@ it under the terms of the one of three licenses as you choose:
    for more information
 */
 
+#line 4777 "dcraw/dcraw.c"
 #include <math.h>
 #define CLASS LibRaw::
 #include "libraw/libraw_types.h"
@@ -28,6 +29,7 @@ it under the terms of the one of three licenses as you choose:
 #include "libraw/libraw.h"
 #include "internal/defines.h"
 #include "internal/var_defines.h"
+#line 4788 "dcraw/dcraw.c"
 /*
    Seach from the current directory up to the root looking for
    a ".badpixels" file, and fix those pixels now.
@@ -52,6 +54,7 @@ void CLASS bad_pixels (const char *cfname)
 #endif
   if (cfname)
     fp = fopen (cfname, "r");
+#line 4838 "dcraw/dcraw.c"
   if (!fp)
       {
 #ifdef LIBRAW_LIBRARY_BUILD
@@ -102,7 +105,7 @@ void CLASS subtract (const char *fname)
 
   if (!(fp = fopen (fname, "rb"))) {
 #ifdef DCRAW_VERBOSE
-    perror (fname); 
+    perror (fname);
 #endif
 #ifdef LIBRAW_LIBRARY_BUILD
     imgdata.process_warnings |= LIBRAW_WARN_BAD_DARKFRAME_FILE;
@@ -151,6 +154,7 @@ void CLASS subtract (const char *fname)
   RUN_CALLBACK(LIBRAW_PROGRESS_DARK_FRAME,1,2);
 #endif
 }
+#line 14498 "dcraw/dcraw.c"
 #ifndef NO_LCMS
 void CLASS apply_profile (const char *input, const char *output)
 {
@@ -160,9 +164,6 @@ void CLASS apply_profile (const char *input, const char *output)
   FILE *fp;
   unsigned size;
 
-#ifndef USE_LCMS2
-  cmsErrorAction (LCMS_ERROR_SHOW);
-#endif
   if (strcmp (input, "embed"))
     hInProfile = cmsOpenProfileFromFile (input, "r");
   else if (profile_length) {

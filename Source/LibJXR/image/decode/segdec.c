@@ -34,7 +34,6 @@
 #define TRACE_NEW       0
 #define TRACE_HEAP      0
 #include "memtrace.h"
-#include <ustdlib.h>
 #endif
 
 extern const int dctIndex[3][16];
@@ -58,19 +57,13 @@ static U32 _FORCEINLINE _load4(void* pv)
 #ifdef _BIG__ENDIAN_
     return (*(U32*)pv);
 #else // _BIG__ENDIAN_
-#if defined(_M_IA64) || defined(_ARM_) || defined(_ARM64_)
+#if defined(_M_IA64) || defined(_ARM_)
     U32  v;
     v = ((U16 *) pv)[0];
     v |= ((U32)((U16 *) pv)[1]) << 16;
     return _byteswap_ulong(v);
-#elif defined(_MSC_VER) && !defined(_DEBUG)
-    return _byteswap_ulong(*(U32*)pv);
 #else // _M_IA64
-    uint32_t Byte0 = *(U32*)pv & 0x000000FF;
-    uint32_t Byte1 = *(U32*)pv & 0x0000FF00;
-    uint32_t Byte2 = *(U32*)pv & 0x00FF0000;
-    uint32_t Byte3 = *(U32*)pv & 0xFF000000;
-    return (Byte0 << 24) | (Byte1 << 8) | (Byte2 >> 8) | (Byte3 >> 24);
+    return _byteswap_ulong(*(U32*)pv);
 #endif // _M_IA64
 #endif // _BIG__ENDIAN_
 }

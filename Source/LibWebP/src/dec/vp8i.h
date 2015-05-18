@@ -31,7 +31,7 @@ extern "C" {
 // version numbers
 #define DEC_MAJ_VERSION 0
 #define DEC_MIN_VERSION 4
-#define DEC_REV_VERSION 0
+#define DEC_REV_VERSION 2
 
 // intra prediction modes
 enum { B_DC_PRED = 0,   // 4x4 modes
@@ -69,7 +69,7 @@ enum { MB_FEATURE_TREE_PROBS = 3,
        NUM_PROBAS = 11,
        NUM_MV_PROBAS = 19 };
 
-// YUV-cache parameters.
+// YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).
 // Constraints are: We need to store one 16x16 block of luma samples (y),
 // and two 8x8 chroma blocks (u/v). These are better be 16-bytes aligned,
 // in order to be SIMD-friendly. We also need to store the top, left and
@@ -91,8 +91,6 @@ enum { MB_FEATURE_TREE_PROBS = 3,
 //  'y' = y-samples   'u' = u-samples     'v' = u-samples
 //  '|' = left sample,   '-' = top sample,    '+' = top-left sample
 //  't' = extra top-right sample for 4x4 modes
-// With this layout, BPS (=Bytes Per Scan-line) is one cacheline size.
-#define BPS       32    // this is the common stride used by yuv[]
 #define YUV_SIZE (BPS * 17 + BPS * 9)
 #define Y_SIZE   (BPS * 17)
 #define Y_OFF    (BPS * 1 + 8)
@@ -143,6 +141,7 @@ typedef struct {
   uint8_t segments_[MB_FEATURE_TREE_PROBS];
   // Type: 0:Intra16-AC  1:Intra16-DC   2:Chroma   3:Intra4
   VP8BandProbas bands_[NUM_TYPES][NUM_BANDS];
+  const VP8BandProbas* bands_ptr_[NUM_TYPES][16 + 1];
 } VP8Proba;
 
 // Filter parameters
@@ -296,12 +295,8 @@ struct VP8Decoder {
   const uint8_t* alpha_data_;     // compressed alpha data (if present)
   size_t alpha_data_size_;
   int is_alpha_decoded_;  // true if alpha_data_ is decoded in alpha_plane_
-  uint8_t* alpha_plane_;        // output. Persistent, contains the whole data.
-
-  // extensions
-  int layer_colorspace_;
-  const uint8_t* layer_data_;   // compressed layer data (if present)
-  size_t layer_data_size_;
+  uint8_t* alpha_plane_;  // output. Persistent, contains the whole data.
+  int alpha_dithering_;   // derived from decoding options (0=off, 100=full).
 };
 
 //------------------------------------------------------------------------------
@@ -348,9 +343,6 @@ int VP8DecodeMB(VP8Decoder* const dec, VP8BitReader* const token_br);
 // in alpha.c
 const uint8_t* VP8DecompressAlphaRows(VP8Decoder* const dec,
                                       int row, int num_rows);
-
-// in layer.c
-int VP8DecodeLayer(VP8Decoder* const dec);
 
 //------------------------------------------------------------------------------
 

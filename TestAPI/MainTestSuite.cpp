@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
 
 	// test memory IO
 	testMemIO("sample.png");
+	testMemIO("exif.jxr");
 
 	// test multipage functions
 	testMultiPage("sample.png");
@@ -97,6 +98,9 @@ int main(int argc, char *argv[]) {
 
 	// test thumbnail functions
 	testThumbnail("exif.jpg", 0);
+
+	// test wrapped user buffer
+	testWrappedBuffer("exif.jpg", 0);
 
 #if defined(FREEIMAGE_LIB) || !defined(WIN32)
 	FreeImage_DeInitialise();

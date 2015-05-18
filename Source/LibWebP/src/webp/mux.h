@@ -7,11 +7,26 @@
 // be found in the AUTHORS file in the root of the source tree.
 // -----------------------------------------------------------------------------
 //
-//  RIFF container manipulation for WebP images.
+//  RIFF container manipulation and encoding for WebP images.
 //
 // Authors: Urvang (urvang@google.com)
 //          Vikas (vikasa@google.com)
 
+#ifndef WEBP_WEBP_MUX_H_
+#define WEBP_WEBP_MUX_H_
+
+#include "./encode.h"
+#include "./mux_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define WEBP_MUX_ABI_VERSION 0x0103        // MAJOR(8b) + MINOR(8b)
+
+//------------------------------------------------------------------------------
+// Mux API
+//
 // This API allows manipulation of WebP container images containing features
 // like color profile, metadata, animation and fragmented images.
 //
@@ -45,17 +60,6 @@
   WebPMuxDelete(mux);
   free(data);
 */
-
-#ifndef WEBP_WEBP_MUX_H_
-#define WEBP_WEBP_MUX_H_
-
-#include "./mux_types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define WEBP_MUX_ABI_VERSION 0x0101        // MAJOR(8b) + MINOR(8b)
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
 // the types are left here for reference.
@@ -105,6 +109,7 @@ WEBP_EXTERN(WebPMux*) WebPNewInternal(int);
 // Creates an empty mux object.
 // Returns:
 //   A pointer to the newly created empty mux object.
+//   Or NULL in case of memory error.
 static WEBP_INLINE WebPMux* WebPMuxNew(void) {
   return WebPNewInternal(WEBP_MUX_ABI_VERSION);
 }
@@ -309,6 +314,24 @@ WEBP_EXTERN(WebPMuxError) WebPMuxGetAnimationParams(
 //------------------------------------------------------------------------------
 // Misc Utilities.
 
+// Sets the canvas size for the mux object. The width and height can be
+// specified explicitly or left as zero (0, 0).
+// * When width and height are specified explicitly, then this frame bound is
+//   enforced during subsequent calls to WebPMuxAssemble() and an error is
+//   reported if any animated frame does not completely fit within the canvas.
+// * When unspecified (0, 0), the constructed canvas will get the frame bounds
+//   from the bounding-box over all frames after calling WebPMuxAssemble().
+// Parameters:
+//   mux - (in) object to which the canvas size is to be set
+//   width - (in) canvas width
+//   height - (in) canvas height
+// Returns:
+//   WEBP_MUX_INVALID_ARGUMENT - if mux is NULL; or
+//                               width or height are invalid or out of bounds
+//   WEBP_MUX_OK - on success.
+WEBP_EXTERN(WebPMuxError) WebPMuxSetCanvasSize(WebPMux* mux,
+                                               int width, int height);
+
 // Gets the canvas size from the mux object.
 // Note: This method assumes that the VP8X chunk, if present, is up-to-date.
 // That is, the mux object hasn't been modified since the last call to
@@ -356,7 +379,8 @@ WEBP_EXTERN(WebPMuxError) WebPMuxNumChunks(const WebPMux* mux,
 // Note: The content of 'assembled_data' will be ignored and overwritten.
 // Also, the content of 'assembled_data' is allocated using malloc(), and NOT
 // owned by the 'mux' object. It MUST be deallocated by the caller by calling
-// WebPDataClear().
+// WebPDataClear(). It's always safe to call WebPDataClear() upon return,
+// even in case of error.
 // Parameters:
 //   mux - (in/out) object whose chunks are to be assembled
 //   assembled_data - (out) assembled WebP data
@@ -367,6 +391,112 @@ WEBP_EXTERN(WebPMuxError) WebPMuxNumChunks(const WebPMux* mux,
 //   WEBP_MUX_OK - on success.
 WEBP_EXTERN(WebPMuxError) WebPMuxAssemble(WebPMux* mux,
                                           WebPData* assembled_data);
+
+//------------------------------------------------------------------------------
+// WebPAnimEncoder API
+//
+// This API allows encoding (possibly) animated WebP images.
+//
+// Code Example:
+/*
+  WebPAnimEncoderOptions enc_options;
+  WebPAnimEncoderOptionsInit(&enc_options);
+  // Tune 'enc_options' as needed.
+  WebPAnimEncoder* enc = WebPAnimEncoderNew(width, height, &enc_options);
+  while(<there are more frames>) {
+    WebPConfig config;
+    WebPConfigInit(&config);
+    // Tune 'config' as needed.
+    WebPAnimEncoderAdd(enc, frame, duration, &config);
+  }
+  WebPAnimEncoderAssemble(enc, webp_data);
+  WebPAnimEncoderDelete(enc);
+  // Write the 'webp_data' to a file, or re-mux it further.
+*/
+
+typedef struct WebPAnimEncoder WebPAnimEncoder;  // Main opaque object.
+
+// Global options.
+typedef struct {
+  WebPMuxAnimParams anim_params;  // Animation parameters.
+  int minimize_size;    // If true, minimize the output size (slow). Implicitly
+                        // disables key-frame insertion.
+  int kmin;
+  int kmax;             // Minimum and maximum distance between consecutive key
+                        // frames in the output. The library may insert some key
+                        // frames as needed to satisfy this criteria.
+                        // Note that these conditions should hold: kmax > kmin
+                        // and kmin >= kmax / 2 + 1. Also, if kmin == 0, then
+                        // key-frame insertion is disabled; and if kmax == 0,
+                        // then all frames will be key-frames.
+  int allow_mixed;      // If true, use mixed compression mode; may choose
+                        // either lossy and lossless for each frame.
+
+  // TODO(urvang): Instead of printing errors to STDERR, we should have an error
+  // string attached to the encoder.
+  int verbose;          // If true, print encoding info.
+  uint32_t padding[4];  // Padding for later use.
+} WebPAnimEncoderOptions;
+
+// Internal, version-checked, entry point.
+WEBP_EXTERN(int) WebPAnimEncoderOptionsInitInternal(
+    WebPAnimEncoderOptions*, int);
+
+// Should always be called, to initialize a fresh WebPAnimEncoderOptions
+// structure before modification. Returns false in case of version mismatch.
+// WebPAnimEncoderOptionsInit() must have succeeded before using the 'options'
+// object.
+static WEBP_INLINE int WebPAnimEncoderOptionsInit(
+    WebPAnimEncoderOptions* enc_options) {
+  return WebPAnimEncoderOptionsInitInternal(enc_options, WEBP_MUX_ABI_VERSION);
+}
+
+// Internal, version-checked, entry point.
+WEBP_EXTERN(WebPAnimEncoder*) WebPAnimEncoderNewInternal(
+    int, int, const WebPAnimEncoderOptions*, int);
+
+// Creates and initializes a WebPAnimEncoder object.
+// Parameters:
+//   width/height - (in) canvas width and height of the animation.
+//   encoder_options - (in) encoding options; can be passed NULL to pick
+//                     reasonable defaults.
+// Returns:
+//   A pointer to the newly created WebPAnimEncoder object.
+//   Or NULL in case of memory error.
+static WEBP_INLINE WebPAnimEncoder* WebPAnimEncoderNew(
+    int width, int height, const WebPAnimEncoderOptions* enc_options) {
+  return WebPAnimEncoderNewInternal(width, height, enc_options,
+                                    WEBP_MUX_ABI_VERSION);
+}
+
+// Optimize the given frame for WebP, encode it and add it to the
+// WebPAnimEncoder object.
+// Parameters:
+//   enc - (in/out) object to which the frame is to be added.
+//   frame - (in/out) frame data in ARGB or YUVA format.
+//   duration - (in) frame duration
+//   config - (in) encoding options; can be passed NULL to pick
+//            reasonable defaults.
+// Returns:
+//   On error, returns false and frame->error_code is set appropriately.
+//   Otherwise, returns true.
+WEBP_EXTERN(int) WebPAnimEncoderAdd(
+    WebPAnimEncoder* enc, WebPPicture* frame, int duration,
+    const WebPConfig* config);
+
+// Assemble all frames added so far into a WebP bitstream.
+// Parameters:
+//   enc - (in/out) object from which the frames are to be assembled.
+//   webp_data - (out) generated WebP bitstream.
+// Returns:
+//   True on success.
+WEBP_EXTERN(int) WebPAnimEncoderAssemble(WebPAnimEncoder* enc,
+                                         WebPData* webp_data);
+
+// Deletes the WebPAnimEncoder object.
+// Parameters:
+//   anim_enc - (in/out) object to be deleted
+WEBP_EXTERN(void) WebPAnimEncoderDelete(WebPAnimEncoder* anim_enc);
 
 //------------------------------------------------------------------------------
 
