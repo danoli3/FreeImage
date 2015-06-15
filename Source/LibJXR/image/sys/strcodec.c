@@ -664,7 +664,7 @@ ERR detach_SB(SimpleBitIO* pSB)
 //================================================================
 // Memory access functions
 //================================================================
-#if (defined(WIN32) && !defined(UNDER_CE) && (!defined(__MINGW32__) || defined(__MINGW64_TOOLCHAIN__))) || (defined(UNDER_CE) && defined(_ARM_))
+#if (defined(WIN32) && !defined(UNDER_CE) && (!defined(__MINGW32__) || defined(__MINGW64_TOOLCHAIN__))) || (defined(UNDER_CE) && (defined(_ARM_) || defined(_ARM64_)))
 // WinCE ARM and Desktop x86
 #else
 // other platform
@@ -688,7 +688,7 @@ U32 load4BE(void* pv)
 #ifdef _BIG__ENDIAN_
     return (*(U32*)pv);
 #else // _BIG__ENDIAN_
-#if defined(_M_IA64) || defined(_ARM_)
+#if defined(_M_IA64) || defined(_ARM_) || defined(_ARM64_)
     U32  v;
     v = ((U16 *) pv)[0];
     v |= ((U32)((U16 *) pv)[1]) << 16;

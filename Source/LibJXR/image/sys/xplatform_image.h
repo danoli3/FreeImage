@@ -47,7 +47,7 @@
 #endif	// x86
 
 
-#if defined(_ARM_) || defined(UNDER_CE)
+#if defined(_ARM_) || defined(_ARM64_)) || defined(UNDER_CE)
 // ARM, WinCE
 #define FORCE_INLINE inline
 #define CDECL
