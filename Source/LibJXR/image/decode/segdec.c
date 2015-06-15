@@ -35,7 +35,6 @@
 #define TRACE_HEAP      0
 #include "memtrace.h"
 #endif
-#include <ustdlib.h>
 
 extern const int dctIndex[3][16];
 extern const int blkOffset[16];

@@ -335,7 +335,7 @@ void __pfx_assume(int, const char *);
 // Some CE versions don't have specstrings.h, some have very old version without
 // __specstrings defined. So we handle CE separately in wmasalce.h
 #if defined(UNDER_CE) || defined(NO_WINDOWS)
-  #include "wmspecstringce.h"
+  #include <wmsal.h>
 #endif
 
 #endif //_WMSPECSTRING_H_
