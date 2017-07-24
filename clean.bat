@@ -44,6 +44,10 @@ rd Source\LibJXR\Debug /s /q
 rd Source\LibJXR\Release /s /q
 rd Source\LibJXR\Win32 /s /q
 rd Source\LibJXR\x64 /s /q
+rd Source\LibMNG\Debug /s /q
+rd Source\LibMNG\Release /s /q
+rd Source\LibMNG\Win32 /s /q
+rd Source\LibMNG\x64 /s /q
 rd Source\LibOpenJPEG\Debug /s /q
 rd Source\LibOpenJPEG\Release /s /q
 rd Source\LibOpenJPEG\Win32 /s /q
@@ -56,6 +60,10 @@ rd Source\LibRawLite\Debug /s /q
 rd Source\LibRawLite\Release /s /q
 rd Source\LibRawLite\Win32 /s /q
 rd Source\LibRawLite\x64 /s /q
+rd Source\LibTIFF\Debug /s /q
+rd Source\LibTIFF\Release /s /q
+rd Source\LibTIFF\Win32 /s /q
+rd Source\LibTIFF\x64 /s /q
 rd Source\LibTIFF4\Debug /s /q
 rd Source\LibTIFF4\Release /s /q
 rd Source\LibTIFF4\Win32 /s /q
