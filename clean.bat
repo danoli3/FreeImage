@@ -19,6 +19,7 @@ del *.sdf /s /q
 del *.sql /s /q
 del *.suo /s /q /a:h
 del *.user /s /q
+del *.opensdf /s /q /a:h
 del TestAPI\*.tif
 del TestAPI\blob.png
 del TestAPI\buffer.png
@@ -32,6 +33,7 @@ del TestAPI\test.jpg
 del TestAPI\TestImageType.tif
 del TestAPI\viewport.png
 del TestAPI\zoneplate.png
+del TestAPI\test_view.bmp
 rd Source\FreeImageLib\Debug /s /q
 rd Source\FreeImageLib\Release /s /q
 rd Source\FreeImageLib\Win32 /s /q
@@ -44,6 +46,10 @@ rd Source\LibJXR\Debug /s /q
 rd Source\LibJXR\Release /s /q
 rd Source\LibJXR\Win32 /s /q
 rd Source\LibJXR\x64 /s /q
+rd Source\LibMNG\Debug /s /q
+rd Source\LibMNG\Release /s /q
+rd Source\LibMNG\Win32 /s /q
+rd Source\LibMNG\x64 /s /q
 rd Source\LibOpenJPEG\Debug /s /q
 rd Source\LibOpenJPEG\Release /s /q
 rd Source\LibOpenJPEG\Win32 /s /q
@@ -56,6 +62,10 @@ rd Source\LibRawLite\Debug /s /q
 rd Source\LibRawLite\Release /s /q
 rd Source\LibRawLite\Win32 /s /q
 rd Source\LibRawLite\x64 /s /q
+rd Source\LibTIFF\Debug /s /q
+rd Source\LibTIFF\Release /s /q
+rd Source\LibTIFF\Win32 /s /q
+rd Source\LibTIFF\x64 /s /q
 rd Source\LibTIFF4\Debug /s /q
 rd Source\LibTIFF4\Release /s /q
 rd Source\LibTIFF4\Win32 /s /q
@@ -85,3 +95,5 @@ rd Release /s /q
 del Dist\FreeImage.h
 rd Dist\x32 /s /q
 rd Dist\x64 /s /q
+rd .vs /s /q
+

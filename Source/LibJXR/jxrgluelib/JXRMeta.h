@@ -29,13 +29,8 @@
 
 #include <windowsmediaphoto.h>
 #if !defined(WIN32) || defined(__MINGW32__)
-#if !defined(NO_WINDOWS)
 #include <wmspecstring.h>
-#else 
-#include <wmsal.h>
 #endif
-#endif
-
 
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) { (P) = (P); }
