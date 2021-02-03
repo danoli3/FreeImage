@@ -13,7 +13,6 @@
  */
 
 #include "../../internal/libraw_cxx_defs.h"
-#include "../../internal/dcraw_defs.h"
 
 #ifndef NO_JPEG
 struct jpegErrorManager
