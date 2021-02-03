@@ -66,15 +66,15 @@ public:
 		return _io->read_proc(buffer, (unsigned)size, (unsigned)count, _handle);
 	}
 
-    int seek(INT64 offset, int origin) { 
+    int seek(long long offset, int origin) { 
 		return _io->seek_proc(_handle, (long)offset, origin);
 	}
 
-    INT64 tell() { 
+    long long tell() { 
         return _io->tell_proc(_handle);
     }
 	
-	INT64 size() {
+	long long size() {
 		return _fsize;
 	}
 
@@ -625,7 +625,7 @@ Validate(FreeImageIO *io, fi_handle handle) {
 			BOOL bSuccess = TRUE;
 
 			// wrap the input datastream
-			LibRaw_freeimage_datastream datastream(io, handle);
+			//LibRaw_freeimage_datastream datastream(io, handle);
 
 			// open the datastream
 			if(RawProcessor->open_datastream(&datastream) != LIBRAW_SUCCESS) {
