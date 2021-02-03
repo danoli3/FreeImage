@@ -60,18 +60,20 @@
 #define gethuff(h) getbithuff(*h, h + 1)
 
 #if __ANDROID__ // not defined in NDK yet
-	#include <stdint.h>
-	#include <asm/byteorder.h>
-	#define ___swab(x)  ({ __u16 __x = (x);   ((__u16)(   (((__u16)(__x) & (__u16)0x00ffU) << 8) | (((__u16)(__x) & (__u16)0xff00U) >> 8) ));  })
-	inline void swab(const void *from, void*to, size_t n)
-	{
-	    size_t i;
-	    if (n < 0)
-	        return;
-	    for (i = 0; i < (n/2)*2; i += 2)
-	        *((uint16_t*)to+i) = ___swab(*((uint16_t*)from+i));
-	}
-	#include <unistd.h>
-#endif
-
+    #ifndef swab
+        #define swab
+        #include <stdint.h>
+        #include <asm/byteorder.h>
+        #define ___swab(x)  ({ __u16 __x = (x);   ((__u16)(   (((__u16)(__x) & (__u16)0x00ffU) << 8) | (((__u16)(__x) & (__u16)0xff00U) >> 8) ));  })
+        inline void swab(const void *from, void*to, size_t n)
+        {
+            size_t i;
+            if (n < 0)
+                return;
+            for (i = 0; i < (n/2)*2; i += 2)
+                *((uint16_t*)to+i) = ___swab(*((uint16_t*)from+i));
+        }
+        #include <unistd.h>
+    #endif
+    #endif
 #endif
