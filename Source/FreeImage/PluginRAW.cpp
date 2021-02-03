@@ -628,9 +628,9 @@ Validate(FreeImageIO *io, fi_handle handle) {
 			//LibRaw_freeimage_datastream datastream(io, handle);
 
 			// open the datastream
-			if(RawProcessor->open_datastream(&datastream) != LIBRAW_SUCCESS) {
-				bSuccess = FALSE;	// LibRaw : failed to open input stream (unknown format)
-			}
+			// if(RawProcessor->open_datastream(&datastream) != LIBRAW_SUCCESS) {
+			 	bSuccess = FALSE;	// LibRaw : failed to open input stream (unknown format)
+			// }
 
 			// clean-up internal memory allocations
 			RawProcessor->recycle();
