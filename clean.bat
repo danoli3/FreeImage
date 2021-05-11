@@ -74,10 +74,6 @@ rd Source\LibWebP\Debug /s /q
 rd Source\LibWebP\Release /s /q
 rd Source\LibWebP\Win32 /s /q
 rd Source\LibWebP\x64 /s /q
-rd Source\OpenEXR\Debug /s /q
-rd Source\OpenEXR\Release /s /q
-rd Source\OpenEXR\Win32 /s /q
-rd Source\OpenEXR\x64 /s /q
 rd Source\Source\Debug /s /q
 rd Source\Source\Release /s /q
 rd Source\Zlib\Debug /s /q
