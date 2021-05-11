@@ -58,10 +58,6 @@ rd Source\LibPNG\Debug /s /q
 rd Source\LibPNG\Release /s /q
 rd Source\LibPNG\Win32 /s /q
 rd Source\LibPNG\x64 /s /q
-rd Source\LibRawLite\Debug /s /q
-rd Source\LibRawLite\Release /s /q
-rd Source\LibRawLite\Win32 /s /q
-rd Source\LibRawLite\x64 /s /q
 rd Source\LibTIFF\Debug /s /q
 rd Source\LibTIFF\Release /s /q
 rd Source\LibTIFF\Win32 /s /q

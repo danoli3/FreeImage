@@ -272,7 +272,9 @@ FreeImage_Initialise(BOOL load_local_plugins_only) {
 			s_plugins->AddNode(InitJP2);
 			s_plugins->AddNode(InitPFM);
 			s_plugins->AddNode(InitPICT);
+			#if INCLUDE_LIB_RAW
 			s_plugins->AddNode(InitRAW);
+			#endif
 			s_plugins->AddNode(InitWEBP);
 #if !(defined(_MSC_VER) && (_MSC_VER <= 1310))
 			s_plugins->AddNode(InitJXR);
