@@ -126,9 +126,16 @@
 //	    sizeof (unsigned short) == 2
 //
 //---------------------------------------------------------------------------
+// Hotpatched into PluginTiff to remove openexr from freeimage for the moment
 
 #ifndef _HALF_H_
 #define _HALF_H_
+
+// force define conversion lookup tables -- wow
+ const half::uif half::_toFloat[1 << 16] =
+    #include "toFloat.h"
+ const unsigned short half::_eLut[1 << 9] =
+    #include "eLut.h"
 
 // #include "halfExport.h"    // for definition of HALF_EXPORT
 #include <iostream>
