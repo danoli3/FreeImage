@@ -131,11 +131,6 @@
 #ifndef _HALF_H_
 #define _HALF_H_
 
-// force define conversion lookup tables -- wow
- const half::uif half::_toFloat[1 << 16] =
-    #include "toFloat.h"
- const unsigned short half::_eLut[1 << 9] =
-    #include "eLut.h"
 
 // #include "halfExport.h"    // for definition of HALF_EXPORT
 #include <iostream>
@@ -272,6 +267,11 @@ class half
      static const unsigned short   _eLut[1 << 9];
 };
 
+// force define conversion lookup tables -- wow
+ const half::uif half::_toFloat[1 << 16] =
+    #include "toFloat.h"
+ const unsigned short half::_eLut[1 << 9] =
+    #include "eLut.h"
 
 
 //-----------
