@@ -176,7 +176,7 @@ FI_STRUCT (FIMULTIBITMAP) { void *data; };
     #ifndef BOOL
         #define BOOL long
     #endif
-    #ifndef BOOL
+    #ifndef BYTE
         #define BYTE unsigned char
     #endif
     #ifndef WORD
