@@ -665,7 +665,7 @@ Cleanup:
     return err;
 }
 
-
+#if defined(WIN32) && !defined(__MINGW32__)
 ERR ReadBinaryData(__in_ecount(1) struct WMPStream* pWS,
                    const __in_win U32 uCount,
                    const __in_win U32 uValue,
@@ -763,6 +763,7 @@ Cleanup:
     return err;
 }
 
+#endif
 
 ERR WriteWmpDE(
     __in_ecount(1) struct WMPStream* pWS,
