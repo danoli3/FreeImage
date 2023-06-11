@@ -8,7 +8,8 @@ set(FreeImage_SOURCES
 
 if(BUILD_JXR)
 set(FreeImage_JXR
-    ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c ./Source/LibJXR/image/decode/strInvTransform.c ./Source/LibJXR/image/    
+    ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c ./Source/LibJXR/image/decode/strInvTransform.c ./Source/LibJXR/image/
+)    
 endif()
 
 # need include directories for FreeImage and all the sub libs
