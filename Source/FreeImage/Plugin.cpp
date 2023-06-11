@@ -275,11 +275,14 @@ FreeImage_Initialise(BOOL load_local_plugins_only) {
 			#if INCLUDE_LIB_RAW
 			s_plugins->AddNode(InitRAW);
 			#endif
+			#if INCLUDE_WEBP
 			s_plugins->AddNode(InitWEBP);
+			#endif
+			#if INCLUDE_JXR
 #if !(defined(_MSC_VER) && (_MSC_VER <= 1310))
 			s_plugins->AddNode(InitJXR);
 #endif // unsupported by MS Visual Studio 2003 !!!
-			
+			#endif
 			// external plugin initialization
 
 #ifdef _WIN32
