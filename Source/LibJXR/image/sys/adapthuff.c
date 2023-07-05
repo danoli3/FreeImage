@@ -125,7 +125,7 @@ static const short g12HuffLookupTable[5][56] = {{
 /**********************************************************************
   Allocation and dellocation
 **********************************************************************/
-Void Clean (CAdaptiveHuffman *pAdHuff)
+void Clean (CAdaptiveHuffman *pAdHuff)
 {
     if (pAdHuff == NULL)
         return;
@@ -410,7 +410,7 @@ static const Int g12DeltaTable[] = {
 static const Int THRESHOLD = 8;
 static const Int MEMORY = 8;
  
-Void AdaptDiscriminant (CAdaptiveHuffman *pAdHuff)
+void AdaptDiscriminant (CAdaptiveHuffman *pAdHuff)
 {
     Int iSym = pAdHuff->m_iNSymbols, t, dL, dH;
     const Int *pCodes, *pDelta = NULL;

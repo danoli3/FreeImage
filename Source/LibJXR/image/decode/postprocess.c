@@ -29,7 +29,7 @@
 #include "windowsmediaphoto.h"
 #include "strcodec.h"
 
-Void smoothMB(PixelI * p1, PixelI * p0, PixelI * q0, PixelI * q1)
+void smoothMB(PixelI * p1, PixelI * p0, PixelI * q0, PixelI * q1)
 {
     //  p1 p0 | q0 q1
     PixelI delta = ((((*q0 - *p0) << 2) + (*p1 - *q1)) >> 3);
@@ -38,7 +38,7 @@ Void smoothMB(PixelI * p1, PixelI * p0, PixelI * q0, PixelI * q1)
     *p0 += delta;
 }
 
-Void smooth(PixelI * p2, PixelI * p1, PixelI * p0, PixelI * q0, PixelI * q1, PixelI * q2)
+void smooth(PixelI * p2, PixelI * p1, PixelI * p0, PixelI * q0, PixelI * q1, PixelI * q2)
 {
     //    p2 p1 p0 | q0 q1 q2
     PixelI delta = ((((*q0 - *p0) << 2) + (*p1 - *q1)) >> 3);
@@ -84,7 +84,7 @@ Int initPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size
     return ICERR_OK;
 }
 
-Void termPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels)
+void termPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels)
 {
     size_t i, j;
 
@@ -97,7 +97,7 @@ Void termPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], siz
     }
 }
 
-Void slideOneMBRow(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels, size_t mbWidth, Bool top, Bool bottom)
+void slideOneMBRow(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels, size_t mbWidth, Bool top, Bool bottom)
 {
     size_t i, j;
     struct tagPostProcInfo * bar;
@@ -123,7 +123,7 @@ Void slideOneMBRow(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], si
 }
 
 // get DC and texture infomation right before transform
-Void updatePostProcInfo(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * pMB, size_t mbX, size_t cc)
+void updatePostProcInfo(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * pMB, size_t mbX, size_t cc)
 {
     size_t i, j;
     struct tagPostProcInfo * pMBInfo = strPostProcInfo[cc][1] + mbX;
@@ -161,7 +161,7 @@ Void updatePostProcInfo(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2
 #define DMB(a, b) (a->ucMBTexture + b->ucMBTexture == 0) && (abs(a->iMBDC - b->iMBDC) <= threshold)
 
 // demacroblock and get DCs of blocks
-Void postProcMB(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold)
+void postProcMB(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold)
 {
     /* 4 MBs involved, current MB is d, we have 4 2-pixel boundary segments */
     /*    |     */
@@ -228,7 +228,7 @@ Void postProcMB(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], Pixel
 /* - - - -  */
 /*  c | d   */
 /*    |     */
-Void postProcBlock(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold)
+void postProcBlock(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold)
 {
     size_t i, j, k;
     Int dc[5][5];

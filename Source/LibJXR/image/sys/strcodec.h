@@ -92,8 +92,8 @@ typedef unsigned __int64 U64;
 
 // The following macros depend on UINTPTR_T and INTPTR_T being properly defined
 // so that they are equal to pointer width. Confirm and fail if our assumptions are wrong.
-//CT_ASSERT(sizeof(UINTPTR_T) == sizeof(void*), strcodec1);
-//CT_ASSERT(sizeof(INTPTR_T) == sizeof(void*), strcodec2);
+CT_ASSERT(sizeof(UINTPTR_T) == sizeof(void*), strcodec1);
+CT_ASSERT(sizeof(INTPTR_T) == sizeof(void*), strcodec2);
 
 // wrap around pointer, s=pow(2,n), p wraps aligned to s
 #define WRAPPTR(p, s) ((void*)((UINTPTR_T)(p) & ~(UINTPTR_T)(s)))
@@ -482,9 +482,9 @@ ERR WMPAlloc(void** ppv, size_t cb);
 ERR WMPFree(void** ppv);
 
 //================================================================
-Void initMRPtr(CWMImageStrCodec*);
-Void advanceMRPtr(CWMImageStrCodec*);
-Void swapMRPtr(CWMImageStrCodec*);
+void initMRPtr(CWMImageStrCodec*);
+void advanceMRPtr(CWMImageStrCodec*);
+void swapMRPtr(CWMImageStrCodec*);
 
 Int IDPEmpty(CWMImageStrCodec*);
 
@@ -501,8 +501,8 @@ extern const Char gGDISignature[];
 
 //================================================================
 Int allocatePredInfo(CWMImageStrCodec*);
-Void freePredInfo(CWMImageStrCodec*);
-Void advanceOneMBRow(CWMImageStrCodec*);
+void freePredInfo(CWMImageStrCodec*);
+void advanceOneMBRow(CWMImageStrCodec*);
 
 //================================================================
 // bit I/O
@@ -520,10 +520,10 @@ U32 getBit32(BitIOInfo* pIO, U32 cBits);
 U32 flushToByte(BitIOInfo* pIO);
 #endif  // ARMOPT_BITIO
 
-Void putBit16z(BitIOInfo* pIO, U32 uiBits, U32 cBits);
-Void putBit16(BitIOInfo* pIO, U32 uiBits, U32 cBits);
-Void putBit32(BitIOInfo* pIO, U32 uiBits, U32 cBits);
-Void fillToByte(BitIOInfo* pIO);
+void putBit16z(BitIOInfo* pIO, U32 uiBits, U32 cBits);
+void putBit16(BitIOInfo* pIO, U32 uiBits, U32 cBits);
+void putBit32(BitIOInfo* pIO, U32 uiBits, U32 cBits);
+void fillToByte(BitIOInfo* pIO);
 
 U32 getSizeRead(BitIOInfo* pIO);
 U32 getSizeWrite(BitIOInfo* pIO);
@@ -551,11 +551,11 @@ ERR detachISWrite(CWMImageStrCodec* pSC, BitIOInfo* pIO);
 // post processing for decoder
 //================================================================
 Int initPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t mbWidth, size_t iNumChannels);
-Void termPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels);
-Void slideOneMBRow(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels, size_t mbWidth, Bool top, Bool bottom);
-Void updatePostProcInfo(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p, size_t mbX, size_t cc);
-Void postProcMB(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold);
-Void postProcBlock(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold);
+void termPostProc(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels);
+void slideOneMBRow(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], size_t iNumChannels, size_t mbWidth, Bool top, Bool bottom);
+void updatePostProcInfo(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p, size_t mbX, size_t cc);
+void postProcMB(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold);
+void postProcBlock(struct tagPostProcInfo * strPostProcInfo[MAX_CHANNELS][2], PixelI * p0, PixelI * p1, size_t mbX, size_t cc, Int threshold);
 
 //================================================================
 // Simple BitIO access functions
@@ -570,7 +570,7 @@ typedef struct tagSimpleBitIO
 
 ERR attach_SB(SimpleBitIO* pSB, struct WMPStream* pWS);
 U32 getBit32_SB(SimpleBitIO* pSB, U32 cBits);
-Void flushToByte_SB(SimpleBitIO* pSB);
+void flushToByte_SB(SimpleBitIO* pSB);
 U32 getByteRead_SB(SimpleBitIO* pSB);
 ERR detach_SB(SimpleBitIO* pSB);
 
@@ -624,26 +624,26 @@ const static Int blkIdxByColumn[4][4] = {{0, 2, 8, 10}, {1, 3, 9, 11},{4, 6, 12,
 
 Int getACPredMode(CWMIMBInfo *, COLORFORMAT);
 Int getDCACPredMode(CWMImageStrCodec *, size_t);
-Void updatePredInfo(CWMImageStrCodec* pSC, CWMIMBInfo *, size_t, COLORFORMAT);
+void updatePredInfo(CWMImageStrCodec* pSC, CWMIMBInfo *, size_t, COLORFORMAT);
 
 Int AllocateCodingContextDec(struct CWMImageStrCodec *pSC, Int iNumContexts);
-Void ResetCodingContext(CCodingContext *pContext);
-Void getTilePos(CWMImageStrCodec* pSC, size_t mbX, size_t mbY);
-Void InitZigzagScan(CCodingContext * pSC);
+void ResetCodingContext(CCodingContext *pContext);
+void getTilePos(CWMImageStrCodec* pSC, size_t mbX, size_t mbY);
+void InitZigzagScan(CCodingContext * pSC);
 Int checkImageBuffer(CWMImageStrCodec *, size_t, size_t);
 
 //U32 log2(U32);
 
 //DQUANT stuff
-EXTERN_C Void remapQP(CWMIQuantizer *, I32, Bool);
+EXTERN_C void remapQP(CWMIQuantizer *, I32, Bool);
 Int allocateTileInfo(CWMImageStrCodec *);
-Void freeTileInfo(CWMImageStrCodec *);
+void freeTileInfo(CWMImageStrCodec *);
 Int allocateQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], size_t, size_t);
-Void freeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS]);
-Void setUniformQuantizer(CWMImageStrCodec *, size_t);
-Void useDCQuantizer(CWMImageStrCodec *, size_t);
-Void useLPQuantizer(CWMImageStrCodec *, size_t, size_t);
-Void formatQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], U8, size_t, size_t, Bool, Bool);
+void freeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS]);
+void setUniformQuantizer(CWMImageStrCodec *, size_t);
+void useDCQuantizer(CWMImageStrCodec *, size_t);
+void useLPQuantizer(CWMImageStrCodec *, size_t, size_t);
+void formatQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], U8, size_t, size_t, Bool, Bool);
 U8 dquantBits(U8);
 
 #ifdef ARMOPT_BITIO

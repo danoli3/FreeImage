@@ -6,6 +6,7 @@
 // - Rui Lopes (ruiglopes@yahoo.com)
 // - Detlev Vendt (detlev.vendt@brillit.de)
 // - Petr Pytelka (pyta@lightcomp.com)
+// - Hervé Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
@@ -283,25 +284,25 @@ FreeImage_Initialise(BOOL load_local_plugins_only) {
 			s_plugins->AddNode(InitJXR);
 #endif // unsupported by MS Visual Studio 2003 !!!
 			#endif
+			
 			// external plugin initialization
 
 #ifdef _WIN32
 			if (!load_local_plugins_only) {
+				const DWORD nPathSize = 8 * _MAX_PATH;	// should be enough to handle a path
 				int count = 0;
-				char buffer[MAX_PATH + 200];
-				wchar_t current_dir[2 * _MAX_PATH], module[2 * _MAX_PATH];
+				char buffer[nPathSize];
+				wchar_t current_dir[nPathSize];
+				wchar_t module_name[nPathSize];
 				BOOL bOk = FALSE;
 
-				// store the current directory. then set the directory to the application location
-
-				if (GetCurrentDirectoryW(2 * _MAX_PATH, current_dir) != 0) {
-					if (GetModuleFileNameW(NULL, module, 2 * _MAX_PATH) != 0) {
-						wchar_t *last_point = wcsrchr(module, L'\\');
-
+				// store the current directory, then set the directory to the application location
+				if (GetCurrentDirectoryW(nPathSize, current_dir) != 0) {
+					if (GetModuleFileNameW(NULL, module_name, nPathSize) != 0) {
+						wchar_t *last_point = wcsrchr(module_name, L'\\');
 						if (last_point) {
 							*last_point = L'\0';
-
-							bOk = SetCurrentDirectoryW(module);
+							bOk = SetCurrentDirectoryW(module_name);
 						}
 					}
 				}
@@ -318,7 +319,7 @@ FreeImage_Initialise(BOOL load_local_plugins_only) {
 					if ((find_handle = (long)_findfirst(buffer, &find_data)) != -1L) {
 						do {
 							strcpy(buffer, s_search_list[count]);
-							strncat(buffer, find_data.name, MAX_PATH + 200);
+							strncat(buffer, find_data.name, nPathSize);
 
 							HINSTANCE instance = LoadLibrary(buffer);
 

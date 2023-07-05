@@ -42,12 +42,6 @@
 extern char L1WW[];
 #endif
 
-#ifdef X86OPT_INLINE
-#define _FORCEINLINE __forceinline
-#else // X86OPT_INLINE
-#define _FORCEINLINE
-#endif // X86OPT_INLINE
-
 Int inputMBRow(CWMImageStrCodec *);
 
 #if defined(WMP_OPT_SSE2) || defined(WMP_OPT_CC_ENC) || defined(WMP_OPT_TRFM_ENC)
@@ -56,32 +50,36 @@ void StrEncOpt(CWMImageStrCodec* pSC);
 
 #define MINIMUM_PACKET_LENGTH 4  // as long as packet header - skipped if data is not accessed (happens only for flexbits)
 
-Void writeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], BitIOInfo * pIO, U8 cChMode, size_t cChannel, size_t iPos)
+void writeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], BitIOInfo * pIO, U8 cChMode, size_t cChannel, size_t iPos)
 {
-    if(cChMode > 2)
-        cChMode = 2;
+	if (cChMode > 2) {
+		cChMode = 2;
+	}
 
-    if(cChannel > 1)
-        putBit16(pIO, cChMode, 2); // Channel mode
-    else
-        cChMode = 0;
+	if (cChannel > 1) {
+		putBit16(pIO, cChMode, 2); // Channel mode
+	}
+	else {
+		cChMode = 0;
+	}
 
     putBit16(pIO, pQuantizer[0][iPos].iIndex, 8); // Y
 
-    if(cChMode == 1)  // MIXED
-        putBit16(pIO, pQuantizer[1][iPos].iIndex, 8); // UV
-    else if(cChMode > 0){ // INDEPENDENT
+	if (cChMode == 1) {  // MIXED
+		putBit16(pIO, pQuantizer[1][iPos].iIndex, 8); // UV
+	}
+	else if (cChMode > 0) { // INDEPENDENT
         size_t i;
-
-        for(i = 1; i < cChannel; i ++)
-            putBit16(pIO, pQuantizer[i][iPos].iIndex, 8); // UV
+		for (i = 1; i < cChannel; i++) {
+			putBit16(pIO, pQuantizer[i][iPos].iIndex, 8); // UV
+		}
     }
 }
 
 // packet header: 00000000 00000000 00000001 ?????xxx
 // xxx:           000(spatial) 001(DC) 010(AD) 011(AC) 100(FL) 101-111(reserved)
 // ?????:         (iTileY * cNumOfSliceV + iTileX)
-Void writePacketHeader(BitIOInfo * pIO, U8 ptPacketType, U8 pID)
+void writePacketHeader(BitIOInfo * pIO, U8 ptPacketType, U8 pID)
 {
     putBit16(pIO, 0, 8);
     putBit16(pIO, 0, 8);
@@ -93,31 +91,32 @@ Int writeTileHeaderDC(CWMImageStrCodec * pSC, BitIOInfo * pIO)
 {
     size_t iTile, j = (pSC->m_pNextSC == NULL ? 1U : 2U);
 
-    for(; j > 0; j --){
-        if((pSC->m_param.uQPMode & 1) != 0){ // not DC uniform
-            CWMITile * pTile = pSC->pTile + pSC->cTileColumn;
-            size_t i;
-            
-            pTile->cChModeDC = (U8)(rand() & 3); // channel mode, just for concept proofing!
-            
-            if(pSC->cTileRow + pSC->cTileColumn == 0) // allocate DC QP info
-                for(iTile = 0; iTile <= pSC->WMISCP.cNumOfSliceMinus1V; iTile ++)
-                    if(allocateQuantizer(pSC->pTile[iTile].pQuantizerDC, pSC->m_param.cNumChannels, 1) != ICERR_OK)
-                        return ICERR_ERROR;
-            
-            for(i = 0; i < pSC->m_param.cNumChannels; i ++)
-                pTile->pQuantizerDC[i]->iIndex = (U8)((rand() & 0x2f) + 1); // QP indexes, just for concept proofing!
-            
-            formatQuantizer(pTile->pQuantizerDC, pTile->cChModeDC, pSC->m_param.cNumChannels, 0, TRUE, pSC->m_param.bScaledArith);
+	for (; j > 0; j--) {
+		if ((pSC->m_param.uQPMode & 1) != 0) { // not DC uniform
+			CWMITile * pTile = pSC->pTile + pSC->cTileColumn;
+			size_t i;
 
-            for(i = 0; i < pSC->m_param.cNumChannels; i ++)
-                pTile->pQuantizerDC[i]->iOffset = (pTile->pQuantizerDC[i]->iQP >> 1);
-            
-            writeQuantizer(pTile->pQuantizerDC, pIO, pTile->cChModeDC, pSC->m_param.cNumChannels, 0);
-        }
+			pTile->cChModeDC = (U8)(rand() & 3); // channel mode, just for concept proofing!
 
-        pSC = pSC->m_pNextSC;
-    }
+			if (pSC->cTileRow + pSC->cTileColumn == 0) // allocate DC QP info
+				for (iTile = 0; iTile <= pSC->WMISCP.cNumOfSliceMinus1V; iTile++) {
+					if (allocateQuantizer(pSC->pTile[iTile].pQuantizerDC, pSC->m_param.cNumChannels, 1) != ICERR_OK) {
+						return ICERR_ERROR;
+					}
+				}
+			for (i = 0; i < pSC->m_param.cNumChannels; i++) {
+				pTile->pQuantizerDC[i]->iIndex = (U8)((rand() & 0x2f) + 1); // QP indexes, just for concept proofing!
+			}
+			formatQuantizer(pTile->pQuantizerDC, pTile->cChModeDC, pSC->m_param.cNumChannels, 0, TRUE, pSC->m_param.bScaledArith);
+
+			for (i = 0; i < pSC->m_param.cNumChannels; i++) {
+				pTile->pQuantizerDC[i]->iOffset = (pTile->pQuantizerDC[i]->iQP >> 1);
+			}
+			writeQuantizer(pTile->pQuantizerDC, pIO, pTile->cChModeDC, pSC->m_param.cNumChannels, 0);
+		}
+
+		pSC = pSC->m_pNextSC;
+	}
 
     return ICERR_OK;
 }
@@ -137,27 +136,29 @@ Int writeTileHeaderLP(CWMImageStrCodec * pSC, BitIOInfo * pIO)
             
             pTile->cNumQPLP = (pTile->bUseDC == TRUE ? 1 : (U8)((rand() & 0xf) + 1)); // # of LP QPs
             
-            if(pSC->cTileRow > 0)
-                freeQuantizer(pTile->pQuantizerLP);
-            
-            if(allocateQuantizer(pTile->pQuantizerLP, pSC->m_param.cNumChannels, pTile->cNumQPLP) != ICERR_OK)
-                return ICERR_ERROR;
-
-            if(pTile->bUseDC == TRUE)
-                useDCQuantizer(pSC, pSC->cTileColumn);
+			if (pSC->cTileRow > 0) {
+				freeQuantizer(pTile->pQuantizerLP);
+			}
+			if (allocateQuantizer(pTile->pQuantizerLP, pSC->m_param.cNumChannels, pTile->cNumQPLP) != ICERR_OK) {
+				return ICERR_ERROR;
+			}
+			if (pTile->bUseDC == TRUE) {
+				useDCQuantizer(pSC, pSC->cTileColumn);
+			}
             else{
                 putBit16(pIO, pTile->cNumQPLP - 1, 4);
                 
                 pTile->cBitsLP = dquantBits(pTile->cNumQPLP);
                 
-                for(i = 0; i < pTile->cNumQPLP; i ++){
-                    pTile->cChModeLP[i] = (U8)(rand() & 3); // channel mode, just for concept proofing!
-                    
-                    for(j = 0; j < pSC->m_param.cNumChannels; j ++)
-                        pTile->pQuantizerLP[j][i].iIndex = (U8)((rand() & 0xfe) + 1); // QP indexes, just for concept proofing!
-                    formatQuantizer(pTile->pQuantizerLP, pTile->cChModeLP[i], pSC->m_param.cNumChannels, i, TRUE, pSC->m_param.bScaledArith);
-                    writeQuantizer(pTile->pQuantizerLP, pIO, pTile->cChModeLP[i], pSC->m_param.cNumChannels, i);
-                }
+				for (i = 0; i < pTile->cNumQPLP; i++) {
+					pTile->cChModeLP[i] = (U8)(rand() & 3); // channel mode, just for concept proofing!
+
+					for (j = 0; j < pSC->m_param.cNumChannels; j++) {
+						pTile->pQuantizerLP[j][i].iIndex = (U8)((rand() & 0xfe) + 1); // QP indexes, just for concept proofing!
+					}
+					formatQuantizer(pTile->pQuantizerLP, pTile->cChModeLP[i], pSC->m_param.cNumChannels, i, TRUE, pSC->m_param.bScaledArith);
+					writeQuantizer(pTile->pQuantizerLP, pIO, pTile->cChModeLP[i], pSC->m_param.cNumChannels, i);
+				}
             }
         }
         pSC = pSC->m_pNextSC;
@@ -168,45 +169,47 @@ Int writeTileHeaderLP(CWMImageStrCodec * pSC, BitIOInfo * pIO)
 
 Int writeTileHeaderHP(CWMImageStrCodec * pSC, BitIOInfo * pIO)
 {
-    size_t k = (pSC->m_pNextSC == NULL ? 1U : 2U);
-    
-    for(; k > 0; k --){
-        if(pSC->WMISCP.sbSubband != SB_DC_ONLY && pSC->WMISCP.sbSubband != SB_NO_HIGHPASS && (pSC->m_param.uQPMode & 4) != 0){ // not HP uniform
-            CWMITile * pTile = pSC->pTile + pSC->cTileColumn;
-            U8 i, j;
+	size_t k = (pSC->m_pNextSC == NULL ? 1U : 2U);
 
-            pTile->bUseLP = ((rand() & 1) == 0 ? TRUE : FALSE); // use LP quantizer?
-            putBit16(pIO, pTile->bUseLP == TRUE ? 1 : 0, 1);
-            pTile->cBitsHP = 0;
-            
-            pTile->cNumQPHP = (pTile->bUseLP == TRUE ? pTile->cNumQPLP : (U8)((rand() & 0xf) + 1)); // # of LP QPs
-            
-            if(pSC->cTileRow > 0)
-                freeQuantizer(pTile->pQuantizerHP);
-            
-            if(allocateQuantizer(pTile->pQuantizerHP, pSC->m_param.cNumChannels, pTile->cNumQPHP) != ICERR_OK)
-                return ICERR_ERROR;
-            
-            if(pTile->bUseLP == TRUE)
-                useLPQuantizer(pSC, pTile->cNumQPHP, pSC->cTileColumn);
-            else{
-                putBit16(pIO, pTile->cNumQPHP - 1, 4);
-                pTile->cBitsHP = dquantBits(pTile->cNumQPHP);
-                
-                for(i = 0; i < pTile->cNumQPHP; i ++){
-                    pTile->cChModeHP[i] = (U8)(rand() & 3); // channel mode, just for concept proofing!
-                    
-                    for(j = 0; j < pSC->m_param.cNumChannels; j ++)
-                        pTile->pQuantizerHP[j][i].iIndex = (U8)((rand() & 0xfe) + 1); // QP indexes, just for concept proofing!
-                    formatQuantizer(pTile->pQuantizerHP, pTile->cChModeHP[i], pSC->m_param.cNumChannels, i, FALSE, pSC->m_param.bScaledArith);
-                    writeQuantizer(pTile->pQuantizerHP, pIO, pTile->cChModeHP[i], pSC->m_param.cNumChannels, i);
-                }
-            }
-        }
-        pSC = pSC->m_pNextSC;
-    }
+	for (; k > 0; k--) {
+		if (pSC->WMISCP.sbSubband != SB_DC_ONLY && pSC->WMISCP.sbSubband != SB_NO_HIGHPASS && (pSC->m_param.uQPMode & 4) != 0) { // not HP uniform
+			CWMITile * pTile = pSC->pTile + pSC->cTileColumn;
+			U8 i, j;
 
-    return ICERR_OK;
+			pTile->bUseLP = ((rand() & 1) == 0 ? TRUE : FALSE); // use LP quantizer?
+			putBit16(pIO, pTile->bUseLP == TRUE ? 1 : 0, 1);
+			pTile->cBitsHP = 0;
+
+			pTile->cNumQPHP = (pTile->bUseLP == TRUE ? pTile->cNumQPLP : (U8)((rand() & 0xf) + 1)); // # of LP QPs
+
+			if (pSC->cTileRow > 0)
+				freeQuantizer(pTile->pQuantizerHP);
+
+			if (allocateQuantizer(pTile->pQuantizerHP, pSC->m_param.cNumChannels, pTile->cNumQPHP) != ICERR_OK) {
+				return ICERR_ERROR;
+			}
+			if (pTile->bUseLP == TRUE) {
+				useLPQuantizer(pSC, pTile->cNumQPHP, pSC->cTileColumn);
+			}
+			else {
+				putBit16(pIO, pTile->cNumQPHP - 1, 4);
+				pTile->cBitsHP = dquantBits(pTile->cNumQPHP);
+
+				for (i = 0; i < pTile->cNumQPHP; i++) {
+					pTile->cChModeHP[i] = (U8)(rand() & 3); // channel mode, just for concept proofing!
+
+					for (j = 0; j < pSC->m_param.cNumChannels; j++) {
+						pTile->pQuantizerHP[j][i].iIndex = (U8)((rand() & 0xfe) + 1); // QP indexes, just for concept proofing!
+					}
+					formatQuantizer(pTile->pQuantizerHP, pTile->cChModeHP[i], pSC->m_param.cNumChannels, i, FALSE, pSC->m_param.bScaledArith);
+					writeQuantizer(pTile->pQuantizerHP, pIO, pTile->cChModeHP[i], pSC->m_param.cNumChannels, i);
+				}
+			}
+		}
+		pSC = pSC->m_pNextSC;
+	}
+
+	return ICERR_OK;
 }
 
 Int encodeMB(CWMImageStrCodec * pSC, Int iMBX, Int iMBY)
@@ -218,8 +221,9 @@ Int encodeMB(CWMImageStrCodec * pSC, Int iMBX, Int iMBY)
         
         if(pSC->WMISCP.bfBitstreamFormat == SPATIAL) {
             writePacketHeader(pContext->m_pIODC, 0, pID);
-            if (pSC->m_param.bTrimFlexbitsFlag)
-                putBit16(pContext->m_pIODC, pContext->m_iTrimFlexBits, 4);
+			if (pSC->m_param.bTrimFlexbitsFlag) {
+				putBit16(pContext->m_pIODC, pContext->m_iTrimFlexBits, 4);
+			}
             writeTileHeaderDC(pSC, pContext->m_pIODC);
             writeTileHeaderLP(pSC, pContext->m_pIODC);
             writeTileHeaderHP(pSC, pContext->m_pIODC);
@@ -237,26 +241,27 @@ Int encodeMB(CWMImageStrCodec * pSC, Int iMBX, Int iMBY)
             }
             if(pSC->cSB > 3) {
                 writePacketHeader(pContext->m_pIOFL, 4, pID);
-                if (pSC->m_param.bTrimFlexbitsFlag)
-                    putBit16(pContext->m_pIOFL, pContext->m_iTrimFlexBits, 4);
+				if (pSC->m_param.bTrimFlexbitsFlag) {
+					putBit16(pContext->m_pIOFL, pContext->m_iTrimFlexBits, 4);
+				}
             }
         }
     }
     
-    if(EncodeMacroblockDC(pSC, pContext, iMBX, iMBY) != ICERR_OK)
-        return ICERR_ERROR;
-    
-    if(pSC->WMISCP.sbSubband != SB_DC_ONLY)
-        if(EncodeMacroblockLowpass(pSC, pContext, iMBX, iMBY) != ICERR_OK)
-            return ICERR_ERROR;
-
-    if(pSC->WMISCP.sbSubband != SB_DC_ONLY && pSC->WMISCP.sbSubband != SB_NO_HIGHPASS)
-        if(EncodeMacroblockHighpass(pSC, pContext, iMBX, iMBY) != ICERR_OK)
-            return ICERR_ERROR;
-    
-    if(iMBX + 1 == (int) pSC->cmbWidth && (iMBY + 1 == (int) pSC->cmbHeight || 
-        (pSC->cTileRow < pSC->WMISCP.cNumOfSliceMinus1H && iMBY == (int) pSC->WMISCP.uiTileY[pSC->cTileRow + 1] - 1)))
-    { // end of a horizontal slice
+	if (EncodeMacroblockDC(pSC, pContext, iMBX, iMBY) != ICERR_OK) {
+		return ICERR_ERROR;
+	}
+	if (pSC->WMISCP.sbSubband != SB_DC_ONLY) {
+		if (EncodeMacroblockLowpass(pSC, pContext, iMBX, iMBY) != ICERR_OK) {
+			return ICERR_ERROR;
+		}
+	}
+	if (pSC->WMISCP.sbSubband != SB_DC_ONLY && pSC->WMISCP.sbSubband != SB_NO_HIGHPASS) {
+		if (EncodeMacroblockHighpass(pSC, pContext, iMBX, iMBY) != ICERR_OK) {
+			return ICERR_ERROR;
+		}
+	}
+    if(iMBX + 1 == (int) pSC->cmbWidth && (iMBY + 1 == (int) pSC->cmbHeight || (pSC->cTileRow < pSC->WMISCP.cNumOfSliceMinus1H && iMBY == (int) pSC->WMISCP.uiTileY[pSC->cTileRow + 1] - 1))) { // end of a horizontal slice
         size_t k, l;
 
         // get sizes of each packet and update index table
@@ -270,8 +275,9 @@ Int encodeMB(CWMImageStrCodec * pSC, Int iMBX, Int iMBY)
         
         // reset coding contexts
         if(iMBY + 1 != (int) pSC->cmbHeight){
-            for(k = 0; k <= pSC->WMISCP.cNumOfSliceMinus1V; k ++)
-                ResetCodingContextEnc(&pSC->m_pCodingContext[k]);
+			for (k = 0; k <= pSC->WMISCP.cNumOfSliceMinus1V; k++) {
+				ResetCodingContextEnc(&pSC->m_pCodingContext[k]);
+			}
         }
     }
 
@@ -295,8 +301,9 @@ Int processMacroblock(CWMImageStrCodec *pSC)
                 pSC->m_pNextSC->cTileRow = pSC->cTileRow;
                 pSC->m_pNextSC->cTileColumn = pSC->cTileColumn;
             }
-            if ((result = encodeMB(pSC, (Int)pSC->cColumn - 1, (Int)pSC->cRow - 1)) != ICERR_OK)
-                return result;
+			if ((result = encodeMB(pSC, (Int)pSC->cColumn - 1, (Int)pSC->cRow - 1)) != ICERR_OK) {
+				return result;
+			}
         }
 
         if (jend) {
@@ -312,7 +319,7 @@ Int processMacroblock(CWMImageStrCodec *pSC)
 /*************************************************************************
   forwardRGBE: forward conversion from RGBE to RGB
 *************************************************************************/
-static _FORCEINLINE PixelI forwardRGBE (PixelI RGB, PixelI E)
+static PixelI forwardRGBE (PixelI RGB, PixelI E)
 {
     PixelI iResult = 0, iAppend = 1;
 
@@ -347,7 +354,7 @@ static _FORCEINLINE PixelI forwardRGBE (PixelI RGB, PixelI E)
 /*************************************************************************
   convert float-32 into float with (c, lm)!!
 *************************************************************************/
-static _FORCEINLINE PixelI float2pixel (float f, const char _c, const unsigned char _lm)
+static PixelI float2pixel (float f, const char _c, const unsigned char _lm)
 {
     union uif
     {
@@ -397,7 +404,7 @@ static _FORCEINLINE PixelI float2pixel (float f, const char _c, const unsigned c
 /*************************************************************************
   convert Half-16 to internal format, only need to handle sign bit
 *************************************************************************/
-static _FORCEINLINE PixelI forwardHalf (PixelI hHalf)
+static PixelI forwardHalf (PixelI hHalf)
 {
     PixelI s;
     s = hHalf >> 31;
@@ -503,7 +510,7 @@ Int StrIOEncInit(CWMImageStrCodec* pSC)
 /*************************************************************************
     Write variable length byte aligned integer
 *************************************************************************/
-static Void PutVLWordEsc(BitIOInfo* pIO, Int iEscape, size_t s)
+static void PutVLWordEsc(BitIOInfo* pIO, Int iEscape, size_t s)
 {
     if (iEscape) {
         assert(iEscape <= 0xff && iEscape > 0xfc); // fd,fe,ff are the only valid escapes
@@ -1305,7 +1312,7 @@ Int ValidateArgs(CWMImageInfo* pII, CWMIStrCodecParam *pSCP)
 /*************************************************************************
   Initialization of CWMImageStrCodec struct
 *************************************************************************/
-static Void InitializeStrEnc(CWMImageStrCodec *pSC,
+static void InitializeStrEnc(CWMImageStrCodec *pSC,
     const CWMImageInfo* pII, const CWMIStrCodecParam *pSCP)
 {
     pSC->cbStruct = sizeof(*pSC);
@@ -1601,7 +1608,7 @@ Int ImageStrEncTerm(
 
 // centralized UV downsampling
 #define DF_ODD ((((d1 + d2 + d3) << 2) + (d2 << 1) + d0 + d4 + 8) >> 4)
-Void downsampleUV(CWMImageStrCodec * pSC)
+void downsampleUV(CWMImageStrCodec * pSC)
 {
     const COLORFORMAT cfInt = pSC->m_param.cfColorFormat;
     const COLORFORMAT cfExt = pSC->WMII.cfColorFormat;
@@ -1683,7 +1690,7 @@ Void downsampleUV(CWMImageStrCodec * pSC)
 }
 
 // centralized horizontal padding
-Void padHorizontally(CWMImageStrCodec * pSC)
+void padHorizontally(CWMImageStrCodec * pSC)
 {
     if(pSC->WMII.cWidth != pSC->cmbWidth * 16){ // horizontal padding is necessary!
         const COLORFORMAT cfExt = pSC->WMISCP.bYUVData ?
@@ -1739,632 +1746,655 @@ Void padHorizontally(CWMImageStrCodec * pSC)
 // centralized alpha channel color conversion, small perf penalty
 Int inputMBRowAlpha(CWMImageStrCodec* pSC)
 {
-    if(pSC->m_bSecondary == FALSE && pSC->m_pNextSC != NULL){ // alpha channel is present
-        const size_t cShift = (pSC->m_pNextSC->m_param.bScaledArith ? (SHIFTZERO + QPFRACBITS) : 0);
-        const BITDEPTH_BITS bdExt = pSC->WMII.bdBitDepth;
-        const size_t iAlphaPos = pSC->WMII.cLeadingPadding + (pSC->WMII.cfColorFormat == CMYK ? 4 : 3);//only RGB and CMYK may have interleaved alpha
-        const size_t cRow = pSC->WMIBI.cLine;
-        const size_t cColumn = pSC->WMII.cWidth;
-        const U8 * pSrc0 = (U8 *)pSC->WMIBI.pv;
-        PixelI * pA = pSC->m_pNextSC->p1MBbuffer[0];
-        size_t iRow, iColumn;
+	if (pSC->m_bSecondary == FALSE && pSC->m_pNextSC != NULL) { // alpha channel is present
+		const size_t cShift = (pSC->m_pNextSC->m_param.bScaledArith ? (SHIFTZERO + QPFRACBITS) : 0);
+		const BITDEPTH_BITS bdExt = pSC->WMII.bdBitDepth;
+		const size_t iAlphaPos = pSC->WMII.cLeadingPadding + (pSC->WMII.cfColorFormat == CMYK ? 4 : 3);//only RGB and CMYK may have interleaved alpha
+		const size_t cRow = pSC->WMIBI.cLine;
+		const size_t cColumn = pSC->WMII.cWidth;
+		const U8 * pSrc0 = (U8 *)pSC->WMIBI.pv;
+		PixelI * pA = pSC->m_pNextSC->p1MBbuffer[0];
+		size_t iRow, iColumn;
 
-        for(iRow = 0; iRow < 16; iRow ++){
-            if(bdExt == BD_8){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3);
-                const U8 * pSrc = pSrc0;
-                
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((PixelI)pSrc[iAlphaPos] - (1 << 7)) << cShift;
-            }
-            else if(bdExt == BD_16){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(U16);
-                const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
-                const U16 * pSrc = (U16 *)pSrc0;
+		for (iRow = 0; iRow < 16; iRow++) {
+			if (bdExt == BD_8) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3);
+				const U8 * pSrc = pSrc0;
 
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((((PixelI)pSrc[iAlphaPos] - (1 << 15)) >> nLenMantissaOrShift) << cShift);
-            }
-            else if(bdExt == BD_16S){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(I16);
-                const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
-                const I16 * pSrc = (I16 *)pSrc0;
-            
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = (((PixelI)pSrc[iAlphaPos] >> nLenMantissaOrShift) << cShift);
-            }
-            else if(bdExt == BD_16F){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(U16);
-                const I16 * pSrc = (I16 *)pSrc0;
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((PixelI)pSrc[iAlphaPos] - (1 << 7)) << cShift;
+				}
+			}
+			else if (bdExt == BD_16) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(U16);
+				const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
+				const U16 * pSrc = (U16 *)pSrc0;
 
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = forwardHalf (pSrc[iAlphaPos]) << cShift;
-            }
-            else if(bdExt == BD_32S){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(I32);
-                const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
-                const I32 * pSrc = (I32 *)pSrc0;
-            
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = (((PixelI)pSrc[iAlphaPos] >> nLenMantissaOrShift) << cShift);
-            }
-            else if(bdExt == BD_32F){
-                const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(float);
-                const U8 nLen = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
-                const I8 nExpBias = pSC->m_pNextSC->WMISCP.nExpBias;
-                const float * pSrc = (float *)pSrc0;
-            
-                for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride)
-                    pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = float2pixel (pSrc[iAlphaPos], nExpBias, nLen) << cShift;
-            }
-            else // not supported
-                return ICERR_ERROR;
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((((PixelI)pSrc[iAlphaPos] - (1 << 15)) >> nLenMantissaOrShift) << cShift);
+				}
+			}
+			else if (bdExt == BD_16S) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(I16);
+				const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
+				const I16 * pSrc = (I16 *)pSrc0;
 
-            if(iRow + 1 < cRow) // vertical padding!
-                pSrc0 += pSC->WMIBI.cbStride;
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = (((PixelI)pSrc[iAlphaPos] >> nLenMantissaOrShift) << cShift);
+				}
+			}
+			else if (bdExt == BD_16F) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(U16);
+				const I16 * pSrc = (I16 *)pSrc0;
 
-            for(iColumn = cColumn; iColumn < pSC->cmbWidth * 16; iColumn ++) // horizontal padding
-                pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] =  pA[(((cColumn - 1) >> 4) << 8) + idxCC[iRow][(cColumn - 1) & 0xf]];
-        }
-    }
-    
-    return ICERR_OK;
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = forwardHalf(pSrc[iAlphaPos]) << cShift;
+				}
+			}
+			else if (bdExt == BD_32S) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(I32);
+				const U8 nLenMantissaOrShift = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
+				const I32 * pSrc = (I32 *)pSrc0;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = (((PixelI)pSrc[iAlphaPos] >> nLenMantissaOrShift) << cShift);
+				}
+			}
+			else if (bdExt == BD_32F) {
+				const size_t cStride = (pSC->WMII.cBitsPerUnit >> 3) / sizeof(float);
+				const U8 nLen = pSC->m_pNextSC->WMISCP.nLenMantissaOrShift;
+				const I8 nExpBias = pSC->m_pNextSC->WMISCP.nExpBias;
+				const float * pSrc = (float *)pSrc0;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = float2pixel(pSrc[iAlphaPos], nExpBias, nLen) << cShift;
+				}
+			}
+			else {// not supported
+				return ICERR_ERROR;
+			}
+
+			if (iRow + 1 < cRow) {// vertical padding!
+				pSrc0 += pSC->WMIBI.cbStride;
+			}
+
+			for (iColumn = cColumn; iColumn < pSC->cmbWidth * 16; iColumn++) {// horizontal padding
+				pA[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = pA[(((cColumn - 1) >> 4) << 8) + idxCC[iRow][(cColumn - 1) & 0xf]];
+			}
+		}
+	}
+
+	return ICERR_OK;
 }
 
 // input one MB row of image data from input buffer
 Int inputMBRow(CWMImageStrCodec* pSC)
 {
-    const size_t cShift = (pSC->m_param.bScaledArith ? (SHIFTZERO + QPFRACBITS) : 0);
-    const BITDEPTH_BITS bdExt = pSC->WMII.bdBitDepth;
-    COLORFORMAT cfExt = pSC->WMII.cfColorFormat;
-    const COLORFORMAT cfInt = pSC->m_param.cfColorFormat;
-    const size_t cPixelStride = (pSC->WMII.cBitsPerUnit >> 3);
-    const size_t iRowStride = 
-		(cfExt == YUV_420 || (pSC->WMISCP.bYUVData && pSC->m_param.cfColorFormat==YUV_420)) ? 2 : 1;
-    const size_t cRow = pSC->WMIBI.cLine;
-    const size_t cColumn = pSC->WMII.cWidth;
+	const size_t cShift = (pSC->m_param.bScaledArith ? (SHIFTZERO + QPFRACBITS) : 0);
+	const BITDEPTH_BITS bdExt = pSC->WMII.bdBitDepth;
+	COLORFORMAT cfExt = pSC->WMII.cfColorFormat;
+	const COLORFORMAT cfInt = pSC->m_param.cfColorFormat;
+	const size_t cPixelStride = (pSC->WMII.cBitsPerUnit >> 3);
+	const size_t iRowStride = (cfExt == YUV_420 || (pSC->WMISCP.bYUVData && pSC->m_param.cfColorFormat == YUV_420)) ? 2 : 1;
+	const size_t cRow = pSC->WMIBI.cLine;
+	const size_t cColumn = pSC->WMII.cWidth;
 	const size_t iB = (pSC->WMII.bRGB ? 2 : 0);
-    const size_t iR = 2 - iB;
-    const U8 * pSrc0 = (U8 *)pSC->WMIBI.pv;
-    const U8 nLen = pSC->WMISCP.nLenMantissaOrShift;
-    const I8 nExpBias = pSC->WMISCP.nExpBias;
+	const size_t iR = 2 - iB;
+	const U8 * pSrc0 = (U8 *)pSC->WMIBI.pv;
+	const U8 nLen = pSC->WMISCP.nLenMantissaOrShift;
+	const I8 nExpBias = pSC->WMISCP.nExpBias;
 
-    PixelI *pY = pSC->p1MBbuffer[0], *pU = pSC->p1MBbuffer[1], *pV = pSC->p1MBbuffer[2];
-    size_t iRow, iColumn, iPos;
+	PixelI *pY = pSC->p1MBbuffer[0], *pU = pSC->p1MBbuffer[1], *pV = pSC->p1MBbuffer[2];
+	size_t iRow, iColumn, iPos;
 
-    // guard input buffer
-    if(checkImageBuffer(pSC, cColumn, cRow) != ICERR_OK)
-        return ICERR_ERROR;
+	// guard input buffer
+	if (checkImageBuffer(pSC, cColumn, cRow) != ICERR_OK) {
+		return ICERR_ERROR;
+	}
 
-    if(pSC->m_bUVResolutionChange)  // will do downsampling somewhere else!
-        pU = pSC->pResU, pV = pSC->pResV;
-    else if(cfInt == Y_ONLY) // xxx to Y_ONLY transcoding!
-        pU = pV = pY; // write pY AFTER pU and pV so Y will overwrite U&V
+	if (pSC->m_bUVResolutionChange) {// will do downsampling somewhere else!
+		pU = pSC->pResU, pV = pSC->pResV;
+	}
+	else if (cfInt == Y_ONLY) {// xxx to Y_ONLY transcoding!
+		pU = pV = pY; // write pY AFTER pU and pV so Y will overwrite U&V
+	}
 
-    for(iRow = 0; iRow < 16; iRow += iRowStride){
-        if (pSC->WMISCP.bYUVData){
-            I32 * pSrc = (I32 *)pSrc0 + pSC->WMII.cLeadingPadding;
+	for (iRow = 0; iRow < 16; iRow += iRowStride) {
+		if (pSC->WMISCP.bYUVData) {
+			I32 * pSrc = (I32 *)pSrc0 + pSC->WMII.cLeadingPadding;
 
-            switch(pSC->m_param.cfColorFormat){
-            case Y_ONLY:
-            case YUV_444:
-            case NCOMPONENT:
-                {
-                    const size_t cChannel = pSC->m_param.cNumChannels;
-                    PixelI * pChannel[16];
-                    size_t iChannel;
+			switch (pSC->m_param.cfColorFormat) {
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->m_param.cNumChannels;
+				PixelI * pChannel[16];
+				size_t iChannel;
 
-                    assert(cChannel <= 16);
-                    for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                        pChannel[iChannel & 15] = pSC->p1MBbuffer[iChannel & 15];
-                    if(pSC->m_bUVResolutionChange)
-                        pChannel[1] = pSC->pResU, pChannel[2] = pSC->pResV;
+				assert(cChannel <= 16);
+				for (iChannel = 0; iChannel < cChannel; iChannel++) {
+					pChannel[iChannel & 15] = pSC->p1MBbuffer[iChannel & 15];
+				}
+				if (pSC->m_bUVResolutionChange) {
+					pChannel[1] = pSC->pResU, pChannel[2] = pSC->pResV;
+				}
 
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cChannel){
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                            pChannel[iChannel & 15][iPos] = (PixelI)pSrc[iChannel & 15];
-                    }
-                }
-                break;
-
-            case YUV_422:
-                for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += 4){
-                    if(cfInt != Y_ONLY){
-                        iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
-                        pU[iPos] = (PixelI)pSrc[0];
-                        pV[iPos] = (PixelI)pSrc[2];
-                    }
-
-                    pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (PixelI)pSrc[1];
-                    pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (PixelI)pSrc[3];
-                }
-                break;
-
-            case YUV_420:
-                for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += 6){
-                    if(cfInt != Y_ONLY){
-                        iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
-                        pU[iPos] = (PixelI)pSrc[4];
-                        pV[iPos] = (PixelI)pSrc[5];
-                    }
-
-                    pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (PixelI)pSrc[0];
-                    pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (PixelI)pSrc[1];
-                    pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (PixelI)pSrc[2];
-                    pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (PixelI)pSrc[3];
-                }
-                break;
-
-            default:
-                assert(0);
-                break;
-            }
-        }
-        else if(bdExt == BD_8){
-            const U8 * pSrc = pSrc0 + pSC->WMII.cLeadingPadding;
-            const PixelI iOffset = (128 << cShift);
-
-            switch(cfExt){
-                case CF_RGB:
-                    assert (pSC->m_bSecondary == FALSE);
-					for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-						PixelI r = ((PixelI)pSrc[iR]) << cShift, g = ((PixelI)pSrc[1]) << cShift, b = ((PixelI)pSrc[iB]) << cShift;   
-
-						_CC(r, g, b); // color conversion
-				   
-						iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-						pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cChannel) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pChannel[iChannel & 15][iPos] = (PixelI)pSrc[iChannel & 15];
 					}
-                    break;
+				}
+			}
+			break;
 
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-                {
-                    const size_t cChannel = pSC->m_param.cNumChannels;
-                    PixelI * pChannel[16];
-                    size_t iChannel;
-
-                    assert(cChannel <= 16);
-                    for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                        pChannel[iChannel & 15] = pSC->p1MBbuffer[iChannel & 15];
-                    if(pSC->m_bUVResolutionChange)
-                        pChannel[1] = pSC->pResU, pChannel[2] = pSC->pResV;
-
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                            pChannel[iChannel & 15][iPos] = (((PixelI)pSrc[iChannel & 15]) << cShift) - iOffset;
-                    }
-                    break;
-                }
-
-                case CF_RGBE:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                        PixelI iExp = (PixelI)pSrc[3];
-                        PixelI r = forwardRGBE (pSrc[0], iExp) << cShift;
-                        PixelI g = forwardRGBE (pSrc[1], iExp) << cShift;
-                        PixelI b = forwardRGBE (pSrc[2], iExp) << cShift;
-
-                        _CC(r, g, b);
-
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
-                    }
-                    break;
-
-                case CMYK:
-                {
-                    PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
-
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                        PixelI c = ((PixelI)pSrc[0]) << cShift;
-                        PixelI m = ((PixelI)pSrc[1]) << cShift;
-                        PixelI y = ((PixelI)pSrc[2]) << cShift;
-                        PixelI k = ((PixelI)pSrc[3]) << cShift;
-
-                        _CC_CMYK(c, m, y, k);
-                        
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = iOffset - m;
-                    }
-                    break;
-                }
-
-                case YUV_422:
-                    for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cPixelStride){
-                        if(cfInt != Y_ONLY){
-                            iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
-                            pU[iPos] = (((PixelI)pSrc[0]) << cShift) - iOffset;
-                            pV[iPos] = (((PixelI)pSrc[2]) << cShift) - iOffset;
-                        }
-
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
-                    }
-                    break;
-
-                case YUV_420:
-                    for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cPixelStride){
-                        if(cfInt != Y_ONLY){
-                            iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
-                            pU[iPos] = (((PixelI)pSrc[4]) << cShift) - iOffset;
-                            pV[iPos] = (((PixelI)pSrc[5]) << cShift) - iOffset;
-                        }
-
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[0]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (((PixelI)pSrc[2]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
-                    }
-                    break;
-
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_16){
-            const U16 * pSrc = (U16 *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(U16);
-            const PixelI iOffset = ((1 << 15) >> nLen) << cShift;
-
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = ((PixelI)pSrc[0] >> nLen) << cShift, g = ((PixelI)pSrc[1] >> nLen) << cShift, b = ((PixelI)pSrc[2] >> nLen) << cShift;
-                        
-                        _CC(r, g, b); // color conversion
-
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
-                    }
-                    break;
-
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-                {
-                    const size_t cChannel = pSC->WMISCP.cChannel;
-                    size_t iChannel;
-
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                            pSC->p1MBbuffer[iChannel][iPos] = (((PixelI)pSrc[iChannel] >> nLen) << cShift) - iOffset;
-                    }
-                    break;
-                }
-
-                case CMYK:
-                {
-                    PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
-
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI c = ((PixelI)pSrc[0] >> nLen) << cShift;
-                        PixelI m = ((PixelI)pSrc[1] >> nLen) << cShift;
-                        PixelI y = ((PixelI)pSrc[2] >> nLen) << cShift;
-                        PixelI k = ((PixelI)pSrc[3] >> nLen) << cShift;
-
-                        _CC_CMYK(c, m, y, k);
-                        
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = iOffset - m;
-                    }
-                    break;
-                }
-
-                case YUV_422:
-                    for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cStride){
-                        if(cfInt != Y_ONLY){
-                            iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
-                            pU[iPos] = (((PixelI)pSrc[0]) << cShift) - iOffset;
-                            pV[iPos] = (((PixelI)pSrc[2]) << cShift) - iOffset;
-                        }
-
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
-                    }
-                    break;
-
-                case YUV_420:
-                    for(iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cStride){
-                        if(cfInt != Y_ONLY){
-                            iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
-                            pU[iPos] = (((PixelI)pSrc[4]) << cShift) - iOffset;
-                            pV[iPos] = (((PixelI)pSrc[5]) << cShift) - iOffset;
-                        }
-
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[0]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
-                        pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (((PixelI)pSrc[2]) << cShift) - iOffset;
-                        pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
-                    }
-                    break;
-
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_16S){
-            const I16 * pSrc = (I16 *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(I16);
-
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = ((PixelI)pSrc[0] >> nLen) << cShift, g = ((PixelI)pSrc[1] >> nLen) << cShift, b = ((PixelI)pSrc[2] >> nLen) << cShift;
-                        
-                        _CC(r, g, b); // color conversion
-
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
-                    }
-                    break;
-
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-					{
-						const size_t cChannel = pSC->WMISCP.cChannel;
-						size_t iChannel;
-	
-						for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-							iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-							for(iChannel = 0; iChannel < cChannel; iChannel ++)
-								pSC->p1MBbuffer[iChannel][iPos] = (((PixelI)pSrc[iChannel] >> nLen) << cShift);
-						}
+			case YUV_422:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += 4) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
+						pU[iPos] = (PixelI)pSrc[0];
+						pV[iPos] = (PixelI)pSrc[2];
 					}
-				    break;
 
-                case CMYK:
-					{
-						PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
-	
-						for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-							PixelI c = ((PixelI)pSrc[0] >> nLen) << cShift;
-							PixelI m = ((PixelI)pSrc[1] >> nLen) << cShift;
-							PixelI y = ((PixelI)pSrc[2] >> nLen) << cShift;
-							PixelI k = ((PixelI)pSrc[3] >> nLen) << cShift;
-	
-							_CC_CMYK(c, m, y, k);
-							
-							iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-							pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = -m;
-						}
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (PixelI)pSrc[1];
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (PixelI)pSrc[3];
+				}
+				break;
+
+			case YUV_420:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += 6) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
+						pU[iPos] = (PixelI)pSrc[4];
+						pV[iPos] = (PixelI)pSrc[5];
 					}
-					break;
 
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_16F){
-            const I16 * pSrc = (I16 *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(U16);
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (PixelI)pSrc[0];
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (PixelI)pSrc[1];
+					pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (PixelI)pSrc[2];
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (PixelI)pSrc[3];
+				}
+				break;
 
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = forwardHalf (pSrc[0]) << cShift;
-                        PixelI g = forwardHalf (pSrc[1]) << cShift;
-                        PixelI b = forwardHalf (pSrc[2]) << cShift;
-                        
-                        _CC(r, g, b); // color conversion
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_8) {
+			const U8 * pSrc = pSrc0 + pSC->WMII.cLeadingPadding;
+			const PixelI iOffset = (128 << cShift);
 
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
-                    }
-                    break;
+			switch (cfExt) {
+			case CF_RGB:
+				assert(pSC->m_bSecondary == FALSE);
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+					PixelI r = ((PixelI)pSrc[iR]) << cShift, g = ((PixelI)pSrc[1]) << cShift, b = ((PixelI)pSrc[iB]) << cShift;
 
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-					{
-						const size_t cChannel = pSC->WMISCP.cChannel; // check xxx => Y_ONLY transcoding!
-						size_t iChannel;
-	
-						for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-							iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-							for(iChannel = 0; iChannel < cChannel; iChannel ++)
-								pSC->p1MBbuffer[iChannel][iPos] = forwardHalf (pSrc[iChannel]) << cShift;
-						}
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->m_param.cNumChannels;
+				PixelI * pChannel[16];
+				size_t iChannel;
+
+				assert(cChannel <= 16);
+				for (iChannel = 0; iChannel < cChannel; iChannel++) {
+					pChannel[iChannel & 15] = pSC->p1MBbuffer[iChannel & 15];
+				}
+				if (pSC->m_bUVResolutionChange) {
+					pChannel[1] = pSC->pResU, pChannel[2] = pSC->pResV;
+				}
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pChannel[iChannel & 15][iPos] = (((PixelI)pSrc[iChannel & 15]) << cShift) - iOffset;
 					}
-					break;
+				}
+				break;
+			}
 
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_32){
-            const U32 * pSrc = (U32 *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(U32);
-            const PixelI iOffset = ((1 << 31) >> nLen) << cShift;
+			case CF_RGBE:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+					PixelI iExp = (PixelI)pSrc[3];
+					PixelI r = forwardRGBE(pSrc[0], iExp) << cShift;
+					PixelI g = forwardRGBE(pSrc[1], iExp) << cShift;
+					PixelI b = forwardRGBE(pSrc[2], iExp) << cShift;
 
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = (pSrc[0] >> nLen) << cShift, g = (pSrc[1] >> nLen) << cShift, b = (pSrc[2] >> nLen) << cShift;
-                        
-                        _CC(r, g, b); // color conversion
+					_CC(r, g, b);
 
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
-                    }
-                    break;
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
+				}
+				break;
 
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-                {
-                    const size_t cChannel = pSC->WMISCP.cChannel;
-                    size_t iChannel;
+			case CMYK:
+			{
+				PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
 
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        for(iChannel = 0; iChannel < cChannel; iChannel ++)
-                            pSC->p1MBbuffer[iChannel][iPos] = (pSrc[iChannel] >> nLen) << cShift;
-                    }
-                    break;
-                }
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+					PixelI c = ((PixelI)pSrc[0]) << cShift;
+					PixelI m = ((PixelI)pSrc[1]) << cShift;
+					PixelI y = ((PixelI)pSrc[2]) << cShift;
+					PixelI k = ((PixelI)pSrc[3]) << cShift;
 
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_32S){
-            const I32 * pSrc = (I32 *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(I32);
+					_CC_CMYK(c, m, y, k);
 
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = (pSrc[0] >> nLen)<< cShift, g = (pSrc[1] >> nLen)<< cShift, b = (pSrc[2] >> nLen)<< cShift;
-                        
-                        _CC(r, g, b); // color conversion
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = iOffset - m;
+				}
+				break;
+			}
 
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
-                    }
-                    break;
-
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-					{
-						const size_t cChannel = pSC->WMISCP.cChannel; // check xxx => Y_ONLY transcoding!
-						size_t iChannel;
-	
-						for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-							iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-							for(iChannel = 0; iChannel < cChannel; iChannel ++)
-								pSC->p1MBbuffer[iChannel][iPos] = (pSrc[iChannel] >> nLen) << cShift;
-						}
+			case YUV_422:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cPixelStride) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
+						pU[iPos] = (((PixelI)pSrc[0]) << cShift) - iOffset;
+						pV[iPos] = (((PixelI)pSrc[2]) << cShift) - iOffset;
 					}
-					break;
 
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_32F){
-            const float * pSrc = (float *)pSrc0 + pSC->WMII.cLeadingPadding;
-            const size_t cStride = cPixelStride / sizeof(float);
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
+				}
+				break;
 
-            switch(cfExt){
-                case CF_RGB:
-                    for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-                        PixelI r = float2pixel (pSrc[0], nExpBias, nLen) << cShift;
-                        PixelI g = float2pixel (pSrc[1], nExpBias, nLen) << cShift;
-                        PixelI b = float2pixel (pSrc[2], nExpBias, nLen) << cShift;
-
-                        _CC(r, g, b); // color conversion
-
-                        iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                        pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
-                    }
-                    break;
-
-                case Y_ONLY:
-                case YUV_444:
-                case NCOMPONENT:
-					{
-						const size_t cChannel = pSC->WMISCP.cChannel;
-						size_t iChannel;
-	
-						for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cStride){
-							iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-							for(iChannel = 0; iChannel < cChannel; iChannel ++)
-								pSC->p1MBbuffer[iChannel][iPos] = float2pixel (pSrc[iChannel], nExpBias, nLen) << cShift;
-						}
+			case YUV_420:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cPixelStride) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
+						pU[iPos] = (((PixelI)pSrc[4]) << cShift) - iOffset;
+						pV[iPos] = (((PixelI)pSrc[5]) << cShift) - iOffset;
 					}
-					break;
-                default:
-                    assert(0);
-                    break;
-            }
-        }
-        else if(bdExt == BD_5){ // RGB 555, work for both big endian and small endian!
-            const U8 * pSrc = pSrc0;
-            const PixelI iOffset = (16 << cShift);
 
-            assert(cfExt == CF_RGB);
-            
-            for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = ((g >> 2) & 0x1F) << cShift;
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[0]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
+					pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (((PixelI)pSrc[2]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
+				}
+				break;
 
-                g = ((r >> 5) + ((g & 3) << 3)) << cShift, r = (r & 0x1F) << cShift;
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_16) {
+			const U16 * pSrc = (U16 *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(U16);
+			const PixelI iOffset = ((1 << 15) >> nLen) << cShift;
 
-                _CC(r, g, b); // color conversion
-                
-                iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
-            }
-        }
-        else if(bdExt == BD_565){ // RGB 555, work for both big endian and small endian!
-            const U8 * pSrc = pSrc0;
-            const PixelI iOffset = (32 << cShift);
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = ((PixelI)pSrc[0] >> nLen) << cShift, g = ((PixelI)pSrc[1] >> nLen) << cShift, b = ((PixelI)pSrc[2] >> nLen) << cShift;
 
-            assert(cfExt == CF_RGB);
-            
-            for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = (g >> 3) << (cShift + 1);
+					_CC(r, g, b); // color conversion
 
-                g = ((r >> 5) + ((g & 7) << 3)) << cShift, r = (r & 0x1F) << (cShift + 1);
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+				}
+				break;
 
-                _CC(r, g, b); // color conversion
-                
-                iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
-            }
-        }
-        else if(bdExt == BD_10){ //RGB 101010, work for both big endian and small endian!
-            const U8 * pSrc = pSrc0;
-            const PixelI iOffset = (512 << cShift);
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel;
+				size_t iChannel;
 
-            assert(cfExt == CF_RGB);
-            
-            for(iColumn = 0; iColumn < cColumn; iColumn ++, pSrc += cPixelStride){
-                PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = (PixelI)pSrc[2];
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = (((PixelI)pSrc[iChannel] >> nLen) << cShift) - iOffset;
+					}
+				}
+				break;
+			}
 
-                r = (r + ((g & 3) << 8)) << cShift, g = ((g >> 2) + ((b & 0xF) << 6)) << cShift;
-                b = ((b >> 4) + (((PixelI)pSrc[3] & 0x3F) << 4)) << cShift;
+			case CMYK:
+			{
+				PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
 
-                _CC(r, g, b); // color conversion
-                
-                iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
-                pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
-            }
-        }
-        else if(bdExt == BD_1){
-            assert(cfExt == Y_ONLY);
-            for(iColumn = 0; iColumn < cColumn; iColumn ++) {
-                pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((pSC->WMISCP.bBlackWhite + (pSrc0[iColumn >> 3] >> (7 - (iColumn & 7)))) & 1) << cShift;
-            }
-        }
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI c = ((PixelI)pSrc[0] >> nLen) << cShift;
+					PixelI m = ((PixelI)pSrc[1] >> nLen) << cShift;
+					PixelI y = ((PixelI)pSrc[2] >> nLen) << cShift;
+					PixelI k = ((PixelI)pSrc[3] >> nLen) << cShift;
 
-        if(iRow + iRowStride < cRow) // centralized vertical padding!
-            pSrc0 += pSC->WMIBI.cbStride;
-    }
+					_CC_CMYK(c, m, y, k);
 
-    padHorizontally(pSC); // centralized horizontal padding
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = iOffset - m;
+				}
+				break;
+			}
 
-    // centralized down-sampling
-    if(pSC->m_bUVResolutionChange)
-        downsampleUV(pSC);
+			case YUV_422:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cStride) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 7) + idxCC[iRow][(iColumn >> 1) & 7];
+						pU[iPos] = (((PixelI)pSrc[0]) << cShift) - iOffset;
+						pV[iPos] = (((PixelI)pSrc[2]) << cShift) - iOffset;
+					}
 
-    // centralized alpha channel handdling
-    if (pSC->WMISCP.uAlphaMode == 3)
-        if(inputMBRowAlpha(pSC) != ICERR_OK)
-            return ICERR_ERROR;
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
+				}
+				break;
 
-    return ICERR_OK;
+			case YUV_420:
+				for (iColumn = 0; iColumn < cColumn; iColumn += 2, pSrc += cStride) {
+					if (cfInt != Y_ONLY) {
+						iPos = ((iColumn >> 4) << 6) + idxCC_420[iRow >> 1][(iColumn >> 1) & 7];
+						pU[iPos] = (((PixelI)pSrc[4]) << cShift) - iOffset;
+						pV[iPos] = (((PixelI)pSrc[5]) << cShift) - iOffset;
+					}
+
+					pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 15]] = (((PixelI)pSrc[0]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow][(iColumn + 1) & 15]] = (((PixelI)pSrc[1]) << cShift) - iOffset;
+					pY[((iColumn >> 4) << 8) + idxCC[iRow + 1][iColumn & 15]] = (((PixelI)pSrc[2]) << cShift) - iOffset;
+					pY[(((iColumn + 1) >> 4) << 8) + idxCC[iRow + 1][(iColumn + 1) & 15]] = (((PixelI)pSrc[3]) << cShift) - iOffset;
+				}
+				break;
+
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_16S) {
+			const I16 * pSrc = (I16 *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(I16);
+
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = ((PixelI)pSrc[0] >> nLen) << cShift, g = ((PixelI)pSrc[1] >> nLen) << cShift, b = ((PixelI)pSrc[2] >> nLen) << cShift;
+
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel;
+				size_t iChannel;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = (((PixelI)pSrc[iChannel] >> nLen) << cShift);
+					}
+				}
+			}
+			break;
+
+			case CMYK:
+			{
+				PixelI * pK = (cfInt == CMYK ? pSC->p1MBbuffer[3] : pY); // CMYK -> YUV_xxx transcoding!
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI c = ((PixelI)pSrc[0] >> nLen) << cShift;
+					PixelI m = ((PixelI)pSrc[1] >> nLen) << cShift;
+					PixelI y = ((PixelI)pSrc[2] >> nLen) << cShift;
+					PixelI k = ((PixelI)pSrc[3] >> nLen) << cShift;
+
+					_CC_CMYK(c, m, y, k);
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = c, pV[iPos] = -y, pK[iPos] = k, pY[iPos] = -m;
+				}
+			}
+			break;
+
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_16F) {
+			const I16 * pSrc = (I16 *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(U16);
+
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = forwardHalf(pSrc[0]) << cShift;
+					PixelI g = forwardHalf(pSrc[1]) << cShift;
+					PixelI b = forwardHalf(pSrc[2]) << cShift;
+
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel; // check xxx => Y_ONLY transcoding!
+				size_t iChannel;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = forwardHalf(pSrc[iChannel]) << cShift;
+					}
+				}
+			}
+			break;
+
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_32) {
+			const U32 * pSrc = (U32 *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(U32);
+			const PixelI iOffset = ((1 << 31) >> nLen) << cShift;
+
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = (pSrc[0] >> nLen) << cShift, g = (pSrc[1] >> nLen) << cShift, b = (pSrc[2] >> nLen) << cShift;
+
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel;
+				size_t iChannel;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = (pSrc[iChannel] >> nLen) << cShift;
+					}
+				}
+				break;
+			}
+
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_32S) {
+			const I32 * pSrc = (I32 *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(I32);
+
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = (pSrc[0] >> nLen) << cShift, g = (pSrc[1] >> nLen) << cShift, b = (pSrc[2] >> nLen) << cShift;
+
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel; // check xxx => Y_ONLY transcoding!
+				size_t iChannel;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = (pSrc[iChannel] >> nLen) << cShift;
+					}
+				}
+			}
+			break;
+
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_32F) {
+			const float * pSrc = (float *)pSrc0 + pSC->WMII.cLeadingPadding;
+			const size_t cStride = cPixelStride / sizeof(float);
+
+			switch (cfExt) {
+			case CF_RGB:
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					PixelI r = float2pixel(pSrc[0], nExpBias, nLen) << cShift;
+					PixelI g = float2pixel(pSrc[1], nExpBias, nLen) << cShift;
+					PixelI b = float2pixel(pSrc[2], nExpBias, nLen) << cShift;
+
+					_CC(r, g, b); // color conversion
+
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g;
+				}
+				break;
+
+			case Y_ONLY:
+			case YUV_444:
+			case NCOMPONENT:
+			{
+				const size_t cChannel = pSC->WMISCP.cChannel;
+				size_t iChannel;
+
+				for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cStride) {
+					iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+					for (iChannel = 0; iChannel < cChannel; iChannel++) {
+						pSC->p1MBbuffer[iChannel][iPos] = float2pixel(pSrc[iChannel], nExpBias, nLen) << cShift;
+					}
+				}
+			}
+			break;
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else if (bdExt == BD_5) { // RGB 555, work for both big endian and small endian!
+			const U8 * pSrc = pSrc0;
+			const PixelI iOffset = (16 << cShift);
+
+			assert(cfExt == CF_RGB);
+
+			for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+				PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = ((g >> 2) & 0x1F) << cShift;
+
+				g = ((r >> 5) + ((g & 3) << 3)) << cShift, r = (r & 0x1F) << cShift;
+
+				_CC(r, g, b); // color conversion
+
+				iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+				pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+			}
+		}
+		else if (bdExt == BD_565) { // RGB 555, work for both big endian and small endian!
+			const U8 * pSrc = pSrc0;
+			const PixelI iOffset = (32 << cShift);
+
+			assert(cfExt == CF_RGB);
+
+			for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+				PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = (g >> 3) << (cShift + 1);
+
+				g = ((r >> 5) + ((g & 7) << 3)) << cShift, r = (r & 0x1F) << (cShift + 1);
+
+				_CC(r, g, b); // color conversion
+
+				iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+				pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+			}
+		}
+		else if (bdExt == BD_10) { //RGB 101010, work for both big endian and small endian!
+			const U8 * pSrc = pSrc0;
+			const PixelI iOffset = (512 << cShift);
+
+			assert(cfExt == CF_RGB);
+
+			for (iColumn = 0; iColumn < cColumn; iColumn++, pSrc += cPixelStride) {
+				PixelI r = (PixelI)pSrc[0], g = (PixelI)pSrc[1], b = (PixelI)pSrc[2];
+
+				r = (r + ((g & 3) << 8)) << cShift, g = ((g >> 2) + ((b & 0xF) << 6)) << cShift;
+				b = ((b >> 4) + (((PixelI)pSrc[3] & 0x3F) << 4)) << cShift;
+
+				_CC(r, g, b); // color conversion
+
+				iPos = ((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf];
+				pU[iPos] = -r, pV[iPos] = b, pY[iPos] = g - iOffset;
+			}
+		}
+		else if (bdExt == BD_1) {
+			assert(cfExt == Y_ONLY);
+			for (iColumn = 0; iColumn < cColumn; iColumn++) {
+				pY[((iColumn >> 4) << 8) + idxCC[iRow][iColumn & 0xf]] = ((pSC->WMISCP.bBlackWhite + (pSrc0[iColumn >> 3] >> (7 - (iColumn & 7)))) & 1) << cShift;
+			}
+		}
+
+		if (iRow + iRowStride < cRow) // centralized vertical padding!
+			pSrc0 += pSC->WMIBI.cbStride;
+	}
+
+	padHorizontally(pSC); // centralized horizontal padding
+
+	// centralized down-sampling
+	if (pSC->m_bUVResolutionChange)
+		downsampleUV(pSC);
+
+	// centralized alpha channel handdling
+	if (pSC->WMISCP.uAlphaMode == 3)
+		if (inputMBRowAlpha(pSC) != ICERR_OK)
+			return ICERR_ERROR;
+
+	return ICERR_OK;
 }
 
 

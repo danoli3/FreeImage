@@ -76,7 +76,7 @@ static QPManExp gs_QPRecipTable[32] = {
     QPRemapping
 *************************************************************************/
 
-Void remapQP(CWMIQuantizer * pQP, I32 iShift, Bool bScaledArith)
+void remapQP(CWMIQuantizer * pQP, I32 iShift, Bool bScaledArith)
 {
     U8 uiQPIndex = pQP->iIndex;
 
@@ -155,7 +155,7 @@ Int allocatePredInfo(CWMImageStrCodec *pSC)
 }
 
 /* clear PredInfo buffers */
-Void freePredInfo(CWMImageStrCodec *pSC)
+void freePredInfo(CWMImageStrCodec *pSC)
 {
     if (pSC->pPredInfoMemory)
         free (pSC->pPredInfoMemory);
@@ -233,7 +233,7 @@ Int getDCACPredMode(CWMImageStrCodec *pSC, size_t mbX)
     return (iDCMode + (iADMode << 2));
 }
 
-Void copyAC(PixelI * src, PixelI * dst)
+void copyAC(PixelI * src, PixelI * dst)
 {
     /* first row of ACs */
     dst[0] = src[1];
@@ -247,7 +247,7 @@ Void copyAC(PixelI * src, PixelI * dst)
 }
 
 /* info of current MB to be saved for future prediction */
-Void updatePredInfo(CWMImageStrCodec *pSC, CWMIMBInfo * pMBInfo, size_t mbX, COLORFORMAT cf)
+void updatePredInfo(CWMImageStrCodec *pSC, CWMIMBInfo * pMBInfo, size_t mbX, COLORFORMAT cf)
 {
     CWMIPredInfo *pPredInfo;
     PixelI * p;

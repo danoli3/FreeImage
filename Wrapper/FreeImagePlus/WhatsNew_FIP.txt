@@ -13,6 +13,7 @@ July 31st, 2018
 + [Herve Drolon] added new fipImage::load / fipImage::loadU / fipImage::save / fipImage::saveU functions
 + [Herve Drolon] added fipImage::loadFromMemory(FREE_IMAGE_FORMAT fif, ...)
 * [Herve Drolon] fixed a bug in fipWinImage::copyFromHandle
+* [Herve Drolon] fixed a bug in fipWinImage::copyToHandle
 * [Herve Drolon] minor refactoring
 * [Ghislain Vaillant] fixed Doxygen files against hardcoded Windows paths
 * [Ghislain Vaillant] fixed missing cstdio.h include in fip test suite

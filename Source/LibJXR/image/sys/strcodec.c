@@ -123,11 +123,12 @@ Int checkImageBuffer(CWMImageStrCodec * pSC, size_t cWidth, size_t cRows)
     return (cBytes > pSC->WMIBI.cbStride ? ICERR_ERROR : ICERR_OK);
 }
 
-Void writeQPIndex(BitIOInfo * pIO, U8 uiIndex, U32 cBits)
+void writeQPIndex(BitIOInfo * pIO, U8 uiIndex, U32 cBits)
 {
-    if(uiIndex == 0)
-        putBit16(pIO, 1, 1); // default QP
-    else{
+	if (uiIndex == 0) {
+		putBit16(pIO, 1, 1); // default QP
+	}
+	else {
         putBit16(pIO, 0, 1); // non default QP
         putBit16(pIO, uiIndex - 1, cBits);
     }
@@ -135,44 +136,46 @@ Void writeQPIndex(BitIOInfo * pIO, U8 uiIndex, U32 cBits)
 
 U8 readQPIndex(BitIOInfo * pIO, U32 cBits)
 {
-    if(getBit16(pIO, 1))
-        return 0; // default QP
-
+	if (getBit16(pIO, 1)) {
+		return 0; // default QP
+	}
     return (U8) getBit16(pIO, cBits) + 1;
 }
 
-Void getTilePos(CWMImageStrCodec* pSC, size_t mbX, size_t mbY)
-{   
-    if(mbX == 0){ // left image boundary
-        pSC->cTileColumn = 0;
-    }
-    else if(pSC->cTileColumn < pSC->WMISCP.cNumOfSliceMinus1V && mbX == pSC->WMISCP.uiTileX[pSC->cTileColumn + 1]){ // left tile boundary
-        pSC->cTileColumn ++;
-    }
+void getTilePos(CWMImageStrCodec* pSC, size_t mbX, size_t mbY)
+{
+	if (mbX == 0) { // left image boundary
+		pSC->cTileColumn = 0;
+	}
+	else if (pSC->cTileColumn < pSC->WMISCP.cNumOfSliceMinus1V && mbX == pSC->WMISCP.uiTileX[pSC->cTileColumn + 1]) { // left tile boundary
+		pSC->cTileColumn++;
+	}
 
-    if(mbY == 0){ // top image boundary
-        pSC->cTileRow = 0;
-    }
-    else if(pSC->cTileRow < pSC->WMISCP.cNumOfSliceMinus1H && mbY == pSC->WMISCP.uiTileY[pSC->cTileRow + 1]){ // top tile boundary
-        pSC->cTileRow ++;
-    }
+	if (mbY == 0) { // top image boundary
+		pSC->cTileRow = 0;
+	}
+	else if (pSC->cTileRow < pSC->WMISCP.cNumOfSliceMinus1H && mbY == pSC->WMISCP.uiTileY[pSC->cTileRow + 1]) { // top tile boundary
+		pSC->cTileRow++;
+	}
 
-    pSC->m_bCtxLeft = (mbX == pSC->WMISCP.uiTileX[pSC->cTileColumn]);
-    pSC->m_bCtxTop  = (mbY == pSC->WMISCP.uiTileY[pSC->cTileRow]);
+	pSC->m_bCtxLeft = (mbX == pSC->WMISCP.uiTileX[pSC->cTileColumn]);
+	pSC->m_bCtxTop = (mbY == pSC->WMISCP.uiTileY[pSC->cTileRow]);
 
-    pSC->m_bResetContext = pSC->m_bResetRGITotals = (((mbX - pSC->WMISCP.uiTileX[pSC->cTileColumn]) & 0xf) == 0);
-    if(pSC->cTileColumn == pSC->WMISCP.cNumOfSliceMinus1V){ // last tile column
-        if(mbX + 1 == pSC->cmbWidth)
-            pSC->m_bResetContext = TRUE;
-    }
-    else if(mbX + 1 == pSC->WMISCP.uiTileX[pSC->cTileColumn + 1])
-        pSC->m_bResetContext = TRUE;
+	pSC->m_bResetContext = pSC->m_bResetRGITotals = (((mbX - pSC->WMISCP.uiTileX[pSC->cTileColumn]) & 0xf) == 0);
+	if (pSC->cTileColumn == pSC->WMISCP.cNumOfSliceMinus1V) { // last tile column
+		if (mbX + 1 == pSC->cmbWidth) {
+			pSC->m_bResetContext = TRUE;
+		}
+	}
+	else if (mbX + 1 == pSC->WMISCP.uiTileX[pSC->cTileColumn + 1]) {
+		pSC->m_bResetContext = TRUE;
+	}
 }
 
 //================================================================
 // utility functions for 2 macro block rows
 //================================================================
-Void initMRPtr(CWMImageStrCodec* pSC)
+void initMRPtr(CWMImageStrCodec* pSC)
 {
     size_t j, jend = (pSC->m_pNextSC != NULL);
 
@@ -183,7 +186,7 @@ Void initMRPtr(CWMImageStrCodec* pSC)
     }
 }
 
-Void advanceMRPtr(CWMImageStrCodec* pSC)
+void advanceMRPtr(CWMImageStrCodec* pSC)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;
     const int cpChroma = cblkChromas[cf] * 16;
@@ -205,22 +208,22 @@ Void advanceMRPtr(CWMImageStrCodec* pSC)
 }
 
 /* advance to next MB row */
-Void advanceOneMBRow(CWMImageStrCodec *pSC)
+void advanceOneMBRow(CWMImageStrCodec *pSC)
 {
-    size_t i, j, jend = (pSC->m_pNextSC != NULL);
-    CWMIPredInfo *pPredInfo;
+	size_t i, j, jend = (pSC->m_pNextSC != NULL);
+	CWMIPredInfo *pPredInfo;
 
-    for (j = 0; j <= jend; j++) {
-        for(i = 0; i < pSC->m_param.cNumChannels; i ++){  // swap current row and previous row
-            pPredInfo = pSC->PredInfo[i];
-            pSC->PredInfo[i] = pSC->PredInfoPrevRow[i];
-            pSC->PredInfoPrevRow[i] = pPredInfo;
-        }
-        pSC = pSC->m_pNextSC;
-    }
+	for (j = 0; j <= jend; j++) {
+		for (i = 0; i < pSC->m_param.cNumChannels; i++) {  // swap current row and previous row
+			pPredInfo = pSC->PredInfo[i];
+			pSC->PredInfo[i] = pSC->PredInfoPrevRow[i];
+			pSC->PredInfoPrevRow[i] = pPredInfo;
+		}
+		pSC = pSC->m_pNextSC;
+	}
 }
 
-Void swapMRPtr(CWMImageStrCodec* pSC)
+void swapMRPtr(CWMImageStrCodec* pSC)
 {
     PixelI *pTemp[MAX_CHANNELS];
     size_t j, jend = (pSC->m_pNextSC != NULL);
@@ -251,8 +254,7 @@ ERR WMPAlloc(void** ppv, size_t cb)
 
 ERR WMPFree(void** ppv)
 {
-    if (*ppv)
-    {
+    if (*ppv) {
         free(*ppv);
         *ppv = NULL;
     }
@@ -641,7 +643,7 @@ U32 getBit32_SB(SimpleBitIO* pSB, U32 cBits)
 }
 
 // ignore input to byte boundary
-Void flushToByte_SB(SimpleBitIO* pSB)
+void flushToByte_SB(SimpleBitIO* pSB)
 {
     pSB->bAccumulator = 0;
     pSB->cBitLeft = 0;
@@ -808,7 +810,7 @@ Int allocateTileInfo(CWMImageStrCodec * pSC)
     return ICERR_OK;
 }
 
-Void freeTileInfo(CWMImageStrCodec * pSC)
+void freeTileInfo(CWMImageStrCodec * pSC)
 {
     size_t iTile;
 
@@ -852,13 +854,13 @@ Int allocateQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], size_t cChannel,
     return ICERR_OK;
 }
 
-Void freeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS])
+void freeQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS])
 {
     if(pQuantizer[0] != NULL)
         free(pQuantizer[0]);
 }
 
-Void formatQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], U8 cChMode, size_t cCh, size_t iPos, Bool bShiftedUV,
+void formatQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], U8 cChMode, size_t cCh, size_t iPos, Bool bShiftedUV,
                      Bool bScaledArith)
 {
     size_t iCh;
@@ -873,7 +875,7 @@ Void formatQuantizer(CWMIQuantizer * pQuantizer[MAX_CHANNELS], U8 cChMode, size_
     }
 }
 
-Void setUniformQuantizer(CWMImageStrCodec * pSC, size_t sb)
+void setUniformQuantizer(CWMImageStrCodec * pSC, size_t sb)
 {
     size_t iCh, iTile;
 
@@ -887,7 +889,7 @@ Void setUniformQuantizer(CWMImageStrCodec * pSC, size_t sb)
                 pSC->pTile[iTile].pQuantizerHP[iCh] = pSC->pTile[0].pQuantizerHP[iCh];
 }
 
-Void useDCQuantizer(CWMImageStrCodec * pSC, size_t iTile)
+void useDCQuantizer(CWMImageStrCodec * pSC, size_t iTile)
 {
    size_t iCh;
 
@@ -895,7 +897,7 @@ Void useDCQuantizer(CWMImageStrCodec * pSC, size_t iTile)
         pSC->pTile[iTile].pQuantizerLP[iCh][0] = *pSC->pTile[iTile].pQuantizerDC[iCh];
 }
 
-Void useLPQuantizer(CWMImageStrCodec * pSC, size_t cQP, size_t iTile)
+void useLPQuantizer(CWMImageStrCodec * pSC, size_t cQP, size_t iTile)
 {
    size_t iCh, iQP;
 
@@ -977,7 +979,7 @@ U32 flushToByte(BitIOInfo* pIO)
 #endif  // ARMOPT_BITIO
 
 //----------------------------------------------------------------
-Void putBit16z(BitIOInfo* pIO, U32 uiBits, U32 cBits)
+void putBit16z(BitIOInfo* pIO, U32 uiBits, U32 cBits)
 {
     assert(cBits <= 16);
     assert(0 == uiBits >> cBits);
@@ -991,7 +993,7 @@ Void putBit16z(BitIOInfo* pIO, U32 uiBits, U32 cBits)
     pIO->cBitsUsed &= 16 - 1;
 }
 
-Void putBit16(BitIOInfo* pIO, U32 uiBits, U32 cBits)
+void putBit16(BitIOInfo* pIO, U32 uiBits, U32 cBits)
 {
     assert(cBits <= 16);
 
@@ -999,7 +1001,7 @@ Void putBit16(BitIOInfo* pIO, U32 uiBits, U32 cBits)
     putBit16z(pIO, uiBits, cBits);
 }
 
-Void putBit32(BitIOInfo* pIO, U32 uiBits, U32 cBits)
+void putBit32(BitIOInfo* pIO, U32 uiBits, U32 cBits)
 {
     assert(0 <= (I32)cBits && cBits <= 32);
 
@@ -1012,7 +1014,7 @@ Void putBit32(BitIOInfo* pIO, U32 uiBits, U32 cBits)
     putBit16(pIO, uiBits, cBits);
 }
 
-Void fillToByte(BitIOInfo* pIO)
+void fillToByte(BitIOInfo* pIO)
 {
     putBit16z(pIO, 0, (16 - pIO->cBitsUsed) & 7);
 }

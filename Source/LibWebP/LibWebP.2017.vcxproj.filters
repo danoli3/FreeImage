@@ -179,6 +179,9 @@
     <ClInclude Include="src\dsp\yuv.h">
       <Filter>Header Files\dsp</Filter>
     </ClInclude>
+    <ClInclude Include="src\dsp\quant.h">
+      <Filter>Header Files\dsp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dec\alpha_dec.c">
@@ -522,6 +525,12 @@
     </ClCompile>
     <ClCompile Include="src\enc\webp_enc.c">
       <Filter>Source Files\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dsp\cost_neon.c">
+      <Filter>Source Files\dsp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dsp\lossless_sse41.c">
+      <Filter>Source Files\dsp</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

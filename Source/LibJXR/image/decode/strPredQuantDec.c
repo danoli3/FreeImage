@@ -30,7 +30,7 @@
 
 #define DEQUANT(iRaw, iQP) ((iRaw) * (iQP))
 
-Void dequantizeBlock4x4(PixelI * pRec, Int * pOrg, const Int * pIndex, Int iQPLP)
+void dequantizeBlock4x4(PixelI * pRec, Int * pOrg, const Int * pIndex, Int iQPLP)
 {
     Int i;
     
@@ -38,14 +38,14 @@ Void dequantizeBlock4x4(PixelI * pRec, Int * pOrg, const Int * pIndex, Int iQPLP
         pRec[pIndex[i]] = DEQUANT(pOrg[i], iQPLP);
 }
 
-Void dequantizeBlock2x2(PixelI * pRec, Int * pOrg, Int iQPLP)
+void dequantizeBlock2x2(PixelI * pRec, Int * pOrg, Int iQPLP)
 {
     pRec[32] = DEQUANT(pOrg[1], iQPLP);
     pRec[16] = DEQUANT(pOrg[2], iQPLP);
     pRec[48] = DEQUANT(pOrg[3], iQPLP);
 }
 
-Void dequantizeBlock4x2(PixelI * pRec, Int * pOrg, Int iQPLP)
+void dequantizeBlock4x2(PixelI * pRec, Int * pOrg, Int iQPLP)
 {
     pRec[ 64] = DEQUANT(pOrg[1], iQPLP);
     pRec[ 16] = DEQUANT(pOrg[2], iQPLP);
@@ -83,7 +83,7 @@ Int dequantizeMacroblock(CWMImageStrCodec * pSC)
 }
 
 /* frequency domain inverse DCAC prediction */
-Void predDCACDec(CWMImageStrCodec * pSC)
+void predDCACDec(CWMImageStrCodec * pSC)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;
     const Int iChannels = (cf == YUV_420 || cf == YUV_422) ? 1 : (Int) pSC->m_param.cNumChannels;
@@ -182,7 +182,7 @@ Void predDCACDec(CWMImageStrCodec * pSC)
 /*************************************************************************
     Frequency domain inverse AC prediction
 *************************************************************************/
-Void predACDec(CWMImageStrCodec * pSC)
+void predACDec(CWMImageStrCodec * pSC)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;
     const Int iChannels = (cf == YUV_420 || cf == YUV_422) ? 1 : (Int) pSC->m_param.cNumChannels;
@@ -515,7 +515,7 @@ static Int predCBPC422Dec(CWMImageStrCodec * pSC, Int iCBP, size_t mbX, size_t m
 
 
 /* Coded Block Pattern (CBP) prediction */
-Void predCBPDec(CWMImageStrCodec *pSC, CCodingContext *pContext)
+void predCBPDec(CWMImageStrCodec *pSC, CCodingContext *pContext)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;
     const size_t iChannels = (cf == YUV_420 || cf == YUV_422) ? 1 : pSC->m_param.cNumChannels;

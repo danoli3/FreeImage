@@ -50,7 +50,7 @@ Revision History:
 /******************************************************************
 Free Adaptive Huffman Table
 ******************************************************************/
-static Void CleanAH(CAdaptiveHuffman **ppAdHuff)
+static void CleanAH(CAdaptiveHuffman **ppAdHuff)
 {
     CAdaptiveHuffman *pAdHuff;
     
@@ -63,7 +63,7 @@ static Void CleanAH(CAdaptiveHuffman **ppAdHuff)
     }
 }
 
-static Void CleanAHDec(CCodingContext * pSC)
+static void CleanAHDec(CCodingContext * pSC)
 {
     Int kk;
 
@@ -159,7 +159,7 @@ Int AllocateCodingContextDec(CWMImageStrCodec *pSC, Int iNumContexts)
 /*************************************************************************
     Context reset on encoder
 *************************************************************************/
-Void ResetCodingContextDec(CCodingContext *pContext)
+void ResetCodingContextDec(CCodingContext *pContext)
 {
     Int k;
     /** set flags **/
@@ -181,7 +181,7 @@ Void ResetCodingContextDec(CCodingContext *pContext)
 /*************************************************************************
     Context deletion
 *************************************************************************/
-Void FreeCodingContextDec(CWMImageStrCodec *pSC)
+void FreeCodingContextDec(CWMImageStrCodec *pSC)
 {
     Int iContexts = (Int)(pSC->cNumCodingContext), i, k;
 

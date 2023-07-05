@@ -111,7 +111,7 @@ static U8 Convert_Float_To_U8(float f)
     }
     else if (f < 1.0f)
     {
-        return (U8)((255.0f * ((1.055f * (float)pow(f, 1.0f / 2.4f)) - 0.055f)) + 0.5f);
+        return (U8)((255.0f * ((1.055f * (float)pow(f, 1.0 / 2.4)) - 0.055f)) + 0.5f);
     }
     else
     {

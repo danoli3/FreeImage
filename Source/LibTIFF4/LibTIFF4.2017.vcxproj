@@ -22,7 +22,7 @@
     <ProjectName>LibTIFF4</ProjectName>
     <ProjectGuid>{EC085CBD-E9C3-477F-9A97-CB9D5DA30E27}</ProjectGuid>
     <RootNamespace>LibTIFF4</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,15 +39,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -213,9 +213,10 @@
     <ClCompile Include="tif_fax3sm.c" />
     <ClCompile Include="tif_flush.c" />
     <ClCompile Include="tif_getimage.c" />
+    <ClCompile Include="tif_hash_set.c" />
     <ClCompile Include="tif_jpeg.c" />
+    <ClCompile Include="tif_lerc.c" />
     <ClCompile Include="tif_luv.c" />
-    <ClCompile Include="tif_lzma.c" />
     <ClCompile Include="tif_lzw.c" />
     <ClCompile Include="tif_next.c" />
     <ClCompile Include="tif_ojpeg.c" />
@@ -231,6 +232,7 @@
     <ClCompile Include="tif_tile.c" />
     <ClCompile Include="tif_version.c" />
     <ClCompile Include="tif_warning.c" />
+    <ClCompile Include="tif_webp.c" />
     <ClCompile Include="tif_write.c" />
     <ClCompile Include="tif_zip.c" />
   </ItemGroup>
@@ -239,6 +241,7 @@
     <ClInclude Include="tif_config.h" />
     <ClInclude Include="tif_dir.h" />
     <ClInclude Include="tif_fax3.h" />
+    <ClInclude Include="tif_hash_set.h" />
     <ClInclude Include="tif_predict.h" />
     <ClInclude Include="tiff.h" />
     <ClInclude Include="tiffconf.h" />

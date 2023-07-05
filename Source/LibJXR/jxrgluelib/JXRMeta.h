@@ -227,13 +227,11 @@ EXTERN_C ERR WriteWmpDE(
 );
 
 
-#if defined(WIN32) && !defined(__MINGW32__)
 EXTERN_C ERR ReadPropvar(__in_ecount(1) struct WMPStream* pWS,
                          const __in_win U16 uType,
                          const __in_win U32 uCount,
                          const __in_win U32 uValue,
                          __out_win DPKPROPVARIANT *pvar);
-#endif
 
 
 

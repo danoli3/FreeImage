@@ -35,9 +35,9 @@
 #define COMPUTE_CORNER_PRED_ADD(a, b) (*(a) += (b))
 
 /** 2x2 foward DCT == 2x2 inverse DCT **/
-Void strDCT2x2dn(PixelI *, PixelI *, PixelI *, PixelI *);
-Void strDCT2x2up(PixelI *, PixelI *, PixelI *, PixelI *);
-Void FOURBUTTERFLY_HARDCODED1(PixelI *p);
+void strDCT2x2dn(PixelI *, PixelI *, PixelI *, PixelI *);
+void strDCT2x2up(PixelI *, PixelI *, PixelI *, PixelI *);
+void FOURBUTTERFLY_HARDCODED1(PixelI *p);
 
 /** 2x2 dct of a group of 4**/
 #define FOURBUTTERFLY(p, i00, i01, i02, i03, i10, i11, i12, i13,\

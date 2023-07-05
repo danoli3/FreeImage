@@ -304,7 +304,9 @@ FreeImage_OpenMultiBitmap(FREE_IMAGE_FORMAT fif, const char *filename, BOOL crea
 					
 					if (!header->m_cachefile.open(cache_name, keep_cache_in_memory)) {
 						// an error occured ...
-						fclose(handle);
+						if(handle){
+						  fclose(handle);
+						}
 						return NULL;
 					}
 				}

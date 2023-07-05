@@ -34,17 +34,17 @@
 #define ROTATE2(a, b) (b) -= (((a)*3 + 4) >> 3), (a) += (((b)*3 + 4) >> 3)  // this works well too
 
 /** local functions **/
-static Void fwdOddOdd(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void fwdOddOddPre(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void fwdOdd(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void strDCT2x2alt(PixelI * a, PixelI * b, PixelI * c, PixelI * d);
-static Void strHSTenc1(PixelI *, PixelI *);
-static Void strHSTenc(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void strHSTenc1_edge (PixelI *pa, PixelI *pd);
+static void fwdOddOdd(PixelI *, PixelI *, PixelI *, PixelI *);
+static void fwdOddOddPre(PixelI *, PixelI *, PixelI *, PixelI *);
+static void fwdOdd(PixelI *, PixelI *, PixelI *, PixelI *);
+static void strDCT2x2alt(PixelI * a, PixelI * b, PixelI * c, PixelI * d);
+static void strHSTenc1(PixelI *, PixelI *);
+static void strHSTenc(PixelI *, PixelI *, PixelI *, PixelI *);
+static void strHSTenc1_edge (PixelI *pa, PixelI *pd);
 
-//static Void scaleDownUp0(PixelI *, PixelI *);
-//static Void scaleDownUp1(PixelI *, PixelI *);
-//static Void scaleDownUp2(PixelI *, PixelI *);
+//static void scaleDownUp0(PixelI *, PixelI *);
+//static void scaleDownUp1(PixelI *, PixelI *);
+//static void scaleDownUp2(PixelI *, PixelI *);
 //#define FOURBUTTERFLY_ENC_ALT(p, i00, i01, i02, i03, i10, i11, i12, i13,	\
 //    i20, i21, i22, i23, i30, i31, i32, i33)		\
 //    strHSTenc(&p[i00], &p[i01], &p[i02], &p[i03]);			\
@@ -69,7 +69,7 @@ static Void strHSTenc1_edge (PixelI *pa, PixelI *pd);
 /** 9  3  7  5 **/
 /** reordering should be combined with zigzag scan **/
 
-Void strDCT4x4Stage1(PixelI * p)
+void strDCT4x4Stage1(PixelI * p)
 {
     /** butterfly **/
     //FOURBUTTERFLY(p, 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
@@ -88,7 +88,7 @@ Void strDCT4x4Stage1(PixelI * p)
     fwdOdd(&p[10], &p[8], &p[11], &p[9]);
 }
 
-Void strDCT4x4SecondStage(PixelI * p)
+void strDCT4x4SecondStage(PixelI * p)
 {
     /** butterfly **/
     FOURBUTTERFLY(p, 0, 192, 48, 240, 64, 128, 112, 176,16, 208, 32, 224,  80, 144, 96, 160);
@@ -106,7 +106,7 @@ Void strDCT4x4SecondStage(PixelI * p)
     fwdOdd(&p[32], &p[48], &p[96], &p[112]);
 }
 
-Void strNormalizeEnc(PixelI* p, Bool bChroma)
+void strNormalizeEnc(PixelI* p, Bool bChroma)
 {
     int i;
     if (!bChroma) {
@@ -122,7 +122,7 @@ Void strNormalizeEnc(PixelI* p, Bool bChroma)
 }
 
 /** 2x2 DCT with pre-scaling - for use on encoder side **/
-Void strDCT2x2dnEnc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strDCT2x2dnEnc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, C, t;
     a = (*pa + 0) >> 1;
@@ -147,7 +147,7 @@ Void strDCT2x2dnEnc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 
 /** pre filter stuff **/
 /** 2-point pre for boundaries **/
-Void strPre2(PixelI * pa, PixelI * pb)
+void strPre2(PixelI * pa, PixelI * pb)
 {
     PixelI a, b;
     a = *pa;
@@ -167,7 +167,7 @@ Void strPre2(PixelI * pa, PixelI * pb)
     *pb = b;
 }
 
-Void strPre2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPre2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -202,7 +202,7 @@ Void strPre2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 }
 
 /** 4-point pre for boundaries **/
-Void strPre4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPre4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -234,7 +234,7 @@ Void strPre4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
   ( 5)( 4)|( 0+64) (1+64) p1 ( 5)( 4)|(64)(65)
   ( 7)( 6)|( 2+64) (3+64)    ( 7)( 6)|(66)(67)
 *****************************************************************************************/
-Void strPre4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset)
+void strPre4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset)
 {
     PixelI *p2 = p0 + 72 - iOffset;
     PixelI *p3 = p1 + 64 - iOffset;
@@ -267,7 +267,7 @@ Void strPre4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset)
     strDCT2x2dn(p0 + 3, p2 + 3, p1 + 3, p3 + 3);
 }
 
-Void strPre4x4Stage1(PixelI* p, Int iOffset)
+void strPre4x4Stage1(PixelI* p, Int iOffset)
 {
     strPre4x4Stage1Split(p, p + 16, iOffset);
 }
@@ -280,7 +280,7 @@ Void strPre4x4Stage1(PixelI* p, Int iOffset)
   ( 5)( 4)|( 0+32)( 1+32) p1 ( 5)( 4)|(32)(33)
   ( 7)( 6)|( 2+32)( 3+32)    ( 7)( 6)|(34)(35)
 *****************************************************************************************/
-Void strPre4x4Stage2Split(PixelI* p0, PixelI* p1)
+void strPre4x4Stage2Split(PixelI* p0, PixelI* p1)
 {
     /** butterfly **/
     strHSTenc(p0 - 96, p0 +  96, p1 - 112, p1 + 80);
@@ -314,7 +314,7 @@ Void strPre4x4Stage2Split(PixelI* p0, PixelI* p1)
     for some strange reason, breaking up the function into two blocks, strHSTenc1 and strHSTenc
     seems to work faster
 **/
-static Void strHSTenc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void strHSTenc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     /** different realization : does rescaling as well! **/
     PixelI a, b, c, d;
@@ -337,7 +337,7 @@ static Void strHSTenc(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
     *pd = d;
 }
 
-static Void strHSTenc1(PixelI *pa, PixelI *pd)
+static void strHSTenc1(PixelI *pa, PixelI *pd)
 {
     /** different realization : does rescaling as well! **/
     PixelI a, d;
@@ -357,7 +357,7 @@ static Void strHSTenc1(PixelI *pa, PixelI *pd)
     *pd = d;
 }
 
-static Void strHSTenc1_edge (PixelI *pa, PixelI *pd)
+static void strHSTenc1_edge (PixelI *pa, PixelI *pd)
 {
     /** different realizion as compared to scaling operator for 2D case **/
     PixelI a, d;
@@ -383,7 +383,7 @@ static Void strHSTenc1_edge (PixelI *pa, PixelI *pd)
 }
 
 /** Kron(Rotate(pi/8), Rotate(pi/8)) **/\
-static Void fwdOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void fwdOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, t1, t2;
 
@@ -415,7 +415,7 @@ static Void fwdOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
     *pd = d;
 }
 /** Kron(Rotate(pi/8), Rotate(pi/8)) **/
-static Void fwdOddOddPre(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void fwdOddOddPre(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, t1, t2;
     a = *pa;
@@ -448,7 +448,7 @@ static Void fwdOddOddPre(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 
 /** Kron(Rotate(pi/8), [1 1; 1 -1]/sqrt(2)) **/
 /** [a b c d] => [D C A B] **/
-Void fwdOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void fwdOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -481,7 +481,7 @@ Void fwdOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 /*************************************************************************
   Top-level function to tranform possible part of a macroblock
 *************************************************************************/
-Void transformMacroblock(CWMImageStrCodec * pSC)
+void transformMacroblock(CWMImageStrCodec * pSC)
 {
     OVERLAP olOverlap = pSC->WMISCP.olOverlap;
     COLORFORMAT cfColorFormat = pSC->m_param.cfColorFormat;

@@ -609,6 +609,8 @@ ReadMetadata(PKImageDecode *pID, FIBITMAP *dib) {
 
 		// free profile buffer
 		free(pbProfile);
+		pbProfile = NULL;
+
 		// restore initial position
 		error_code = pID->pStream->SetPos(pID->pStream, currentPos);
 		JXR_CHECK(error_code);
@@ -622,6 +624,7 @@ ReadMetadata(PKImageDecode *pID, FIBITMAP *dib) {
 	} catch(...) {
 		// free profile buffer
 		free(pbProfile);
+		pbProfile = NULL;
 		if(currentPos) {
 			// restore initial position
 			pStream->SetPos(pStream, currentPos);
@@ -786,6 +789,7 @@ WriteMetadata(PKImageEncode *pIE, FIBITMAP *dib) {
 
 	} catch(...) {
 		free(profile);
+		profile = NULL;
 		return error_code;
 	}
 }
@@ -899,12 +903,20 @@ MimeType() {
 
 static BOOL DLL_CALLCONV
 Validate(FreeImageIO *io, fi_handle handle) {
-	BYTE jxr_signature[3] = { 0x49, 0x49, 0xBC };
-	BYTE signature[3] = { 0, 0, 0 };
+	BYTE jxr_signature[4] = { 0x49, 0x49, 0xBC, 0x01 };
+	BYTE signature[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	io->read_proc(&signature, 1, 3, handle);
+	if (io->read_proc(&signature, 1, 8, handle) == 8) {
+		if (memcmp(jxr_signature, signature, 4) == 0) {
+			// FIRST_IFD_OFFSET (little-endian format) specifies the byte position, relative to the beginning of the file, of the first
+			// IMAGE_FILE_DIRECTORY() syntax structure(subclause A.6) in the file.
+			// The value of FIRST_IFD_OFFSET shall be an integer multiple of 2.
+			unsigned first_ifd_offset = *((unsigned*)(&signature[0] + 4));
+			return (first_ifd_offset % 2 == 0) ? TRUE : FALSE;
+		}
+	}
 
-	return (memcmp(jxr_signature, signature, 3) == 0);
+	return FALSE;
 }
 
 static BOOL DLL_CALLCONV
@@ -957,6 +969,7 @@ Open(FreeImageIO *io, fi_handle handle, BOOL read) {
 			// create a JXR stream wrapper
 			if(_jxr_io_Create(&pStream, jxr_io) != WMP_errSuccess) {
 				free(jxr_io);
+				jxr_io = NULL;
 				return NULL;
 			}
 		}
@@ -971,6 +984,7 @@ Close(FreeImageIO *io, fi_handle handle, void *data) {
 		// free the FreeImageIO stream wrapper
 		FreeImageJXRIO *jxr_io = (FreeImageJXRIO*)pStream->state.pvObj;
 		free(jxr_io);
+		jxr_io = NULL;
 		// free the JXR stream wrapper
 		pStream->fMem = TRUE;
 		_jxr_io_Close(&pStream);
@@ -1209,6 +1223,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 	} catch (const char *message) {
 		// unload the dib
 		FreeImage_Unload(dib);
+		dib = NULL;
 		// free the decoder
 		pDecoder->Release(&pDecoder);
 

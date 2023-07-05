@@ -332,5 +332,11 @@ void __pfx_assume(int, const char *);
 #endif /* if !(defined(RC_INVOKED) || defined(SORTPP_PASS)) */
 #endif /* #ifndef SPECSTRINGS_H */
 
+// Some CE versions don't have specstrings.h, some have very old version without
+// __specstrings defined. So we handle CE separately in wmasalce.h
+#if defined(UNDER_CE) || defined(NO_WINDOWS)
+  #include "wmspecstringce.h"
+#endif
+
 #endif //_WMSPECSTRING_H_
 

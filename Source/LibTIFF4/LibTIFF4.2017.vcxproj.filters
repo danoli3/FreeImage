@@ -65,9 +65,6 @@
     <ClCompile Include="tif_luv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tif_lzma.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tif_lzw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -119,6 +116,15 @@
     <ClCompile Include="tif_zip.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tif_lerc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tif_webp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tif_hash_set.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="t4.h">
@@ -152,6 +158,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uvcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tif_hash_set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -211,6 +211,7 @@ class IOCache
 public:
 	IOCache(FreeImageIO *io, fi_handle handle, size_t size) :
 		_ptr(NULL), _begin(NULL), _end(NULL), _size(size), _io(io), _handle(handle)	{
+		  assert(size);
 			_begin = (BYTE*)malloc(size);
 			if (_begin) {
 			_end = _begin + _size;
@@ -570,7 +571,7 @@ Generic RLE loader
 */
 template<int bPP>
 static void 
-loadRLE(FIBITMAP* dib, int width, int height, FreeImageIO* io, fi_handle handle, long eof, BOOL as24bit) {
+loadRLE(FIBITMAP*& dib, int width, int height, FreeImageIO* io, fi_handle handle, long eof, BOOL as24bit) {
 	const int file_pixel_size = bPP/8;
 	const int pixel_size = as24bit ? 3 : file_pixel_size;
 
@@ -587,8 +588,12 @@ loadRLE(FIBITMAP* dib, int width, int height, FreeImageIO* io, fi_handle handle,
 	const BYTE* dib_end = FreeImage_GetScanLine(dib, height);//< one-past-end row
 
 	// Compute the rough size of a line...
-	long pixels_offset = io->tell_proc(handle);
-	long sz = ((eof - pixels_offset) / height);
+	const long pixels_offset = io->tell_proc(handle);
+	const long remaining_size = (eof - pixels_offset);
+	if (remaining_size < height) {
+		throw FI_MSG_ERROR_CORRUPTED;
+	}
+	const long sz = (remaining_size / height);
 
 	// ...and allocate cache of this size (yields good results)
 	IOCache cache(io, handle, sz);

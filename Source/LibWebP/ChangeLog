@@ -1,23 +1,402 @@
+d9191588 fuzzer/*: normalize src/ includes
+53b6f762 fix indent
+731246ba update ChangeLog (tag: v1.2.1-rc2)
+d250f01d dsp/*: use WEBP_HAVE_* to determine Init availability
+3a4d3ecd update NEWS
+b2bc8093 bump version to 1.2.1
+e542fc7a update AUTHORS
+e0241154 Merge "libwebp/CMake: Add <BUILD_INTERFACE> to webp incl" into main
+edea6444 libwebp/CMake: Add <BUILD_INTERFACE> to webp incl
+ece18e55 dsp.h: respect --disable-sse2/sse4.1/neon
+a89a3230 wicdec: support alpha from WebP WIC decoder
+26f4aa01 Merge "alpha_processing: fix visual studio warnings" into main
+8f594663 alpha_processing: fix visual studio warnings
+46d844e6 Merge "cpu.cmake: fix compiler flag detection w/3.17.0+" into main
+298d26ea Merge changes I593adf92,If20675e7,Ifac68eac into main
+a1e5dae0 alpha_processing*: use WEBP_RESTRICT qualifier
+327ef24f cpu.cmake: fix compiler flag detection w/3.17.0+
+f70819de configure: enable libwebpmux by default
+dc7e2b42 configure: add informational notices when disabling binaries
+9df23ddd configure: move lib flag checks before binaries
+a2e18f10 Merge "WebPConfig.config.in: correct WEBP_INCLUDE_DIRS" into main
+e1a8d4f3 Merge "bit_reader_inl_utils: uniformly apply WEBP_RESTRICT" into main
+4de35f43 rescaler.c: fix alignment
+0f13eec7 bit_reader_inl_utils: uniformly apply WEBP_RESTRICT
+277d3074 Fix size_t overflow in  WebPRescalerInit
+97adbba5 WebPConfig.config.in: correct WEBP_INCLUDE_DIRS
+b60d4603 advanced_api_fuzzer: add extreme config value coverage
+72fe52f6 anim_encode.c,cosmetics: normalize indent
+116d235c anim_encode: Fix encoded_frames_[] overflow
+6f445b3e CMake: set CMP0072 to NEW
+b1cf887f define WEBP_RESTRICT for MSVC
+3e265136 Add WEBP_RESTRICT & use it in VP8BitReader
+f6d29247 vp8l_dec::ProcessRows: fix int overflow in multiply
+de3b4ba8 CMake: add WEBP_BUILD_LIBWEBPMUX
+7f09d3d1 CMakeLists.txt: rm libwebpmux dep from anim_{diff,dump}
+4edea4a6 Init{RGB,YUV}Rescaler: fix a few more int overflows
+c9e26bdb rescaler_utils: set max valid scaled w/h to INT_MAX/2
+28d488e6 utils.h: add SizeOverflow()
+695bdaa2 Export/EmitRescaledRowsRGBA: fix pointer offset int overflow
+685d073e Init{RGB,YUV}Rescaler: fix int overflows in multiplication
+d38bd0dd WebPFlipBuffer: fix integer overflow
+109ff0f1 utils: allow MALLOC_LIMIT to indicate a max
+a2fce867 WebPRescalerImportRowExpand_C: promote some vals before multiply
+776983d4 AllocateBuffer: fix int multiplication overflow check
+315abbd6 Merge "Revert "Do not use a palette for one color images.""
+eae815d0 Merge changes Ica3bbf75,I82f82954
+afbca5a1 Require Emscripten 2.0.18
+3320416b CMakeLists,emscripten: use EXPORTED_RUNTIME_METHODS
+29145ed6 Update README instructions for using Emscripten
+1f579139 cosmetics: remove use of 'sanity' / 'master'
+29b6129c WebPAnimEncoderNewInternal: remove some unnecessary inits
+b60869a1 Revert "Do not use a palette for one color images."
+6fb4cddc demux: move padded size calc post unpadded validation
+05b72d42 vp8l_enc.c: normalize index types
+b6513fba Do not use a palette for one color images.
+98bbe35b Fix multi-threading with palettes.
+b1674240 Add modified Zeng's method to palette sorting.
+88c90c45 add CONTRIBUTING.md
+6a9916d7 WebPRescalerInit: add missing int64_t promotion
+b6cf52d5 WebPIoInitFromOptions: treat use_scaling as a bool
+3b12b7f4 WebPIoInitFromOptions: treat use_cropping as a bool
+595fa13f add WebPCheckCropDimensions()
+8fdaecb0 Disable cross-color when palette is used.
+8933bac2 WebPIoInitFromOptions: respect incoming bypass_filtering val
+7d416ff0 webpdec,cosmetics: match error text to function call
+ec6cfeb5 Fix typo on WebPPictureAlloc() in README
+7e58a1a2 *.cmake: add license header
+5651a6b2 cmake: fix .so versioning
+25ae67b3 xcframeworkbuild.sh: add arm64 simulator target
+5d4ee4c3 cosmetics: remove use of the term 'dummy'
+01b38ee1 faster CollectColorXXXTransforms_SSE41
+652aa344 Merge "Use BitCtz for FastSLog2Slow_C"
+0320e1e3 add the missing default BitsCtz() code
+8886f620 Use BitCtz for FastSLog2Slow_C
+fae41617 faster CombinedShannonEntropy_SSE2
+5bd2704e Introduce the BitCtz() function.
+fee64287 Merge "wicdec,icc: treat unsupported op as non-fatal"
+33ddb894 lossless_sse{2,41}: remove some unneeded includes
+b27ea852 wicdec,icc: treat unsupported op as non-fatal
+b78494a9 Merge "Fix undefined signed shift."
+e79974cd Fix undefined signed shift.
+a8853394 SSE4.1 versions of BGRA to RGB/BGR color-space conversions
+a09a6472 SSE4.1 version of TransformColorInverse
+401da22b Merge "pngdec: check version before using png_get_chunk_malloc_max"
+26907822 pngdec: check version before using png_get_chunk_malloc_max
+06c1e72e Code cleanup
+8f0d41aa Merge changes Id135bbf4,I99e59797
+373eb170 gif2webp: don't store loop-count if there's only 1 frame
+759b9d5a cmake: add WEBP_USE_THREAD option
+926ce921 cmake: don't install binaries from extras/
+9c367bc6 WebPAnimDecoderNewInternal: validate bitstream before alloc
+47f64f6e filters_sse2: import Chromium change
+cc3577e9 fuzzer/*: use src/ based include paths
+004d77ff Merge tag 'v1.2.0'
+fedac6cc update ChangeLog (tag: v1.2.0-rc3, tag: v1.2.0)
+170a8712 Fix check_c_source_compiles with pthread.
+ceddb5fc Fix check_c_source_compiles with pthread.
+85995719 disable CombinedShannonEntropy_SSE2 on x86
+289757fe TiffDec: enforce stricter mem/dimension limit on tiles
+8af7436f Merge "{ios,xcframework}build.sh: make min version(s) more visible" into 1.2.0
+e56c3c5b pngdec: raise memory limit if needed
+8696147d pngdec: raise memory limit if needed
+13b8e9fe {ios,xcframework}build.sh: make min version(s) more visible
+a9225410 animdecoder_fuzzer: fix memory leak
+d6c2285d update gradle to 6.1.1
+8df77fb1 animdecoder_fuzzer: fix memory leak
+52ce6333 update NEWS
+28c49820 bump version to 1.2.0
+7363dff2 webp/encode.h: restore WEBP_ENCODER_ABI_VERSION to v1.1.0
+826aafa5 update AUTHORS
+63258823 animdecoder_fuzzer: validate canvas size
+9eb26381 CMake: remove duplicate "include(GNUInstallDirs)"
+2e7bed79 WebPPicture: clarify the ownership of user-owned data.
+cccf5e33 webpmux: add an '-set loop <value>' option
+c9a3f6a1 Merge changes Ie29f9867,I289c54c4
+319f56f1 iosbuild.sh: sync some aspects of xcframeworkbuild.sh
+e8e8db98 add xcframeworkbuild.sh
+ae545534 dsp.h: allow config.h to override MSVC SIMD autodetection
+fef789f3 Merge "cmake: fix per-file assembly flags"
+fc14fc03 Have C encoding predictors use decoding predictors.
+7656f0b3 README,cosmetics: fix a couple typos
+d2e245ea cmake: disable webp.js if WEBP_ENABLE_SIMD=1
+96099a79 cmake: fix per-file assembly flags
+5abb5582 Merge "cmake: fix compilation w/Xcode generator"
+8484a120 cmake: fix compilation w/Xcode generator
+d7bf01c9 Merge changes Ifcae0f38,Iee2d7401
+36c81ff6 WASM-SIMD: port 2 patches from rreverser@'s tree
+988b02ab Merge "Couple of fixes to allow SIMD on Emscripten"
+26faf770 wicdec: fail with animated images
+ab2d08a8 [cd]webp: document lack of animated webp support
+52273943 Couple of fixes to allow SIMD on Emscripten
+8870ba7f Fix skia bug #10952
+4b3c6953 Detect if StoreFrame read more than anmf_payload_size bytes
+17fd4ba8 webp/decode.h,cosmetics: normalize 'flip' comment
+411d3677 remove some unreachable break statements
+3700ffd7 WebPPictureHasTransparency: remove unreachable return
+83604bf3 {animencoder,enc_dec}_fuzzer: convert some abort()s to returns
+eb44119c Merge changes I8ae09473,I678c8b1e
+9f6055fc fuzz_utils.h: rename max() to Max()
+695788e7 fuzz_utils.h: make functions WEBP_INLINE
+906c1fcd make ImgIoUtilReadFile use WebPMalloc instead of malloc
+8cb7e536 rename demux_api_fuzzer.c -> mux_demux_api_fuzzer.c
+443db47d add animdecoder_fuzzer.cc
+36a6eea3 Merge "import fuzzers from oss-fuzz/chromium"
+ec5f12c1 Makefile.vc: remove deprecated /Gm option
+64425a08 picture_tools_enc: fix windows build warning
+bd94090a import fuzzers from oss-fuzz/chromium
+cf847cba use WEBP_DSP_INIT_FUNC for Init{GammaTables*,GetCoeffs}
+55a080e5 Add WebPReplaceTransparentPixels() in dsp
+84739717 GetBackgroundColorGIF: promote to uint32_t before << 24
+def64e92 cwebp: Fix -print_psnr for near_lossless
+cf2f88b3 Add palette and spatial for q >= 75 and -m 5
+f0110bae Add no-color cache configuration to the cruncher
+749a8b99 Better estimate of the cache cost.
+4f9f00cc Use spatial predictors on top of palette no matter what.
+7658c686 Add spatial prediction on top of palette in cruncher.
+133ff0e3 webp_js: force WASM=0 option explicitly
+e3c259a2 Fix integer overflow in EmitFancyRGB.
+b3ff0bde man/{gif2,img2}webp,webpmux: normalize some wording
+f9b30586 fix ABI breakage introduced by 6a0ff358
+1d58dcfc README.webp_js: update note about emscripten version
+44070266 README.webp_js: s/fastcomp/upstream/
+2565fa8f README.webp_js: update cmake command
+47309ef5 webp: WEBP_OFFSET_PTR()
+687ab00e DC{4,8,16}_NEON: replace vmovl w/vaddl
+1b92fe75 DC16_NEON,aarch64: use vaddlv
+53f3d8cf dec_neon,DC8_NEON: use vaddlv instead of movl+vaddv
+27d08240 Fix integer overflow in WebPAnimDecoderGetNext()
+69776e38 Merge "remove call to MBAnalyzeBestIntra4Mode for method >= 5"
+a99078c1 remove call to MBAnalyzeBestIntra4Mode for method >= 5
+22e404cc CMakeLists.txt: fix set(CACHE) argument order
+71690b52 fix MSVC warning
+6a0ff358 Enc: add a qmin / qmax range for quality factor
+0fa56f30 Merge tag 'v1.1.0'
+6cf504d0 PNM decoding: handle max_value != 255
+d7844e97 update ChangeLog (tag: v1.1.0-rc2, tag: v1.1.0, origin/1.1.0)
+7f006436 Makefile.vc: fix webp_quality.exe link
+cf047e83 Makefile.vc: fix webp_quality.exe link
+c074c653 update NEWS
+30f09551 bump version to 1.1.0
+a76694a1 update AUTHORS
+6e3ef7b3 extras: fix WEBP_SWAP_16BIT_CSP check
+47178dbd extras: add WebPUnmultiplyARGB() convenience function
+22cbae33 idec_dec: fix 0 offset of NULL pointer
+290dd0b4 muxread: fix 0 offset of NULL pointer
+0df474ac Merge "lossless_(enc_|)sse2: avoid offsetting a NULL pointer"
+c6b75a19 lossless_(enc_|)sse2: avoid offsetting a NULL pointer
+295e5e38 fix UBSAN warning
+e2575e05 DC8_NEON,aarch64: use vaddv
+b0e09e34 dec_neon: Fix build failure under some toolchains
+cf0e903c dsp/lossless: Fix non gcc ARM builds
+bb7bc40b Remove ubsan errors.
+78881b76 CMake: fix GLUT library link
+9f750f7a cmake: fix BUILD_SHARED_LIBS build on mac
+17850e74 libwebp: Remove char-subscripts warning in pnmdec.c
+2fa2552d Merge "Expose WebPMalloc() in addition to WebPFree()"
+a4df4aae Expose WebPMalloc() in addition to WebPFree()
+853ea3d8 imageio/tiff: Return error before allocating bad tile size
+af650c0b Fix a Wxor-used-as-pow false positive
+601ef17c libwebp.py: update to swig 3.0.12
+0e48d889 bugfix: last alpha rows were incorrectly decoded
+24d2ccb4 webp: Fix imageio ReadPNM() TUPLTYPE
+fab8f9cf cosmetics: normalize '*' association
+94138e0e update .gitignore
+0fe1a89d update ChangeLog (tag: v1.0.3-rc1, tag: v1.0.3)
+2ad0916d update NEWS
+1287362b bump version to 1.0.3
+7b968cc2 update AUTHORS
+9d6988f4 Fix the oscillating prediction problem at low quality
+312f74d0 makefile.unix: allow *_LIBS to be overridden w/EXTRA_LIBS
+92dbf237 filters_sse2,cosmetics: shorten some long lines
+a277d197 filters_sse2.c: quiet integer sanitizer warnings
+804540f1 Fix cpufeatures in CMake.
+bf00c15b Add CMake option for bittrace.
+a788b498 filters_sse2.c: quiet integer sanitizer warnings
+e6a92c5e filters.c: quiet integer sanitizer warnings
+ec1cc40a lossless.c: remove U32 -> S8 conversion warnings
+1106478f remove conversion U32 -> S8 warnings
+812a6b49 lossless_enc: fix some conversion warning
+4627c1c9 lossless_enc,TransformColorBlue: quiet uint32_t conv warning
+c84673a6 lossless_enc_sse{2,41}: quiet signed conv warnings
+776a7757 dec_sse2: quiet signed conv warnings
+bd39c063 Merge "thread_utils: release mutex before signaling"
+0550576f Merge "(alpha_processing,enc}_sse2: quiet signed conv warnings"
+6682f2c4 thread_utils: release mutex before signaling
+e78dea75 (alpha_processing,enc}_sse2: quiet signed conv warnings
+9acf18ba iosbuild.sh: add WebP{Demux,Mux}.framework
+b9be7e65 vwebp: remove the -fit option (and make it default)
+1394a2bb Merge "README.webp_js: update Emscripten.cmake note"
+dd3e7f8a README.webp_js: update Emscripten.cmake note
+32cf8801 predictor_enc,GetBestGreenRedToBlue: quiet implicit conv warnings
+e1c8acb5 Merge "vwebp: add a -fit option"
+cbd23dd5 vwebp: add a -fit option
+2e672351 bit_writer_utils,Flush: quiet implicit conversion warnings
+1326988d swig: update libwebp_python_wrap.c
+0e7f8548 update generated swig files
+17ed1438 Merge "PutLE{16,24}: quiet implicit conversion warnings"
+24686538 PutLE{16,24}: quiet implicit conversion warnings
+153bb3a0 fix some clang-7 warnings:
+ab2dc893 Rescaler: fix rounding error
+aa65f89a HistogramCombineStochastic: fix free of uninit value
+af0bac64 Merge "encode.h: mention 'exact' default in WebPEncodeLossless*"
+6d2e11ec encode.h: mention 'exact' default in WebPEncodeLossless*
+8c3f04fe AndroidCPUInfo: reorder terms in conditional
+fcfd9c71 BitTrace: if BITTRACE is > 0, record and print syntax bits used
+067031ea Speedups for unused Huffman groups.
+01ac46ba libwebp: Display "libjpeg error:" in imageio/jpegdec
+d9a662e1 WebPRescalerGetScaledDimensions: round scaled dimension up
+62eb3f08 libwebp: Fix missing '{' in README
+e05f785a Merge "unicode,INIT_WARGV: add missing cast"
+63c9a69f tag the VP8LHashPix() function for potential uint roll-over
+2b7214ab unicode,INIT_WARGV: add missing cast
+bf424b46 tag the GetPixPairHash64() function for potential uint roll-over
+7d05d6ca Have the color cache computation be u32-bit only.
+6bcf8769 Remove BINARYEN_METHOD in wasm settings.
+2b98df90 update ChangeLog (tag: v1.0.2-rc1, tag: v1.0.2)
+61e372b7 update NEWS
+7ae658a0 bump version to 1.0.2
+51c4907d update AUTHORS
+666bd6c6 man/cwebp.1: refine near-lossless text
+561cdce5 Clarify the doc about GetFeatures.
+aec2cf02 near_lossless: fix fuzzing-detected integer overflow
+928a75de webp: Fix VP8LBitWriterClone() bug
+5173d4ee neon IsFlat
+5b081219 IsFlat: inline when possible
+381b7b54 IsFlat: use int for thresh
+6ed15ea1 fix unprobable leak in webp_sdl.c
+22bbb24e Merge "IsFlat: return int"
+8b3fb238 Merge tag 'v1.0.1'
+f435de95 IsFlat: return int
+41521aed utils.h: only define WEBP_NEED_LOG_TABLE_8BIT when needed
+9f4d4a3f neon: GetResidualCost
+0fd7514b neon: SetResidualCoeffs
+f95a996c Simpler histogram clustering.
+e85d3313 update ChangeLog (tag: v1.0.1-rc2, tag: v1.0.1)
+fa8210e4 Fix pair update in stochastic entropy merging.
+fd198f73 add codereview.settings
+825389ac README.mux: add a reference to the AnimDecoder API
+3be698c3 CMake: fix webp_js compilation
+485ff86f Fix pair update in stochastic entropy merging.
+4cd0582d CMake: fix webp_js compilation
+4cbb4caf update NEWS
+f5a5918d bump version to 1.0.1
+d61385db Speed-up: Make sure we only initialize histograms when needed.
+6752904b Speed-up: Make sure we only initialize histograms when needed.
+0c570316 update AUTHORS
+301a2dda img2webp: add help note about arguments from a file
+f0abab92 Speedups for empty histograms.
+f2dfd925 Split HistogramAdd to only have the high level logic in C.
+06b7bc7d Fix compilation on windows and clang-cl+ninja.
+b6284d82 img2webp: add help note about arguments from a file
+decf6f6b Speedups for empty histograms.
+dea3e899 Split HistogramAdd to only have the high level logic in C.
+632798ae Merge "Fix compilation on windows and clang-cl+ninja."
+dc1a9518 Merge "libwebp: Unicode command tools on Windows"
+9cf9841b libwebp: Unicode command tools on Windows
+98179495 remove some minor TODOs
+a376e7b9 Fix compilation on windows and clang-cl+ninja.
+cbf82cc0 Remove AVX2 files.
+5030e902 Merge "TIFF decoder: remove unused KINV definition"
+ac543311 Remove a few more useless #defines
+123d3306 TIFF decoder: remove unused KINV definition
+ef1094b0 Merge "- install pkg-config files during the CMake build"
+b911fbc9 libwebp: Remove duplicate GIFDisplayError in anim_util
+eee00b66 - install pkg-config files during the CMake build
+ac3ec8c9 Merge "Clean-up the common sources in dsp."
+3e13da7b Clean-up the common sources in dsp.
+5c395f1d libwebp: cmake-format all
+e7a69729 libwebp: Add extras targets in CMakeLists.txt
+e52485d6 libwebp: Rename macros in webpmux.c
+92dc0f09 clean-up MakeInputImageCopy()
+39952de2 VP8IteratorImport: add missing 'const'
+382af7a2 clean-up WebPBlendAlpha
+14d020f6 libwebp: Use ExUtilGet*() in anim_diff
+0d92ff25 libwebp: remove useless variable in gif2webp
+556cb1b4 Merge "CMake: Set WEBP_BUILD_GIF2WEBP to off"
+da26ee49 CMake: Set WEBP_BUILD_GIF2WEBP to off
+b2a867c0 cwebp: Don't premultiply during -resize if -exact
+637141bc pngdec: fix build w/libpng < 1.4.x
+bc5092b1 pngdec: set memory functions
+50d8345a Fix CMake math library.
+6aa3e8aa Fix math library on Visual Studio.
+d71df4e2 Fix math library finding in CMake.
+de08d727 cosmetics: normalize include guard comment
+009562b4 vwebp: Fix bug when Dispose then NoBlend frames
+423f2579 Fix up CMake to create targets.
+907208f9 Wait for all threads to be done in DecodeRemaining.
+4649b3c4 vwebp: Add background color display option
+78ad57a3 Fix bad glClearColor parameters
+da96d8d9 Allow for a non-initialized alpha decompressor in DoRemap.
+2563db47 fix rescaling rounding inaccuracy
+211f37ee fix endian problems in pattern copy
+5f0f5c07 Make sure partition #0 is read before VP8 data in IDecode.
+de98732b fix GetColorf() bug
+4338cd36 misc fixes in libwebpmux
+e00af13e fix signatures after a9ceda7ff1
+a9ceda7f Speed-up chunk list operations.
+2281bbf6 Merge "Better handling of bogus Huffman codes."
+39cb9aad Better handling of bogus Huffman codes.
+89cc9d37 Merge "fix read-overflow while parsing VP8X chunk"
+95fd6507 fix read-overflow while parsing VP8X chunk
+9e729fe1 Fix VP8IoTeardownHook being called twice on worker sync failure
+29fb8562 Merge "muxread,anmf: fail on multiple image chunks"
+eb82ce76 muxread,anmf: fail on multiple image chunks
+1344a2e9 fix alpha-filtering crash when image width is larger than radius
+be738c6d muxread,ChunkVerifyAndAssign: validate chunk_size
+2c70ad76 muxread,CreateInternal: fix riff size checks
+569001f1 Fix for thread race heap-use-after-free
+c56a02d9 Android.mk: use LOCAL_EXPORT_C_INCLUDES w/public libs
+15795596 CMakeLists.txt,cosmetics: normalize if() formatting
+1a44c233 Merge "cmake: add support for webpmux"
+e9569ad7 Merge "configure,*am,cosmetics: s/WANT_/BUILD_/"
+35c7de6f cmake: add support for webpmux
+0f25e61c WebpToSDL(): fix the return value in case of error
+5d8985de configure,*am,cosmetics: s/WANT_/BUILD_/
+895fd28f Merge "man/Makefile.am: add img2webp.1"
+5cf3e2af man/Makefile.am: add img2webp.1
+2a9de5b9 Add build rules for anim_diff & anim_dump utils.
+71ed73cf fix invalid check for buffer size
+af0e4fbb gif2webp: fix transcode of loop count=65535
+dce5d764 Limit memory allocation when reading invalid Huffman codes.
+f9df0081 Merge "cmake: quiet glut deprecation warnings on OS X"
+dc39b16f webpmux.1: correct grammar
+c7aa1264 cwebp.c: fix a missing \n
+53aa51e9 Merge tag 'v1.0.0'
+698b8844 update ChangeLog (tag: v1.0.0)
 8d510751 webp-container-spec: correct frame duration=0 note
 e6b2164e vwebp: Copy Chrome's behavior w/frame duration == 0
+094b3b28 cmake: quiet glut deprecation warnings on OS X
+71c39a06 webp-container-spec: correct frame duration=0 note
+fd3d5756 vwebp: Copy Chrome's behavior w/frame duration == 0
+b0c966fb Build vwebp from CMake.
 d20b7707 update ChangeLog (tag: v1.0.0-rc3)
 0d5fad46 add WEBP_DSP_INIT / WEBP_DSP_INIT_FUNC
+d77bf512 add WEBP_DSP_INIT / WEBP_DSP_INIT_FUNC
 c1cb86af fix 16b overflow in SSE2
 e577feb7 makefile.unix: add DEBUG flag for compiling w/ debug-symbol
 99be34b3 cwebp,get_disto: fix bpp output
+e122e511 cwebp,get_disto: fix bpp output
 f5565ca8 cmake: Make sure we use near-lossless by default.
 d898dc14 fix bug in WebPImport565: alpha value was not set
+1c8f358d Fix CMake with WASM.
+a0215fb7 webp_js: fix webp_js demo html
 882784b0 update ChangeLog (tag: v1.0.0-rc2)
 2f930e08 Revert "Use proper targets for CMake."
 8165e8fb Use proper targets for CMake.
 3f157dd5 Remove some very hard TODOs.
+abb47760 Merge "Use proper targets for CMake."
 cd758a17 {de,}mux/Makefile.am: add missing headers
+e155dda0 Use proper targets for CMake.
 b892b8ba makefile.unix,dist: use ascii for text output
 64a57d05 add -version option to anim_dump,anim_diff and img2webp
+994be82d Merge "Remove some very hard TODOs."
+4033e1d7 Remove some very hard TODOs.
 fc1b8e3a webp_js: fix webp_js demo html
 15aa48d9 update ChangeLog (tag: v1.0.0-rc1)
 e607dabc update AUTHORS
 38410c08 [CFI] Remove function pointer casts
+978eec25 [CFI] Remove function pointer casts
 c57b2736 bump version to 1.0.0
 cba28853 update NEWS
 c909d531 Merge "remove some deprecation warning on MacOSX"
@@ -362,7 +741,7 @@ dcf9d82a imageio: add limited PNM support for reading
 6524fcd6 vwebp_sdl: simple viewer based on SDL
 6cf24a24 get_disto: fix reference file read
 43d472aa Merge tag 'v0.6.0'
-50d1a848 update ChangeLog (tag: v0.6.0, origin/0.6.0, 0.6.0)
+50d1a848 update ChangeLog (tag: v0.6.0, origin/0.6.0)
 20a7fea0 extras/Makefile.am: fix libwebpextras.la reference
 415f3ffe update ChangeLog (tag: v0.6.0-rc3)
 3c6d1224 update NEWS
@@ -439,7 +818,7 @@ b016cb91 NEON: faster fancy upsampling
 f04eb376 Merge tag 'v0.5.2'
 341d711c NEON: 5% faster conversion to RGB565 and RGBA4444
 abb54827 remove Clang warnings with unused arch arguments.
-ece9684f update ChangeLog (tag: v0.5.2-rc2, tag: v0.5.2, origin/0.5.2, 0.5.2)
+ece9684f update ChangeLog (tag: v0.5.2-rc2, tag: v0.5.2, origin/0.5.2)
 aa7744ca anim_util: quiet implicit conv warnings in 32-bit
 d9120271 jpegdec: correct ContextFill signature
 24eb3940 Remove some errors when compiling the code as C++.
@@ -726,7 +1105,7 @@ bbb6ecd9 Merge "Add MSA optimized distortion functions"
 c0991a14 io,EmitRescaledAlphaYUV: factor out a common expr
 48bf5ed1 build.gradle: remove tab
 bfef6c9f Merge tag 'v0.5.1'
-3d97bb75 update ChangeLog (tag: v0.5.1, origin/0.5.1, 0.5.1)
+3d97bb75 update ChangeLog (tag: v0.5.1, origin/0.5.1)
 deb54d91 Clarify the expected 'config' lifespan in WebPIDecode()
 435308e0 Add MSA optimized encoder transform functions
 dce64bfa Add MSA optimized alpha filter functions
@@ -920,7 +1299,7 @@ b74657fb configure: fix builtin detection w/-Werror
 6c1d7631 avoid Yoda style for comparison
 8ce975ac SSE optimization for vector mismatch.
 7db53831 Merge tag 'v0.5.0'
-37f04949 update ChangeLog (tag: v0.5.0-rc1, tag: v0.5.0, origin/0.5.0, 0.5.0)
+37f04949 update ChangeLog (tag: v0.5.0-rc1, tag: v0.5.0, origin/0.5.0)
 7e7b6ccc faster rgb565/rgb4444/argb output
 4c7f565f update NEWS
 1f62b6b2 update AUTHORS
@@ -1704,7 +2083,7 @@ b5a36cc9 add -near_lossless [0..100] experimental option
 0524d9e5 dsp: detect mips64 & disable mips32 code
 d3485d96 cwebp.1: fix quality description placement
 29a9fe22 Merge tag 'v0.4.1'
-8af27718 update ChangeLog (tag: v0.4.1, origin/0.4.1, 0.4.1)
+8af27718 update ChangeLog (tag: v0.4.1, origin/0.4.1)
 e09e9ff6 Record & log the image pre-processing time.
 f59c0b4b iosbuild.sh: specify optimization flags
 8d34ea3e update ChangeLog (tag: v0.4.1-rc1)
@@ -2089,7 +2468,7 @@ ea59a8e9 Merge "Merge tag 'v0.4.0'"
 effcb0fd Merge tag 'v0.4.0'
 7c76255d autoconf: update ax_pthread.m4
 fff2a11b make -short work with -print_ssim, -print_psnr, etc.
-68e7901d update ChangeLog (tag: v0.4.0-rc1, tag: v0.4.0, origin/0.4.0, 0.4.0)
+68e7901d update ChangeLog (tag: v0.4.0-rc1, tag: v0.4.0, origin/0.4.0)
 256e4333 update NEWS description with new general features
 29625340 Merge "gif2webp: don't use C99 %zu" into 0.4.0
 3b9f9dd0 gif2webp: don't use C99 %zu
@@ -2865,7 +3244,7 @@ a61a824b Merge "Add NULL check in chunk APIs"
 a0770727 mux struct naming
 6c66dde8 Merge "Tune Lossless encoder"
 ab5ea217 Tune Lossless encoder
-74fefc8c Update ChangeLog (tag: v0.2.1, origin/0.2.0, 0.2.0)
+74fefc8c Update ChangeLog (tag: v0.2.1, origin/0.2.0)
 92f8059c Rename some chunks:
 3bb4bbeb Merge "Mux API change:"
 d0c79f05 Mux API change:
