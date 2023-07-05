@@ -131,7 +131,7 @@ void DLL_CALLCONV InitGIF(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitHDR(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitG3(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitSGI(Plugin *plugin, int format_id);
-#if INCLUDE_OPEN_EXR
+#if INCLUDE_LIB_OPEN_EXR
 void DLL_CALLCONV InitEXR(Plugin *plugin, int format_id);
 #endif
 void DLL_CALLCONV InitJ2K(Plugin *plugin, int format_id);
@@ -142,10 +142,10 @@ void DLL_CALLCONV InitPICT(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitRAW(Plugin *plugin, int format_id);
 #endif
 void DLL_CALLCONV InitJNG(Plugin *plugin, int format_id);
-#if INCLUDE_WEBP
+#if INCLUDE_LIB_WEBP
 void DLL_CALLCONV InitWEBP(Plugin *plugin, int format_id);
 #endif
-#if INCLUDE_JXR
+#if INCLUDE_LIB_JXR
 void DLL_CALLCONV InitJXR(Plugin *plugin, int format_id);
 #endif
 
