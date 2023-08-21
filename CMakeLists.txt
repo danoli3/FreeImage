@@ -65,7 +65,7 @@ Source/LibTIFF4/tif_flush.c            Source/LibTIFF4/tif_getimage.c
 Source/LibTIFF4/tif_hash_set.c         Source/LibTIFF4/tif_hash_set.h
 Source/LibTIFF4/tif_jbig.c             Source/LibTIFF4/tif_jpeg.c
 Source/LibTIFF4/tif_jpeg_12.c          Source/LibTIFF4/tif_lerc.c
-Source/LibTIFF4/tif_luv.c              Source/LibTIFF4/tif_lwz.c
+Source/LibTIFF4/tif_luv.c              Source/LibTIFF4/tif_lzw.c
 Source/LibTIFF4/tif_lzw.c              Source/LibTIFF4/tif_next.c
 Source/LibTIFF4/tif_ojpeg.c            Source/LibTIFF4/tif_open.c
 Source/LibTIFF4/tif_packbits.c         Source/LibTIFF4/tif_pixarlog.c
@@ -74,15 +74,21 @@ Source/LibTIFF4/tif_print.c            Source/LibTIFF4/tif_read.c
 Source/LibTIFF4/tif_strip.c            Source/LibTIFF4/tif_swab.c
 Source/LibTIFF4/tif_thunder.c          Source/LibTIFF4/tif_tile.c
 Source/LibTIFF4/tif_version.c          Source/LibTIFF4/tif_warning.c
-Source/LibTIFF4/tif_webp.c             Source/LibTIFF4/tif_win32.c
-Source/LibTIFF4/tif_wince.c            Source/LibTIFF4/tif_write.c
+Source/LibTIFF4/tif_webp.c             Source/LibTIFF4/tif_write.c   
 Source/LibTIFF4/tif_zip.c              Source/LibTIFF4/tif_zstd.c
 Source/LibTIFF4/tiff.h                 Source/LibTIFF4/tiffconf.h
 Source/LibTIFF4/tiffconf.vc.h          Source/LibTIFF4/tiffconf.wince.h
 Source/LibTIFF4/tiffio.h               Source/LibTIFF4/tiffiop.h
 Source/LibTIFF4/tiffvers.h             Source/LibTIFF4/uvcode.h
-Source/LibTIFF4/t4.h
+Source/LibTIFF4/t4.h                   Source/LibTIFF4/libport.h
 )
+# Add Windows-specific source files if building on Windows
+if(WIN32)
+    list(APPEND FreeImage_LIBTIFF_SRCS 
+      Source/LibTIFF4/tif_win32.c
+      Source/LibTIFF4/tif_wince.c
+    )
+endif()
 add_definitions(-DINCLUDE_LIB_TIFF4)
 endif()
 
