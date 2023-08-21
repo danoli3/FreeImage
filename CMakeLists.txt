@@ -38,7 +38,7 @@ endif()
 if(${NO_BUILD_LIBTIFF}) 
     message("BUILD_LIBTIFF = FALSE")
 else()
-    set(BUILD_LIBTIFFF 1)
+    set(BUILD_LIBTIFF 1)
 endif()
 
 
