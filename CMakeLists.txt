@@ -176,6 +176,7 @@ add_library(FreeImage STATIC
     ${FreeImage_WEBP_SRCS}
     ${FreeImage_OPENEXR_SRCS}
     ${FreeImage_LIBRAWLITE_SRCS}
+    ${FreeImage_LIBTIFF_SRCS}
     ${FreeImage_OPENEXR_HALF_SRCS}
 )
 #install_dep(FreeImage include Source/FreeImage.h)
