@@ -86,7 +86,6 @@ Source/LibTIFF4/t4.h                   Source/LibTIFF4/libport.h
 if(WIN32)
     list(APPEND FreeImage_LIBTIFF_SRCS 
       Source/LibTIFF4/tif_win32.c
-      Source/LibTIFF4/tif_wince.c
     )
 endif()
 add_definitions(-DINCLUDE_LIB_TIFF4)
