@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.0)
 
 project(FreeImage)
 
+option(BUILD_SHARED_LIBS "Build FreeImage as a shared library" OFF)
+
+if(BUILD_SHARED_LIBS)
+    message(STATUS "Building FreeImage as a shared library.")
+    # If building as a shared library, do not define FREEIMAGE_LIB
+else()
+    message(STATUS "Building FreeImage as a static library.")
+    add_definitions(-DFREEIMAGE_LIB)
+endif()
+
 message("BUILD_OPENEXR foo: ${BUILD_OPENEXR}")
 
 if(${NO_BUILD_ZLIB}) 
