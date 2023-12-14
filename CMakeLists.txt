@@ -51,6 +51,11 @@ else()
     set(BUILD_LIBTIFF 1)
 endif()
 
+if(MSVC)
+    if(NOT ARM64EC_TARGET)  # Your condition to check for ARM64EC
+        add_compile_options("/Gy-")
+    endif()
+endif()
 
 
 set(FreeImage_SOURCES
