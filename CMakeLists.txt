@@ -38,6 +38,24 @@ add_library(FreeImage STATIC
 )
 #install_dep(FreeImage include Source/FreeImage.h)
 
+if(EMSCRIPTEN)
+    set(EMSCRIPTEN_CORE_SOURCES
+        ${FreeImage_SOURCES}  
+        ${FreeImage_JXR_SOURCES}
+    )
+
+    add_executable(FreeImage_wasm
+         ${EMSCRIPTEN_CORE_SOURCES}
+    )
+    target_include_directories(uriparser_wasm PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}  # for UriConfig.h
+    )
+    target_link_libraries(uriparser_wasm "-s SIDE_MODULE=1"
+    )
+endif()
+
+
 if (APPLE)
  set_target_properties(FreeImage PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
 
