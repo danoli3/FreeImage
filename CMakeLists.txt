@@ -43,15 +43,8 @@ if(EMSCRIPTEN)
         ${FreeImage_SOURCES}  
         ${FreeImage_JXR_SOURCES}
     )
-
     add_executable(FreeImage_wasm
          ${EMSCRIPTEN_CORE_SOURCES}
-    )
-    target_include_directories(uriparser_wasm PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR}  # for UriConfig.h
-    )
-    target_link_libraries(uriparser_wasm "-s SIDE_MODULE=1"
     )
 endif()
 
