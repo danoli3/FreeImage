@@ -194,6 +194,22 @@ add_library(FreeImage STATIC
 )
 #install_dep(FreeImage include Source/FreeImage.h)
 
+if(EMSCRIPTEN)
+    set(EMSCRIPTEN_CORE_SOURCES
+        ${FreeImage_SOURCES}  
+    	${FreeImage_ZLIB_SRCS}
+    	${FreeImage_JXR_SRCS}
+    	${FreeImage_WEBP_SRCS}
+    	${FreeImage_OPENEXR_SRCS}
+    	${FreeImage_LIBRAWLITE_SRCS}
+    	${FreeImage_LIBTIFF_SRCS}
+    	${FreeImage_OPENEXR_HALF_SRCS}
+    )
+    add_executable(FreeImage_wasm
+         ${EMSCRIPTEN_CORE_SOURCES}
+    )
+endif()
+
 if (APPLE)
  set_target_properties(FreeImage PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
 
