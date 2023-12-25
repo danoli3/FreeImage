@@ -16,4 +16,4 @@ add_executable(MainTestSuite
 )
 
 target_link_libraries(MainTestSuite FreeImage::FreeImage)
-add_test(NAME test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
+add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
