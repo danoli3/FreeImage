@@ -48,7 +48,7 @@ For `find_package` to work, simply set `CMAKE_PREFIX_PATH` to the directory wher
 ## Running tests
 
 ```bash
-cmake . -B cmake-build -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON
+cmake . -B cmake-build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
 cmake --build cmake-build --config=Debug # Linux: -j$(nproc)
-ctest --test-dir cmake-build -C Debug
+ctest --test-dir cmake-build -C Debug # Optionally --rerun-failed --output-on-failure
 ```
