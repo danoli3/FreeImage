@@ -111,3 +111,10 @@ cmake-build/
 *.bak
 
 *.o-i386
+
+# CMake and CTest build files #
+###############################
+
+build*/
+cmake-build-*/
+Testing/
