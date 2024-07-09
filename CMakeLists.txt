@@ -507,7 +507,6 @@ endif()
 
 # Need include directories for FreeImage and all the sub libs
 include_directories(Source)
-add_subdirectory(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
 include_directories(Source/LibJPEG)
