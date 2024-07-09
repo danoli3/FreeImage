@@ -5,6 +5,12 @@ project(FreeImage VERSION 3.19.0 LANGUAGES C CXX)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_JXR "Build JPEG-XR support" WIN32)
 option(BUILD_TESTS "Build the test suite" OFF)
+option(BUILD_ZLIB "Build zlib from source or link" ON)
+option(BUILD_LIBPNG "Build zlib from source or link" ON)
+option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
+option(BUILD_WEBP "Build webp from source or link" ON)
+option(BUILD_LIBRAWLITE "Build librawlite from source or link" ON)
+option(BUILD_OPENEXR "Build OpenEXR from source or link" ON)
 
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building FreeImage as a shared library.")
@@ -13,7 +19,45 @@ else()
     add_definitions(-DFREEIMAGE_LIB)
 endif()
 
-message("BUILD_OPENEXR foo: ${BUILD_OPENEXR}")
+# Set C and C++ standards if provided
+if (DEFINED C_STANDARD)
+    set(CMAKE_C_STANDARD ${C_STANDARD})
+endif()
+if (DEFINED CPP_STANDARD)
+    set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
+endif()
+
+if(BUILD_SHARED_LIBS)
+    message(STATUS "Building FreeImage as a shared library.")
+else()
+    message(STATUS "Building FreeImage as a static library.")
+    add_definitions(-DFREEIMAGE_LIB)
+endif()
+
+# Fetch and set external library paths
+if (DEFINED PNG_ROOT)
+    set(PNG_ROOT ${PNG_ROOT} CACHE PATH "Path to libpng root")
+endif()
+
+if (DEFINED PNG_INCLUDE_DIR)
+    set(FreeImage_LIBPNG_SRCS ${PNG_INCLUDE_DIR} CACHE PATH "Path to libpng include directory")
+endif()
+
+if (DEFINED PNG_LIBRARY)
+    set(PNG_LIBRARY ${PNG_LIBRARY} CACHE FILEPATH "Path to libpng library")
+endif()
+
+if (DEFINED ZLIB_ROOT)
+    set(ZLIB_ROOT ${ZLIB_ROOT} CACHE PATH "Path to zlib root")
+endif()
+
+if (DEFINED ZLIB_LIBRARY)
+    set(ZLIB_LIBRARY ${ZLIB_LIBRARY} CACHE FILEPATH "Path to zlib library")
+endif()
+
+if (DEFINED ZLIB_INCLUDE_DIRS)
+    set(FreeImage_ZLIB_SRCS ${ZLIB_INCLUDE_DIRS} CACHE PATH "Path to zlib include directories")
+endif()
 
 set(NO_BUILD_OPTIONS ZLIB JXR WEBP LIBRAWLITE OPENEXR LIBTIFF)
 
@@ -123,6 +167,10 @@ if(BUILD_LIBPNG)
         ./Source/LibPNG/pngstruct.h
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_LIBPNG_SRCS})
+    include_directories(Source/LibPNG)
+elseif (DEFINED PNG_LIBRARY)
+    list(APPEND FreeImage_LIBS ${PNG_LIBRARY})
+    include_directories(${FreeImage_LIBPNG_SRCS})
 endif()
 
 if(BUILD_LIBTIFF)
@@ -170,6 +218,9 @@ if(BUILD_ZLIB)
     list(APPEND FreeImage_SOURCES ${FreeImage_ZLIB_SRCS})
     include_directories(Source/ZLib)
     add_definitions(-DINCLUDE_LIB_ZLIB)
+elseif (DEFINED ZLIB_LIBRARY)
+    list(APPEND FreeImage_LIBS ${ZLIB_LIBRARY})
+    include_directories(${FreeImage_ZLIB_SRCS})
 endif()
 
 if(BUILD_JXR)
@@ -510,19 +561,23 @@ include_directories(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
 include_directories(Source/LibJPEG)
-include_directories(Source/LibPNG)
+
 include_directories(Source/LibTIFF4)
 include_directories(Source/LibOpenJPEG)
 
 if(BUILD_SHARED_LIBS)
-    add_library(FreeImage SHARED 
+    add_library(${PROJECT_NAME} SHARED 
         ${FreeImage_SOURCES}
 )
 else()
     # Define the FreeImage library
-    add_library(FreeImage STATIC 
+    add_library(${PROJECT_NAME} STATIC 
         ${FreeImage_SOURCES}
 )
+endif()
+
+if (DEFINED FreeImage_LIBS)
+    target_link_libraries(${PROJECT_NAME} ${PNG_LIBRARY})
 endif()
 
 # Preprocessor definitions

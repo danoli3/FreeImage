@@ -15,5 +15,13 @@ add_executable(MainTestSuite
     testWrappedBuffer.cpp
 )
 
-target_link_libraries(MainTestSuite FreeImage::FreeImage)
-add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
+if (BUILD_TESTS)
+    target_link_libraries(MainTestSuite FreeImage)
+    if (DEFINED PNG_LIBRARY)
+        target_link_libraries(MainTestSuite ${PNG_LIBRARY})
+    endif()
+    if (DEFINED ZLIB_LIBRARY)
+        target_link_libraries(MainTestSuite ${ZLIB_LIBRARY})
+    endif()
+    add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
+endif ()
