@@ -10,7 +10,7 @@ option(BUILD_LIBPNG "Build zlib from source or link" ON)
 option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
 option(BUILD_LIBRAWLITE "Build librawlite from source or link" ON)
-option(BUILD_OPENEXR "Build OpenEXR from source or link" ON)
+option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
 
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building FreeImage as a shared library.")
@@ -59,7 +59,7 @@ if (DEFINED ZLIB_INCLUDE_DIRS)
     set(FreeImage_ZLIB_SRCS ${ZLIB_INCLUDE_DIRS} CACHE PATH "Path to zlib include directories")
 endif()
 
-set(NO_BUILD_OPTIONS ZLIB JXR WEBP LIBRAWLITE OPENEXR LIBTIFF)
+#set(NO_BUILD_OPTIONS LIBRAWLITE LIBTIFF)
 
 foreach(opt ${NO_BUILD_OPTIONS})
     if(NOT DEFINED NO_BUILD_${opt})
