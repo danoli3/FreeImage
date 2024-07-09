@@ -577,7 +577,7 @@ else()
 endif()
 
 if (DEFINED FreeImage_LIBS)
-    target_link_libraries(${PROJECT_NAME} ${PNG_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} ${FreeImage_LIBS})
 endif()
 
 # Preprocessor definitions
@@ -598,7 +598,7 @@ endif()
 
 # Emscripten support
 if(EMSCRIPTEN)
-    add_executable(FreeImage_wasm)
+    add_executable(FreeImage_wasm ${FreeImage_SOURCES)
     target_link_libraries(FreeImage_wasm PRIVATE ${PROJECT_NAME}::${PROJECT_NAME})
 endif()
 
