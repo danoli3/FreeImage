@@ -614,6 +614,10 @@ endif()
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 endif()
+if (WIN32)
+    # Add ws2_32.lib for Windows builds
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+endif()
 
 # Test suite
 if (BUILD_TESTS)

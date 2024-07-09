@@ -23,5 +23,10 @@ if (BUILD_TESTS)
     if (DEFINED ZLIB_LIBRARY)
         target_link_libraries(MainTestSuite ${ZLIB_LIBRARY})
     endif()
+    if (WIN32)
+        # Add ws2_32.lib for Windows builds
+        target_link_libraries(${MainTestSuite} ws2_32)
+    endif()
+
     add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
 endif ()
