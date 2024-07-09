@@ -24,6 +24,9 @@ jobs:
         cppstandard:
           - 17
           - 20
+          - 23
+        cstandard:
+          - 17
         configuration:
           - Debug
         include:
@@ -45,11 +48,11 @@ jobs:
       - name: Configure (${{ matrix.configuration }})
         run: |
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }}
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -G "MinGW Makefiles"
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -G "MinGW Makefiles"
           else
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }}
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           fi
       - name: Build with ${{ matrix.compiler }}
         run: |
