@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
+project(FreeImage VERSION 3.19.0 LANGUAGES C CXX)
 
-project(FreeImage)
+# Options for configuring the build
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(BUILD_JXR "Build JPEG-XR support" WIN32)
+option(BUILD_TESTS "Build the test suite" OFF)
 
 option(BUILD_SHARED_LIBS "Build FreeImage as a shared library" OFF)
 
@@ -188,9 +192,42 @@ include_directories(Source/LibTIFF4)
 include_directories(Source/LibOpenJPEG)
 
 
+# Define the FreeImage library
+add_subdirectory(Source)
 
+# Preprocessor definitions
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    DISABLE_PERF_MEASUREMENT
+    OPJ_STATIC
+    NO_LCMS
+    NO_WINDOWS
+)
+if (NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FREEIMAGE_LIB)
+endif ()
 
-add_definitions(-DOPJ_STATIC -DNO_WINDOWS -DNDEBUG -DNO_LCMS -D__ANSI__ -DDISABLE_PERF_MEASUREMENT -DFREEIMAGE_LIB -DNO_LCMS)
+# Set C++ standard
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
+
+# Emscripten support
+if(EMSCRIPTEN)
+    add_executable(FreeImage_wasm)
+    target_link_libraries(FreeImage_wasm PRIVATE ${PROJECT_NAME}::${PROJECT_NAME})
+endif()
+
+# Apple-specific settings
+if (APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
+    if(BUILD_PLATFORM_APPLE_IOS)
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_THUMB_SUPPORT "NO")
+    endif()
+endif()
+
+# Enable Multi-core compilation in MSVC
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /MP)
+endif()
 
 add_library(FreeImage STATIC 
     ${FreeImage_SOURCES}  
@@ -222,18 +259,47 @@ endif()
 
 if (APPLE)
  set_target_properties(FreeImage PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
+# Append -d to debug build so we can have both debug and release builds in the same directory
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX -d)
 
- if(BUILD_PLATFORM_APPLE_IOS)
-  set_target_properties(FreeImage PROPERTIES XCODE_ATTRIBUTE_GCC_THUMB_SUPPORT "NO")
- endif()
-endif()
+# Test suite
+if (BUILD_TESTS)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(TestAPI)
+endif ()
 
-set(FreeImage_INCLUDE_DIR "${FreeImage_SOURCE_DIR}/Source" CACHE PATH "" FORCE)
-set(FreeImage_LIBRARY_DBG FreeImage CACHE STRING "" FORCE)
-set(FreeImage_LIBRARY_REL FreeImage CACHE STRING "" FORCE)
-mark_as_advanced(FreeImage_INCLUDE_DIR FreeImage_LIBRARY_DBG FreeImage_LIBRARY_REL)
+# Install the library
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include
+)
+install(FILES Source/FreeImage.h DESTINATION include)
 
-INSTALL (
-    DIRECTORY ${CMAKE_SOURCE_DIR}/Source/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h*")
+# Install the CMake Targets
+install(EXPORT ${PROJECT_NAME}Targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION lib/cmake/${PROJECT_NAME}
+)
+
+# Install the CMake config
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in
+    ${PROJECT_NAME}Config.cmake
+    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+)
+write_basic_package_version_file(
+    ${PROJECT_NAME}ConfigVersion.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION lib/cmake/${PROJECT_NAME}
+)

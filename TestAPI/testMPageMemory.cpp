@@ -161,7 +161,7 @@ loadBuffer(const char *lpszPathName, BYTE **buffer, DWORD *length) {
 	return FALSE;
 }
 
-BOOL testMemoryStreamMultiPageOpenSave(const char *lpszPathName, char *output, int input_flag, int output_flag) {
+BOOL testMemoryStreamMultiPageOpenSave(const char *lpszPathName, const char *output, int input_flag, int output_flag) {
 	BOOL bSuccess = FALSE;
 
 	BYTE *buffer = NULL;
