@@ -507,6 +507,7 @@ endif()
 
 # Need include directories for FreeImage and all the sub libs
 include_directories(Source)
+add_subdirectory(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
 include_directories(Source/LibJPEG)
@@ -514,10 +515,16 @@ include_directories(Source/LibPNG)
 include_directories(Source/LibTIFF4)
 include_directories(Source/LibOpenJPEG)
 
-# Define the FreeImage library
-add_library(FreeImage STATIC 
-    ${FreeImage_SOURCES}
+if(BUILD_SHARED_LIBS)
+    add_library(FreeImage SHARED 
+        ${FreeImage_SOURCES}
 )
+else()
+    # Define the FreeImage library
+    add_library(FreeImage STATIC 
+        ${FreeImage_SOURCES}
+)
+endif()
 
 # Preprocessor definitions
 target_compile_definitions(${PROJECT_NAME} PUBLIC
