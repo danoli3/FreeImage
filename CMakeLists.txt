@@ -9,7 +9,7 @@ option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build zlib from source or link" ON)
 option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
-option(BUILD_LIBRAWLITE "Build librawlite from source or link" ON)
+option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
 option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
 
 if(BUILD_SHARED_LIBS)
