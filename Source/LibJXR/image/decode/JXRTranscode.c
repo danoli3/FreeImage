@@ -30,7 +30,7 @@
 #include "strcodec.h"
 #include "decode.h"
 
-EXTERN_C Void freePredInfo(CWMImageStrCodec *);
+EXTERN_C void freePredInfo(CWMImageStrCodec *);
 
 EXTERN_C Int ReadWMIHeader(CWMImageInfo *, CWMIStrCodecParam *, CCoreParameters *);
 EXTERN_C Int StrIODecInit(CWMImageStrCodec *);
@@ -39,17 +39,17 @@ EXTERN_C Int readPackets(CWMImageStrCodec *);
 EXTERN_C Int DecodeMacroblockDC(CWMImageStrCodec *, CCodingContext *, Int, Int);
 EXTERN_C Int DecodeMacroblockLowpass(CWMImageStrCodec *, CCodingContext *, Int, Int);
 EXTERN_C Int DecodeMacroblockHighpass(CWMImageStrCodec *, CCodingContext *, Int, Int);
-EXTERN_C Void predDCACDec(CWMImageStrCodec *);
-EXTERN_C Void predACDec(CWMImageStrCodec *);
-EXTERN_C Void StrIODecTerm(CWMImageStrCodec *);
-EXTERN_C Void FreeCodingContextDec(CWMImageStrCodec *);
+EXTERN_C void predDCACDec(CWMImageStrCodec *);
+EXTERN_C void predACDec(CWMImageStrCodec *);
+EXTERN_C void StrIODecTerm(CWMImageStrCodec *);
+EXTERN_C void FreeCodingContextDec(CWMImageStrCodec *);
 
 EXTERN_C Int StrEncInit(CWMImageStrCodec *);
-EXTERN_C Void StrIOEncTerm(CWMImageStrCodec *);
-EXTERN_C Void FreeCodingContextEnc(CWMImageStrCodec *);
-EXTERN_C Void encodeMB(CWMImageStrCodec *, Int, Int);
+EXTERN_C void StrIOEncTerm(CWMImageStrCodec *);
+EXTERN_C void FreeCodingContextEnc(CWMImageStrCodec *);
+EXTERN_C Int  encodeMB(CWMImageStrCodec *, Int, Int);
 EXTERN_C Int  writeIndexTableNull(CWMImageStrCodec *);
-EXTERN_C Void writePacketHeader(BitIOInfo *, U8, U8);
+EXTERN_C void writePacketHeader(BitIOInfo *, U8, U8);
 
 EXTERN_C Int WriteWMIHeader(CWMImageStrCodec *);
 EXTERN_C Int ReadImagePlaneHeader(CWMImageInfo *, CWMIStrCodecParam *, CCoreParameters *, SimpleBitIO *);
@@ -80,7 +80,7 @@ typedef struct CTileQPInfo
     U8 hpIndex[16][MAX_CHANNELS];
 } CTileQPInfo;
 
-Void transcodeQuantizer(BitIOInfo * pIO, U8 cIndex[MAX_CHANNELS], U8 cChMode, size_t cChannel)
+void transcodeQuantizer(BitIOInfo * pIO, U8 cIndex[MAX_CHANNELS], U8 cChMode, size_t cChannel)
 {
     if(cChMode > 2)
         cChMode = 2;
@@ -102,7 +102,7 @@ Void transcodeQuantizer(BitIOInfo * pIO, U8 cIndex[MAX_CHANNELS], U8 cChMode, si
     }
 }
 
-Void transcodeQuantizers(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U8 cChMode[16], U32 cNum, size_t cChannel, Bool bCopy)
+void transcodeQuantizers(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U8 cChMode[16], U32 cNum, size_t cChannel, Bool bCopy)
 {
     putBit16(pIO, bCopy == TRUE ? 1 : 0, 1);
     if(bCopy == FALSE){
@@ -115,7 +115,7 @@ Void transcodeQuantizers(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U8 cChMod
     }
 }
 
-Void transcodeQuantizersAlpha(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U32 cNum, size_t iChannel, Bool bCopy)
+void transcodeQuantizersAlpha(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U32 cNum, size_t iChannel, Bool bCopy)
 {
     putBit16(pIO, bCopy == TRUE ? 1 : 0, 1);
     if(bCopy == FALSE){
@@ -128,7 +128,7 @@ Void transcodeQuantizersAlpha(BitIOInfo * pIO, U8 cIndex[16][MAX_CHANNELS], U32 
     }
 }
 
-Void transcodeTileHeader(CWMImageStrCodec * pSC, CTileQPInfo * pTileQPInfo)
+void transcodeTileHeader(CWMImageStrCodec * pSC, CTileQPInfo * pTileQPInfo)
 {
     if(pSC->m_bCtxLeft && pSC->m_bCtxTop && pSC->m_bSecondary == FALSE){ // write packet headers
         CCodingContext * pContext = &pSC->m_pCodingContext[pSC->cTileColumn];
@@ -193,7 +193,7 @@ Void transcodeTileHeader(CWMImageStrCodec * pSC, CTileQPInfo * pTileQPInfo)
     }
 }
 
-Void transformDCBlock(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformDCBlock(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     size_t i;
 
@@ -212,7 +212,7 @@ Void transformDCBlock(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
             pDst[i] = pOrg[(i >> 2) + ((i & 3) << 2)];
 }
 
-Void transformDCBlock422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformDCBlock422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     assert(oOrientation < O_RCW);
 
@@ -228,7 +228,7 @@ Void transformDCBlock422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
         memcpy(pDst, pOrg, 8 * sizeof(PixelI));
 }
 
-Void transformDCBlock420(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformDCBlock420(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     if(bFlipV[oOrientation])
         pOrg[1] = -pOrg[1], pOrg[3] = -pOrg[3];
@@ -243,7 +243,7 @@ Void transformDCBlock420(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
         pDst[1] = pOrg[2], pDst[2] = pOrg[1];
 }
 
-Void transformACBlocks(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformACBlocks(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     PixelI * pO, * pD;
     const Int * pT = dctIndex[0];
@@ -275,7 +275,7 @@ Void transformACBlocks(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
         }
 }
 
-Void transformACBlocks422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformACBlocks422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     PixelI * pO;
     const Int * pT = dctIndex[0];
@@ -302,7 +302,7 @@ Void transformACBlocks422(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation
         }
 }
 
-Void transformACBlocks420(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
+void transformACBlocks420(PixelI * pOrg, PixelI * pDst, ORIENTATION oOrientation)
 {
     PixelI * pO, * pD;
     const Int * pT = dctIndex[0];
@@ -871,13 +871,15 @@ Int WMPhotoTranscode(struct WMPStream * pStreamIn, struct WMPStream * pStreamOut
                     if(pSCEnc->m_bCtxLeft && pSCEnc->m_bCtxTop)
                         transcodeTileHeader(pSCEnc, pTileQPInfo);
 
-                    encodeMB(pSCEnc, cColumn, cRow);
+                    if(encodeMB(pSCEnc, cColumn, cRow) != ICERR_OK)
+                        return ICERR_ERROR;
                     if(pParam->uAlphaMode > 0){
                         pSCEnc->m_pNextSC->cColumn = pSCDec->cColumn - mbLeft + 1;
                         pSCEnc->m_pNextSC->cRow = pSCDec->cRow + 1 - mbTop;
                         getTilePos(pSCEnc->m_pNextSC, cColumn, cRow);
                         pSCEnc->m_pNextSC->MBInfo = pSCDec->m_pNextSC->MBInfo;
-                        encodeMB(pSCEnc->m_pNextSC, cColumn, cRow);
+                        if(encodeMB(pSCEnc->m_pNextSC, cColumn, cRow) != ICERR_OK)
+                            return ICERR_ERROR;
                     }
                 }
                 else{
@@ -932,7 +934,8 @@ Int WMPhotoTranscode(struct WMPStream * pStreamIn, struct WMPStream * pStreamOut
 
                 if(pSCEnc->m_bCtxLeft && pSCEnc->m_bCtxTop)
                     transcodeTileHeader(pSCEnc, pTileQPInfo + pSCEnc->cTileRow * (pSCEnc->WMISCP.cNumOfSliceMinus1V + 1) + pSCEnc->cTileColumn);
-                encodeMB(pSCEnc, cColumn, cRow);
+                if(encodeMB(pSCEnc, cColumn, cRow) != ICERR_OK)
+                    return ICERR_ERROR;
                 
                 if(pParam->uAlphaMode > 0){
                     pSCEnc->m_pNextSC->cColumn = pSCEnc->cColumn;
@@ -946,7 +949,8 @@ Int WMPhotoTranscode(struct WMPStream * pStreamIn, struct WMPStream * pStreamOut
                     pSCEnc->m_pNextSC->MBInfo.iQIndexLP = pMBInfoAlpha[cOff].iQIndexLP;
                     pSCEnc->m_pNextSC->MBInfo.iQIndexHP = pMBInfoAlpha[cOff].iQIndexHP;
 
-                    encodeMB(pSCEnc->m_pNextSC, cColumn, cRow);
+                    if(encodeMB(pSCEnc->m_pNextSC, cColumn, cRow) != ICERR_OK)
+                        return ICERR_ERROR;
                 }
             }
 

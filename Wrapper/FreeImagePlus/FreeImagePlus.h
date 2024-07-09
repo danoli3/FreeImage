@@ -1264,10 +1264,10 @@ protected:
 	FIMEMORY *_hmem;
 
 public :
-	/** Constructor.
-	Wrap a memory buffer containing image data.<br>
-	The memory buffer is read only and has to be freed by the user 
-	when no longer in use.<br>
+	/** 
+	Constructor.
+	Wrap a memory buffer containing image data.
+	The memory buffer is read only and has to be freed by the user when no longer in use.
 	When default arguments are used, open a memory file as read/write. 
 	@param data Pointer to the memory buffer
 	@param size_in_bytes Buffer size in bytes

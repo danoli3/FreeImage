@@ -3,12 +3,18 @@ What is FreeImage ?
 FreeImage is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.
 FreeImage is easy to use, fast, multithreading safe, and cross-platform (works with Windows, Linux and Mac OS X).
 
-Thanks to it's ANSI C interface, FreeImage is usable in many languages including C, C++, VB, C#, Delphi, Java and also in common scripting languages such as Perl, Python, PHP, TCL, Lua or Ruby.
+### This GitHub Fork/Patch of FreeImage
+ - Numerous Sub-Dependancy patches (Security/Bugs/Latest) 
+ - With patches applied from nVidia Devs and OpenSource additions
+ - CMake Build ability allowing compiling easily for all targets and platforms 
 
+Thanks to it's ANSI C interface, FreeImage is usable in many languages including C, C++, VB, C#, Delphi, Java and also in common scripting languages such as Perl, Python, PHP, TCL, Lua or Ruby.
 The library comes in two versions: a binary DLL distribution that can be linked against any WIN32/WIN64 C/C++ compiler and a source distribution.
 Workspace files for Microsoft Visual Studio provided, as well as makefiles for Linux, Mac OS X and other systems.
 
-Original library can be found : https://freeimage.sourceforge.io
+## Original Source Code Upstream
+https://sourceforge.net/projects/freeimage
+Original library can be found : https://freeimage.sourceforge.io 
 
 ## Status
 

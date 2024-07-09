@@ -5,6 +5,43 @@ What's New for FreeImage
 ! : changed
 + : added
 
+Month day, 2023 - 3.19.0
+! FreeImage now uses ZLib 1.2.13
+! FreeImage now uses LibPNG 1.6.39
+! FreeImage now uses LibTIFF 4.5.0 (GIT patch 2023-05-18)
+! FreeImage now uses LibWebP 1.2.1 (GIT patch 2021-10-29)
+! FreeImage now uses LibRaw 0.21.1 (GIT patch 2023-05-13)
+! FreeImage now uses LibJPEG 9d
+! FreeImage now uses LibJXR 1.2 (fixed FreeImage version)
+! FreeImage no longer support a 32-bit DLL or Lib version
+- [Herve Drolon] removed VS 2013 project files : this IDE is no longer supported because of its outdated C++ compiler
+- [Herve Drolon] removed the 32-bit build option from the MSVC build options
++ [ovnz] added the 'ExtraSamples' tag key to the FIMD_EXIF_MAIN & FIMD_EXIF_EXIF metadata models
++ [Herve Drolon] added support for Exif v2.3.2 tags
++ [Milos Komarcevic] improved TIFF compression when using float images with TIFF_ADOBE_DEFLATE or TIFF_LZW flag
+* [Martin Strunz] fixed uninitialized variable in tmoReinhard05.cpp
+* [realdolos] improved performance of _MemoryReadProc function (see FreeImageIO.cpp)
+* [Herve Drolon] fixed PluginBMP, PluginDDS for compilation under Big Endian OS (see FREEIMAGE_BIGENDIAN)
+* [Herve Drolon] improved TIFF validation against Canon CR2 files (CR2 files are no longer recognized as TIFF)
+* [Herve Drolon] improved TIFF plugin when working with malicious images
+* [Herve Drolon] improved BMP plugin when working with malicious images
+* [Herve Drolon] improved FreeImage_LoadFromMemory robustness when working with malicious images
+* [Herve Drolon] fixed JXR plugin when working under a Linux OS
+* [Herve Drolon] improved PFM plugin against malicious images
+* [Herve Drolon] improved JXR plugin against malicious images
+* [Mihail Naydenov] improved Targa plugin against malicious images
+* [Mihail Naydenov] improved DDS plugin against malicious images
+* [Mihail Naydenov] improved PCX plugin against malicious images
+* [Mihail Naydenov] improved PNM plugin against malicious images
+* [Mihail Naydenov] improved TIFF plugin against malicious images
+* [Mihail Naydenov] improved J2K plugin against malicious images
+* [Mihail Naydenov] fixed FreeImage_OpenMultiBitmap with usage of filenames longer than 255 characters & Windows Long Path disabled
+* [Milos Komarcevic] TIFF images saved with TIFF_DEFLATE compression are saved to images with TIFF_ADOBE_DEFLATE compresssion (TIFF_DEFLATE is obsolete)
+* [Patrick Pelletier] fixed FreeImage_FlipVertical behavior with very large images
+* [Patrick Pelletier] fixed FreeImage_Paste behavior with very large images
+* [Aleks] fixed FreeImage_SeekMemory behavior with 64-bit malicious images
+* [Herve Drolon] fixed C++11 warnings
+
 July 31st, 2018 - 3.18.0
 ! FreeImage now uses ZLib 1.2.11
 ! FreeImage now uses LibRaw 0.19

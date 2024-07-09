@@ -52,7 +52,7 @@ static Int EncodeBlock (Bool bChroma, const Int *aLocalCoef, Int iNumNonzero,
 #ifdef X86OPT_INLINE
 //__forceinline
 #endif
-static Void EncodeSignificantAbsLevel (UInt iAbsLevel, struct CAdaptiveHuffman *pAHexpt, BitIOInfo* pOut)
+static void EncodeSignificantAbsLevel (UInt iAbsLevel, struct CAdaptiveHuffman *pAHexpt, BitIOInfo* pOut)
 {
     Int iIndex, iFixed, aIndex[] = { 0,1,2,2, 3,3,3,3, 4,4,4,4, 5,5,5,5 };
     Int aFixedLength[] = { 0, 0, 1, 2, 2, 2 };
@@ -101,7 +101,7 @@ static Void EncodeSignificantAbsLevel (UInt iAbsLevel, struct CAdaptiveHuffman *
     EncodeMacroblockDC
 *************************************************************************/
 
-Void encodeQPIndex(BitIOInfo* pIO, U8 iIndex,U8 cBits)
+void encodeQPIndex(BitIOInfo* pIO, U8 iIndex,U8 cBits)
 {
     if(iIndex == 0)
         putBit16z(pIO, 0, 1);
@@ -489,7 +489,7 @@ Int EncodeMacroblockLowpass (CWMImageStrCodec *pSC, CCodingContext *pContext, In
     Int aRLCoeffs[MAX_CHANNELS][32], iNumCoeffs[MAX_CHANNELS];
     const I32 *aDC[MAX_CHANNELS];
     Int aResidual[MAX_CHANNELS][16];
-    Void (*putBits)(BitIOInfo* pIO, U32 uiBits, U32 cBits) = putBit16;
+    void (*putBits)(BitIOInfo* pIO, U32 uiBits, U32 cBits) = putBit16;
 
     UNREFERENCED_PARAMETER( iMBX );
     UNREFERENCED_PARAMETER( iMBY );
@@ -654,7 +654,7 @@ Int EncodeMacroblockLowpass (CWMImageStrCodec *pSC, CCodingContext *pContext, In
 /*************************************************************************
     Adapt
 *************************************************************************/
-Void AdaptLowpassEnc(CCodingContext *pSC)
+void AdaptLowpassEnc(CCodingContext *pSC)
 {
     Int kk;
     for (kk = 0; kk < CONTEXTX + CTDC; kk++) { /** adapt fixed code (index 0 and 1) as well **/
@@ -662,7 +662,7 @@ Void AdaptLowpassEnc(CCodingContext *pSC)
     }
 }
 
-Void AdaptHighpassEnc(CCodingContext *pSC)
+void AdaptHighpassEnc(CCodingContext *pSC)
 {
     Int kk;
     //Adapt (pSC->m_pAdaptHuffCBPCY, FALSE);
@@ -692,7 +692,7 @@ Void AdaptHighpassEnc(CCodingContext *pSC)
 #ifdef X86OPT_INLINE
 __forceinline
 #endif
-static Void EncodeSignificantRun (Int iRun, Int iMaxRun, struct CAdaptiveHuffman *pAHexpt, BitIOInfo* pOut)
+static void EncodeSignificantRun (Int iRun, Int iMaxRun, struct CAdaptiveHuffman *pAHexpt, BitIOInfo* pOut)
 {
     Int iIndex, iFLC, iBin;
     static const Int aIndex[] = {
@@ -734,7 +734,7 @@ static Void EncodeSignificantRun (Int iRun, Int iMaxRun, struct CAdaptiveHuffman
 #ifdef X86OPT_INLINE
 __forceinline
 #endif
-static Void EncodeFirstIndex (Bool bChroma, Int iLoc, Int iCont, Int iIndex, Int iSign,
+static void EncodeFirstIndex (Bool bChroma, Int iLoc, Int iCont, Int iIndex, Int iSign,
                   struct CAdaptiveHuffman **ppAHexpt, BitIOInfo* pOut)
 {
     // Int iContext = iCont + 1 + bChroma * 3;
@@ -750,7 +750,7 @@ static Void EncodeFirstIndex (Bool bChroma, Int iLoc, Int iCont, Int iIndex, Int
 #ifdef X86OPT_INLINE
 __forceinline
 #endif
-static Void EncodeIndex (Bool bChroma, Int iLoc, Int iCont, Int iIndex, Int  iSign,
+static void EncodeIndex (Bool bChroma, Int iLoc, Int iCont, Int iIndex, Int  iSign,
                          struct CAdaptiveHuffman **ppAHexpt, BitIOInfo* pOut)
 {
     Int iContext = iCont + 1 + bChroma * 3;
@@ -969,7 +969,7 @@ static Int CodeCoeffs (CWMImageStrCodec * pSC, CCodingContext *pContext,
 /*************************************************************************
     CodeCBP
 *************************************************************************/
-static Void CodeCBP (CWMImageStrCodec * pSC, CCodingContext *pContext, 
+static void CodeCBP (CWMImageStrCodec * pSC, CCodingContext *pContext, 
                      Int iMBX, Int iMBY, BitIOInfo *pIO)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;

@@ -41,10 +41,10 @@ typedef struct {
 } GUID;
 #else
 typedef struct _GUID {
-#if defined(_WINDOWS_) || !__LP64__
-    unsigned long  Data1;
+#if defined(_WIN32) || defined(_WIN64) || !__LP64__
+    unsigned long  Data1;	// 32-bit
 #else
-    unsigned int   Data1;
+    unsigned int   Data1;	// 32-bit
 #endif
     unsigned short Data2;
     unsigned short Data3;

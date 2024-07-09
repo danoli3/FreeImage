@@ -201,11 +201,11 @@ ERR BufferCalcIFDSize(const U8* pbdata, size_t cbdata, U32 ofsifd, U8 endian, U3
     ofsdir = ofsifd + sizeof(U16);
     for ( i = 0; i < cDir; i++ )
     {
-        U16 tag;
-        U16 type;
-        U32 count;
-        U32 value;
-        U32 datasize;
+        U16 tag = 0;
+        U16 type = 0;
+        U32 count = 0;
+        U32 value = 0;
+        U32 datasize = 0;
 
         Call(getbfwe(pbdata, cbdata, ofsdir, &tag, endian));
         Call(getbfwe(pbdata, cbdata, ofsdir + sizeof(U16), &type, endian));
@@ -268,11 +268,11 @@ ERR StreamCalcIFDSize(struct WMPStream* pWS, U32 uIFDOfs, U32 *pcbifd)
     ofsdir = uIFDOfs + sizeof(U16);
     for ( i = 0; i < cDir; i++ )
     {
-        U16 tag;
-        U16 type;
-        U32 count;
-        U32 value;
-        U32 datasize;
+        U16 tag = 0;
+        U16 type = 0;
+        U32 count = 0;
+        U32 value = 0;
+        U32 datasize = 0;
 
         Call(GetUShort(pWS, ofsdir, &tag));
         Call(GetUShort(pWS, ofsdir + sizeof(U16), &type));
@@ -345,11 +345,11 @@ ERR BufferCopyIFD(const U8* pbsrc, U32 cbsrc, U32 ofssrc, U8 endian, U8* pbdst, 
     ofsdstdir = ofsdst + sizeof(U16);
     for ( i = 0; i < cDir; i++ )
     {
-        U16 tag;
-        U16 type;
-        U32 count;
-        U32 value;
-        U32 size;
+        U16 tag = 0;
+        U16 type = 0;
+        U32 count = 0;
+        U32 value = 0;
+        U32 size = 0;
 
         Call(getbfwe(pbsrc, cbsrc, ofssrcdir, &tag, endian));
         Call(setbfw(pbdst, cbdst, ofsdstdir, tag));
@@ -503,11 +503,11 @@ ERR StreamCopyIFD(struct WMPStream* pWS, U32 ofssrc, U8* pbdst, U32 cbdst, U32* 
     ofsdstdir = ofsdst + sizeof(U16);
     for ( i = 0; i < cDir; i++ )
     {
-        U16 tag;
-        U16 type;
-        U32 count;
-        U32 value;
-        U32 size;
+        U16 tag = 0;
+        U16 type = 0;
+        U32 count = 0;
+        U32 value = 0;
+        U32 size = 0;
 
         Call(GetUShort(pWS, ofssrcdir, &tag));
         Call(setbfw(pbdst, cbdst, ofsdstdir, tag));
@@ -628,7 +628,7 @@ ERR GetULong(
     __out_ecount(1) U32* puValue)
 {
     ERR err = WMP_errSuccess;
-    U8  cVal;
+    U8  cVal = 0;
 
     Call(pWS->SetPos(pWS, offPos));
     Call(pWS->Read(pWS, &cVal, sizeof(cVal)));
@@ -665,7 +665,7 @@ Cleanup:
     return err;
 }
 
-#if defined(WIN32) && !defined(__MINGW32__)
+
 ERR ReadBinaryData(__in_ecount(1) struct WMPStream* pWS,
                    const __in_win U32 uCount,
                    const __in_win U32 uValue,
@@ -683,7 +683,7 @@ ERR ReadBinaryData(__in_ecount(1) struct WMPStream* pWS,
     }
     else
     {
-        size_t offPosPrev;
+        size_t offPosPrev = 0;
 
         Call(pWS->GetPos(pWS, &offPosPrev));
         Call(pWS->SetPos(pWS, uValue));
@@ -763,7 +763,6 @@ Cleanup:
     return err;
 }
 
-#endif
 
 ERR WriteWmpDE(
     __in_ecount(1) struct WMPStream* pWS,

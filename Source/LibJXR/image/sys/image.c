@@ -79,7 +79,7 @@ const Int gSignificantRunFixedLength[] = {
 *************************************************************************/
 #define MODELWEIGHT 70//90
 
-Void UpdateModelMB (COLORFORMAT cf, Int iChannels, Int iLaplacianMean[], CAdaptiveModel *pModel)
+void UpdateModelMB (COLORFORMAT cf, Int iChannels, Int iLaplacianMean[], CAdaptiveModel *pModel)
 {
     Int j;
     static const Int aWeight0[3] = { 240/*DC*/, 12/*LP*/, 1 };
@@ -145,7 +145,7 @@ Void UpdateModelMB (COLORFORMAT cf, Int iChannels, Int iLaplacianMean[], CAdapti
 }
 
 
-Void ResetCodingContext(CCodingContext *pContext)
+void ResetCodingContext(CCodingContext *pContext)
 {
     // reset bit reduction models
     memset (&(pContext->m_aModelAC), 0, sizeof(CAdaptiveModel));  
@@ -170,7 +170,7 @@ Void ResetCodingContext(CCodingContext *pContext)
 /*************************************************************************
     Initialize zigzag scan parameters
 *************************************************************************/
-Void InitZigzagScan(CCodingContext * pContext)
+void InitZigzagScan(CCodingContext * pContext)
 {
     if (NULL != pContext) {
         Int i;

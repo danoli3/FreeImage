@@ -1100,7 +1100,7 @@ Int outputMBRow_RGB24_Lossy_3(CWMImageStrCodec* pSC)
 
 //================================================================
 #if defined(WMP_OPT_TRFM_DEC)
-FORCE_INLINE Void strDCT2x2up_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+FORCE_INLINE void strDCT2x2up_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, C, t;
     a = *pa;
@@ -1122,7 +1122,7 @@ FORCE_INLINE Void strDCT2x2up_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd
     *pd = d;
 }
 
-FORCE_INLINE Void invOdd_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+FORCE_INLINE void invOdd_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -1153,7 +1153,7 @@ FORCE_INLINE Void invOdd_OPT(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
     *pd = d;
 }
 
-FORCE_INLINE Void invOddOdd_OPT(PixelI* pa, PixelI* pb, PixelI* pc, PixelI* pd)
+FORCE_INLINE void invOddOdd_OPT(PixelI* pa, PixelI* pb, PixelI* pc, PixelI* pd)
 {
     PixelI a, b, c, d, t1, t2;
     a = *pa;
@@ -1185,7 +1185,7 @@ FORCE_INLINE Void invOddOdd_OPT(PixelI* pa, PixelI* pb, PixelI* pc, PixelI* pd)
     *pd = d;
 }
 
-FORCE_INLINE Void strDCT2x2dn_SSE2_1(PixelI* p)
+FORCE_INLINE void strDCT2x2dn_SSE2_1(PixelI* p)
 {
     __m128i* const pdq = (__m128i*)p;
     __m128i a = pdq[0];
@@ -1210,7 +1210,7 @@ FORCE_INLINE Void strDCT2x2dn_SSE2_1(PixelI* p)
     pdq[3] = d;
 }
 
-Void strIDCT4x4Stage1_OPT_H1(PixelI* p)
+void strIDCT4x4Stage1_OPT_H1(PixelI* p)
 {
     /** top left corner, butterfly => butterfly **/
     strDCT2x2up_OPT(p + 0, p + 1, p + 2, p + 3);
@@ -1225,13 +1225,13 @@ Void strIDCT4x4Stage1_OPT_H1(PixelI* p)
     invOddOdd_OPT(p + 15, p + 14, p + 13, p + 12);
 }
 
-FORCE_INLINE Void strIDCT4x4Stage1_OPT_H2(PixelI* p)
+FORCE_INLINE void strIDCT4x4Stage1_OPT_H2(PixelI* p)
 {
     /** butterfly **/
     strDCT2x2dn_SSE2_1(p);
 }
 
-Void strIDCT4x4Stage1_OPT5(PixelI* p0, PixelI* p1)
+void strIDCT4x4Stage1_OPT5(PixelI* p0, PixelI* p1)
 {
     _mm_prefetch((char*)(p0 - 96 + 256), _MM_HINT_T0);
     strIDCT4x4Stage1_OPT_H1(p0 - 96);

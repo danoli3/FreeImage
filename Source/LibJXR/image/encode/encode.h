@@ -40,27 +40,27 @@ Int EncodeMacroblockLowpass(CWMImageStrCodec*, CCodingContext *, Int, Int);
 Int EncodeMacroblockHighpass(CWMImageStrCodec*, CCodingContext *, Int, Int);
 
 Int quantizeMacroblock(CWMImageStrCodec *);
-Void transformMacroblock(CWMImageStrCodec *);
-Void predMacroblockEnc(CWMImageStrCodec *);
+void transformMacroblock(CWMImageStrCodec *);
+void predMacroblockEnc(CWMImageStrCodec *);
 
-Void AdaptLowpassEnc(CCodingContext *pContext);
-Void AdaptHighpassEnc(CCodingContext *pContext);
-Void ResetCodingContextEnc(CCodingContext *pContext);
+void AdaptLowpassEnc(CCodingContext *pContext);
+void AdaptHighpassEnc(CCodingContext *pContext);
+void ResetCodingContextEnc(CCodingContext *pContext);
 Int  AllocateCodingContextEnc(struct CWMImageStrCodec *pSC, Int iNumContexts, Int iTrimFlexBits);
-Void FreeCodingContextEnc(struct CWMImageStrCodec *pSC);
-Void predCBPEnc(CWMImageStrCodec *pSC, CCodingContext *pContext);
+void FreeCodingContextEnc(struct CWMImageStrCodec *pSC);
+void predCBPEnc(CWMImageStrCodec *pSC, CCodingContext *pContext);
 
 /*************************************************************************
     Forward transform definitions
 *************************************************************************/
 /** 2-point pre filter for boundaries (only used in 420 UV DC subband) **/
-Void strPre2(PixelI *, PixelI *);
+void strPre2(PixelI *, PixelI *);
 
 /** 2x2 pre filter (only used in 420 UV DC subband) **/
-Void strPre2x2(PixelI *, PixelI *, PixelI *, PixelI *);
+void strPre2x2(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** 4-point pre filter for boundaries **/
-Void strPre4(PixelI *, PixelI *, PixelI *, PixelI *);
+void strPre4(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** data allocation in working buffer (first stage) **/
 
@@ -77,17 +77,17 @@ Void strPre4(PixelI *, PixelI *, PixelI *, PixelI *);
 /** 192 194 196 198 **/
 
 /** 4x4 foward DCT for first stage **/
-Void strDCT4x4FirstStage(PixelI *);
-Void strDCT4x4FirstStage420UV(PixelI *);
+void strDCT4x4FirstStage(PixelI *);
+void strDCT4x4FirstStage420UV(PixelI *);
 
-Void strDCT4x4Stage1(PixelI*);
+void strDCT4x4Stage1(PixelI*);
 
 /** 4x4 pre filter for first stage **/
-Void strPre4x4FirstStage(PixelI *);
-Void strPre4x4FirstStage420UV(PixelI *);
+void strPre4x4FirstStage(PixelI *);
+void strPre4x4FirstStage420UV(PixelI *);
 
-Void strPre4x4Stage1Split(PixelI* p0, PixelI* p1, Int iOffset);
-Void strPre4x4Stage1(PixelI* p, Int iOffset);
+void strPre4x4Stage1Split(PixelI* p0, PixelI* p1, Int iOffset);
+void strPre4x4Stage1(PixelI* p, Int iOffset);
 
 /** data allocation in working buffer (second stage)**/
 
@@ -102,12 +102,12 @@ Void strPre4x4Stage1(PixelI* p, Int iOffset);
 /** 256 264 **/
 
 /** 4x4 foward DCT for second stage **/
-Void strDCT4x4SecondStage(PixelI *);
-Void strNormalizeEnc(PixelI *, Bool);
-Void strDCT2x2dnEnc(PixelI *, PixelI *, PixelI *, PixelI *);
+void strDCT4x4SecondStage(PixelI *);
+void strNormalizeEnc(PixelI *, Bool);
+void strDCT2x2dnEnc(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** 4x4 pre filter for second stage **/
-Void strPre4x4Stage2Split(PixelI* p0, PixelI* p1);
+void strPre4x4Stage2Split(PixelI* p0, PixelI* p1);
     
 #endif // ENCODE_H
 

@@ -1,3 +1,9 @@
+: go the the directory of this script
+: drive letter
+%~d0
+: directory
+cd %~dp0
+
 del *.aps /s /q
 del *.bak /s /q
 del *.bsc /s /q
@@ -58,6 +64,10 @@ rd Source\LibPNG\Debug /s /q
 rd Source\LibPNG\Release /s /q
 rd Source\LibPNG\Win32 /s /q
 rd Source\LibPNG\x64 /s /q
+rd Source\LibRawLite\Debug /s /q
+rd Source\LibRawLite\Release /s /q
+rd Source\LibRawLite\Win32 /s /q
+rd Source\LibRawLite\x64 /s /q
 rd Source\LibTIFF\Debug /s /q
 rd Source\LibTIFF\Release /s /q
 rd Source\LibTIFF\Win32 /s /q
@@ -70,6 +80,10 @@ rd Source\LibWebP\Debug /s /q
 rd Source\LibWebP\Release /s /q
 rd Source\LibWebP\Win32 /s /q
 rd Source\LibWebP\x64 /s /q
+rd Source\OpenEXR\Debug /s /q
+rd Source\OpenEXR\Release /s /q
+rd Source\OpenEXR\Win32 /s /q
+rd Source\OpenEXR\x64 /s /q
 rd Source\Source\Debug /s /q
 rd Source\Source\Release /s /q
 rd Source\Zlib\Debug /s /q

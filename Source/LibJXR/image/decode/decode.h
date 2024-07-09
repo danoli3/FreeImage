@@ -51,9 +51,9 @@ typedef struct CWMDecoderParameters {
     size_t * pOffsetY;
 } CWMDecoderParameters;
 
-Void predCBPDec(CWMImageStrCodec *, CCodingContext *);
-Void predDCACDec(CWMImageStrCodec *);
-Void predACDec(CWMImageStrCodec *);
+void predCBPDec(CWMImageStrCodec *, CCodingContext *);
+void predDCACDec(CWMImageStrCodec *);
+void predACDec(CWMImageStrCodec *);
 
 Int dequantizeMacroblock(CWMImageStrCodec *);
 Int invTransformMacroblock(CWMImageStrCodec * pSC);
@@ -66,19 +66,19 @@ Int DecodeMacroblockHighpass(CWMImageStrCodec * pSC, CCodingContext *pContext, I
 Int AdaptLowpassDec(struct CCodingContext *);
 Int AdaptHighpassDec(struct CCodingContext *);
 
-Void ResetCodingContextDec(CCodingContext *pContext);
-Void FreeCodingContextDec(struct CWMImageStrCodec *pSC);
+void ResetCodingContextDec(CCodingContext *pContext);
+void FreeCodingContextDec(struct CWMImageStrCodec *pSC);
 
 /*************************************************************************/
 // Inverse transform functions
 // 2-point post filter for boundaries (only used in 420 UV DC subband)
-Void strPost2(PixelI *, PixelI *);
+void strPost2(PixelI *, PixelI *);
 
 // 2x2 post filter (only used in 420 UV DC subband)
-Void strPost2x2(PixelI *, PixelI *, PixelI *, PixelI *);
+void strPost2x2(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** 4-point post filter for boundaries **/
-Void strPost4(PixelI *, PixelI *, PixelI *, PixelI *);
+void strPost4(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** data allocation in working buffer (first stage) **/
 
@@ -95,20 +95,20 @@ Void strPost4(PixelI *, PixelI *, PixelI *, PixelI *);
 /** 192 194 196 198 **/
 
 /** 4x4 inverse DCT for first stage **/
-Void strIDCT4x4FirstStage(PixelI *);
-Void strIDCT4x4Stage1(PixelI*);
-Void strIDCT4x4FirstStage420UV(PixelI *);
+void strIDCT4x4FirstStage(PixelI *);
+void strIDCT4x4Stage1(PixelI*);
+void strIDCT4x4FirstStage420UV(PixelI *);
 
 /** 4x4 post filter for first stage **/
-Void strPost4x4FirstStage(PixelI *);
-Void strPost4x4Stage1Split(PixelI*, PixelI*, Int, Int, Bool);
-Void strPost4x4Stage1(PixelI*, Int, Int, Bool);
-Void strPost4x4Stage1Split_alternate(PixelI*, PixelI*, Int);
-Void strPost4x4Stage1_alternate(PixelI*, Int);
-//Void strPost4x4Stage1Split_420(PixelI*, PixelI*);
-//Void strPost4x4Stage1_420(PixelI*);
+void strPost4x4FirstStage(PixelI *);
+void strPost4x4Stage1Split(PixelI*, PixelI*, Int, Int, Bool);
+void strPost4x4Stage1(PixelI*, Int, Int, Bool);
+void strPost4x4Stage1Split_alternate(PixelI*, PixelI*, Int);
+void strPost4x4Stage1_alternate(PixelI*, Int);
+//void strPost4x4Stage1Split_420(PixelI*, PixelI*);
+//void strPost4x4Stage1_420(PixelI*);
 
-Void strPost4x4FirstStage420UV(PixelI *);
+void strPost4x4FirstStage420UV(PixelI *);
 
 /** data allocation in working buffer (second stage)**/
 
@@ -123,15 +123,15 @@ Void strPost4x4FirstStage420UV(PixelI *);
 /** 256 264 **/
 
 /** 4x4 invesr DCT for second stage **/
-//Void strIDCT4x4SecondStage(PixelI *);
-Void strIDCT4x4Stage2(PixelI*);
-Void strNormalizeDec(PixelI*, Bool);
-Void strDCT2x2dnDec(PixelI *, PixelI *, PixelI *, PixelI *);
+//void strIDCT4x4SecondStage(PixelI *);
+void strIDCT4x4Stage2(PixelI*);
+void strNormalizeDec(PixelI*, Bool);
+void strDCT2x2dnDec(PixelI *, PixelI *, PixelI *, PixelI *);
 
 /** 4x4 post filter for second stage **/
-Void strPost4x4SecondStage(PixelI *);
-Void strPost4x4Stage2Split(PixelI*, PixelI*);
-Void strPost4x4Stage2Split_alternate(PixelI*, PixelI*);
+void strPost4x4SecondStage(PixelI *);
+void strPost4x4Stage2Split(PixelI*, PixelI*);
+void strPost4x4Stage2Split_alternate(PixelI*, PixelI*);
 
 /** Huffman decode related defines **/
 #define HUFFMAN_DECODE_ROOT_BITS_LOG    3

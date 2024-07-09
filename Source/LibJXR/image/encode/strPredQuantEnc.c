@@ -106,7 +106,7 @@ Int quantizeMacroblock(CWMImageStrCodec* pSC)
 }
 
 /* frequency domain prediction */
-Void predMacroblockEnc(CWMImageStrCodec * pSC)
+void predMacroblockEnc(CWMImageStrCodec * pSC)
 {
     const COLORFORMAT cf = pSC->m_param.cfColorFormat;
     const Int iChannels = (cf == YUV_420 || cf == YUV_422) ? 1 : (Int) pSC->m_param.cNumChannels;
@@ -471,7 +471,7 @@ static Int predCBPC422Enc(CWMImageStrCodec *pSC, Int iCBP, size_t mbX, size_t mb
     return iRetval;
 }
 
-Void predCBPEnc(CWMImageStrCodec* pSC, CCodingContext *pContext)
+void predCBPEnc(CWMImageStrCodec* pSC, CCodingContext *pContext)
 {
     size_t mbX = pSC->cColumn - 1, mbY = pSC->cRow - 1;
     CWMIMBInfo * pMBInfo = &(pSC->MBInfo);

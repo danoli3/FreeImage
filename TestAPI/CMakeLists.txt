@@ -15,5 +15,21 @@ add_executable(MainTestSuite
     testWrappedBuffer.cpp
 )
 
-target_link_libraries(MainTestSuite FreeImage::FreeImage)
-add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
+if (BUILD_TESTS)
+    target_link_libraries(MainTestSuite FreeImage)
+    if (DEFINED PNG_LIBRARY)
+        target_link_libraries(MainTestSuite ${PNG_LIBRARY})
+    endif()
+    if (DEFINED ZLIB_LIBRARY)
+        target_link_libraries(MainTestSuite ${ZLIB_LIBRARY})
+    endif()
+
+    if(APPLE)
+    set_target_properties(MainTestSuite PROPERTIES
+        MACOSX_BUNDLE TRUE
+        XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.yourcompany.MainTestSuite"
+    )
+    endif()
+
+    add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
+endif ()

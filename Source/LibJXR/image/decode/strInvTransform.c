@@ -35,13 +35,13 @@
 #define IROTATE2(a, b) (a) -= (((b)*3 + 4) >> 3), (b) += (((a)*3 + 4) >> 3)  // this works well too
 
 /** local functions **/
-static Void invOddOdd(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void invOddOddPost(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void invOdd(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void strHSTdec(PixelI *, PixelI *, PixelI *, PixelI *);
-static Void strHSTdec1(PixelI *, PixelI *);
-static Void strHSTdec1_alternate(PixelI *, PixelI *);
-static Void strHSTdec1_edge(PixelI *pa, PixelI *pd);
+static void invOddOdd(PixelI *, PixelI *, PixelI *, PixelI *);
+static void invOddOddPost(PixelI *, PixelI *, PixelI *, PixelI *);
+static void invOdd(PixelI *, PixelI *, PixelI *, PixelI *);
+static void strHSTdec(PixelI *, PixelI *, PixelI *, PixelI *);
+static void strHSTdec1(PixelI *, PixelI *);
+static void strHSTdec1_alternate(PixelI *, PixelI *);
+static void strHSTdec1_edge(PixelI *pa, PixelI *pd);
 
 /** IDCT stuff **/
 /** reordering should be combined with zigzag scan **/
@@ -55,7 +55,7 @@ static Void strHSTdec1_edge(PixelI *pa, PixelI *pd);
 /**  4  5  6  7 **/
 /**  8  9 10 11 **/
 /** 12 13 14 15 **/
-Void strIDCT4x4Stage1(PixelI* p)
+void strIDCT4x4Stage1(PixelI* p)
 {
     /** top left corner, butterfly => butterfly **/
     strDCT2x2up(p + 0, p + 1, p + 2, p + 3);
@@ -74,7 +74,7 @@ Void strIDCT4x4Stage1(PixelI* p)
     FOURBUTTERFLY_HARDCODED1(p);
 }
 
-Void strIDCT4x4Stage2(PixelI* p)
+void strIDCT4x4Stage2(PixelI* p)
 {
     /** bottom left corner, butterfly => -pi/8 rotation **/
     invOdd(p + 32, p + 48, p + 96, p + 112);
@@ -92,7 +92,7 @@ Void strIDCT4x4Stage2(PixelI* p)
     FOURBUTTERFLY(p, 0, 192, 48, 240, 64, 128, 112, 176, 16, 208, 32, 224, 80, 144, 96, 160);
 }
 
-Void strNormalizeDec(PixelI* p, Bool bChroma)
+void strNormalizeDec(PixelI* p, Bool bChroma)
 {
     int i;
     if (!bChroma) {
@@ -108,7 +108,7 @@ Void strNormalizeDec(PixelI* p, Bool bChroma)
 }
 
 /** 2x2 DCT with post-scaling - for use on decoder side **/
-Void strDCT2x2dnDec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strDCT2x2dnDec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, C, t;
     a = *pa;
@@ -133,14 +133,14 @@ Void strDCT2x2dnDec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 
 /** post filter stuff **/
 /** 2-point post for boundaries **/
-Void strPost2(PixelI * a, PixelI * b)
+void strPost2(PixelI * a, PixelI * b)
 {
     *b += ((*a + 4) >> 3);
     *a += ((*b + 2) >> 2);
     *b += ((*a + 4) >> 3);
 }
 
-Void strPost2_alternate(PixelI * pa, PixelI * pb)
+void strPost2_alternate(PixelI * pa, PixelI * pb)
 {
     PixelI a, b;
     a = *pa;
@@ -159,7 +159,7 @@ Void strPost2_alternate(PixelI * pa, PixelI * pb)
     *pb = b;
 }
 
-Void strPost2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPost2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -190,7 +190,7 @@ Void strPost2x2(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
     *pd = d;
 }
 
-Void strPost2x2_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPost2x2_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -225,7 +225,7 @@ Void strPost2x2_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 }
 
 /** 4-point post for boundaries **/
-Void strPost4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPost4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -249,7 +249,7 @@ Void strPost4(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
     *pd = d;
 }
 
-Void strPost4_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void strPost4_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;
@@ -280,7 +280,7 @@ Void strPost4_alternate(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
   ( 5)( 4)|( 0+64) (1+64) p1 ( 5)( 4)|(64)(65)
   ( 7)( 6)|( 2+64) (3+64)    ( 7)( 6)|(66)(67)
 *****************************************************************************************/
-Void DCCompensate (PixelI *a, PixelI *b, PixelI *c, PixelI *d, int iDC)
+void DCCompensate (PixelI *a, PixelI *b, PixelI *c, PixelI *d, int iDC)
 {
     iDC = iDC>>1;
     *a -= iDC;
@@ -315,7 +315,7 @@ int ClipDCL(int iDCL, int iAltDCL)
     return iClipDCL;
 }
 
-Void strPost4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset, Int iHPQP, Bool bHPAbsent)
+void strPost4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset, Int iHPQP, Bool bHPAbsent)
 {
     int iDCLAlt1, iDCLAlt2, iDCLAlt3, iDCLAlt0;
     int iDCL1, iDCL2, iDCL3, iDCL0;
@@ -381,12 +381,12 @@ Void strPost4x4Stage1Split(PixelI *p0, PixelI *p1, Int iOffset, Int iHPQP, Bool 
     }
 }
 
-Void strPost4x4Stage1(PixelI* p, Int iOffset, Int iHPQP, Bool bHPAbsent)
+void strPost4x4Stage1(PixelI* p, Int iOffset, Int iHPQP, Bool bHPAbsent)
 {
     strPost4x4Stage1Split(p, p + 16, iOffset, iHPQP, bHPAbsent);
 }
 
-Void strPost4x4Stage1Split_alternate(PixelI *p0, PixelI *p1, Int iOffset)
+void strPost4x4Stage1Split_alternate(PixelI *p0, PixelI *p1, Int iOffset)
 {
     PixelI *p2 = p0 + 72 - iOffset;
     PixelI *p3 = p1 + 64 - iOffset;
@@ -419,7 +419,7 @@ Void strPost4x4Stage1Split_alternate(PixelI *p0, PixelI *p1, Int iOffset)
     strHSTdec(p0 + 3, p2 + 3, p1 + 3, p3 + 3);
 }
 
-Void strPost4x4Stage1_alternate(PixelI* p, Int iOffset)
+void strPost4x4Stage1_alternate(PixelI* p, Int iOffset)
 {
     strPost4x4Stage1Split_alternate(p, p + 16, iOffset);
 }
@@ -441,7 +441,7 @@ Void strPost4x4Stage1_alternate(PixelI* p, Int iOffset)
   (-128)(-64)|( 0)( 64) p1
   (-112)(-48)|(16)( 80)
 *****************************************************************************************/
-Void strPost4x4Stage2Split(PixelI* p0, PixelI* p1)
+void strPost4x4Stage2Split(PixelI* p0, PixelI* p1)
 {
     /** buttefly **/
     strDCT2x2dn(p0 - 96, p0 +  96, p1 - 112, p1 + 80);
@@ -470,7 +470,7 @@ Void strPost4x4Stage2Split(PixelI* p0, PixelI* p1)
     strHSTdec(p0 - 16, p1 -  64, p0 +  48, p1 +  0);
 }
 
-Void strPost4x4Stage2Split_alternate(PixelI* p0, PixelI* p1)
+void strPost4x4Stage2Split_alternate(PixelI* p0, PixelI* p1)
 {
     /** buttefly **/
     strDCT2x2dn(p0 - 96, p0 +  96, p1 - 112, p1 + 80);
@@ -504,7 +504,7 @@ Void strPost4x4Stage2Split_alternate(PixelI* p0, PixelI* p1)
     for some strange reason, breaking up the function into two blocks, strHSTdec1 and strHSTdec
     seems to work faster
 **/
-static Void strHSTdec1(PixelI *pa, PixelI *pd)
+static void strHSTdec1(PixelI *pa, PixelI *pd)
 {
     /** different realization : does rescaling as well! **/
     PixelI a, d;
@@ -521,7 +521,7 @@ static Void strHSTdec1(PixelI *pa, PixelI *pd)
     *pd = d;
 }
 
-static Void strHSTdec1_alternate(PixelI *pa, PixelI *pd)
+static void strHSTdec1_alternate(PixelI *pa, PixelI *pd)
 {
     /** different realization : does rescaling as well! **/
     PixelI a, d;
@@ -541,7 +541,7 @@ static Void strHSTdec1_alternate(PixelI *pa, PixelI *pd)
     *pd = d;
 }
 
-static Void strHSTdec1_edge (PixelI *pa, PixelI *pd)
+static void strHSTdec1_edge (PixelI *pa, PixelI *pd)
 {
     /** different realization as compared to scaling operator for 2D case **/
     PixelI a, d;
@@ -566,7 +566,7 @@ static Void strHSTdec1_edge (PixelI *pa, PixelI *pd)
     *pd = -d; // Negative sign needed here for 1D scaling case to ensure correct scaling.
 }
 
-static Void strHSTdec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void strHSTdec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     /** different realization : does rescaling as well! **/
     PixelI a, b, c, d;
@@ -586,7 +586,7 @@ static Void strHSTdec(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 }
 
 /** Kron(Rotate(pi/8), Rotate(pi/8)) **/
-static Void invOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void invOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, t1, t2;
     a = *pa;
@@ -619,7 +619,7 @@ static Void invOddOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 }
 
 /** Kron(Rotate(pi/8), Rotate(pi/8)) **/
-static Void invOddOddPost(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+static void invOddOddPost(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d, t1, t2;
     a = *pa;
@@ -653,7 +653,7 @@ static Void invOddOddPost(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 
 /** Kron(Rotate(-pi/8), [1 1; 1 -1]/sqrt(2)) **/
 /** [D C A B] => [a b c d] **/
-Void invOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
+void invOdd(PixelI *pa, PixelI *pb, PixelI *pc, PixelI *pd)
 {
     PixelI a, b, c, d;
     a = *pa;

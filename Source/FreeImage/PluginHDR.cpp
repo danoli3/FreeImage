@@ -244,7 +244,8 @@ rgbe_ReadHeader(FreeImageIO *io, fi_handle handle, unsigned *width, unsigned *he
 		}
 		else if((buf[0] == '#') && (buf[1] == 0x20)) {
 			header_info->valid |= RGBE_VALID_COMMENT;
-			strcpy(header_info->comment, buf);
+			strncpy(header_info->comment, buf, HDR_MAXLINE - 1);
+			header_info->comment[HDR_MAXLINE - 1] = '\0';
 		}
 	}
 	if(!bHeaderFound || !bFormatFound) {
@@ -271,39 +272,39 @@ rgbe_ReadHeader(FreeImageIO *io, fi_handle handle, unsigned *width, unsigned *he
 */
 static BOOL 
 rgbe_WriteHeader(FreeImageIO *io, fi_handle handle, unsigned width, unsigned height, rgbeHeaderInfo *info) {
-	char buffer[HDR_MAXLINE];
+	char buffer[HDR_MAXLINE + 1];
 
 	const char *programtype = "RADIANCE";
 
-	if(info && (info->valid & RGBE_VALID_PROGRAMTYPE)) {
+	if (info && (info->valid & RGBE_VALID_PROGRAMTYPE)) {
 		programtype = info->programtype;
 	}
 	// The #? is to identify file type, the programtype is optional
-	sprintf(buffer, "#?%s\n", programtype);
+	snprintf(buffer, HDR_MAXLINE, "#?%s\n", programtype);
 	if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 		return rgbe_Error(rgbe_write_error, NULL);
 	}
-	sprintf(buffer, "%s\n", info->comment);
+	snprintf(buffer, HDR_MAXLINE, "%s\n", info->comment);
 	if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 		return rgbe_Error(rgbe_write_error, NULL);
 	}
-	sprintf(buffer, "FORMAT=32-bit_rle_rgbe\n");
+	snprintf(buffer, HDR_MAXLINE, "FORMAT=32-bit_rle_rgbe\n");
 	if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 		return rgbe_Error(rgbe_write_error, NULL);
 	}
-	if(info && (info->valid & RGBE_VALID_GAMMA)) {
-		sprintf(buffer, "GAMMA=%g\n", info->gamma);
+	if (info && (info->valid & RGBE_VALID_GAMMA)) {
+		snprintf(buffer, HDR_MAXLINE, "GAMMA=%g\n", info->gamma);
 		if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 			return rgbe_Error(rgbe_write_error, NULL);
 		}
 	}
-	if(info && (info->valid & RGBE_VALID_EXPOSURE)) {
-		sprintf(buffer,"EXPOSURE=%g\n", info->exposure);
+	if (info && (info->valid & RGBE_VALID_EXPOSURE)) {
+		snprintf(buffer, HDR_MAXLINE, "EXPOSURE=%g\n", info->exposure);
 		if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 			return rgbe_Error(rgbe_write_error, NULL);
 		}
 	}
-	sprintf(buffer, "\n-Y %d +X %d\n", height, width);
+	snprintf(buffer, HDR_MAXLINE, "\n-Y %d +X %d\n", height, width);
 	if (io->write_proc(buffer, 1, (unsigned int)strlen(buffer), handle) < 1) {
 		return rgbe_Error(rgbe_write_error, NULL);
 	}

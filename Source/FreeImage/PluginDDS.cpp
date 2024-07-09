@@ -356,14 +356,6 @@ SwapHeader(DDSHEADER *header) {
 	for(int i=0; i<11; i++) {
 		SwapLong(&header->surfaceDesc.dwReserved1[i]);
 	}
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwSize);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwFlags);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwFourCC);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwRGBBitCount);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwRBitMask);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwGBitMask);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwBBitMask);
-	SwapLong(&header->surfaceDesc.ddpfPixelFormat.dwRGBAlphaBitMask);
 	SwapLong(&header->surfaceDesc.ddsCaps.dwCaps1);
 	SwapLong(&header->surfaceDesc.ddsCaps.dwCaps2);
 	SwapLong(&header->surfaceDesc.ddsCaps.dwReserved[0]);
@@ -625,7 +617,7 @@ LoadRGB(const DDSURFACEDESC2 *desc, FreeImageIO *io, fi_handle handle) {
 	// read the file
 	// -------------------------------------------------------------------------
 
-	const int line = CalculateLine(width, bpp);
+	const int line = CalculateLine(width, FreeImage_GetBPP(dib));
 	const int filePitch = ((desc->dwFlags & DDSD_PITCH) == DDSD_PITCH) ? (int)desc->dwPitchOrLinearSize : line;
 	const long delta = (long)filePitch - (long)line;
 

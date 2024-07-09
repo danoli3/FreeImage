@@ -511,7 +511,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		// load image data
 		// ---------------
 
-		line = (BYTE*)malloc(lineLength * sizeof(BYTE));
+		line = (BYTE*)malloc(MAX(lineLength, width * header.bpp) * sizeof(BYTE)); //< # header.bytes_per_line might be corrupted (too small)
 		if(!line) {
 			throw FI_MSG_ERROR_MEMORY;
 		}

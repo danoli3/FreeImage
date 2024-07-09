@@ -104,7 +104,7 @@ Int AllocateCodingContextEnc(CWMImageStrCodec *pSC, Int iNumContexts, Int iTrimF
 /*************************************************************************
     Context reset on encoder
 *************************************************************************/
-Void ResetCodingContextEnc(CCodingContext *pContext)
+void ResetCodingContextEnc(CCodingContext *pContext)
 {
     Int k;
     /** set flags **/
@@ -126,7 +126,7 @@ Void ResetCodingContextEnc(CCodingContext *pContext)
 /*************************************************************************
     Context deletion
 *************************************************************************/
-Void FreeCodingContextEnc(CWMImageStrCodec *pSC)
+void FreeCodingContextEnc(CWMImageStrCodec *pSC)
 {
     Int iContexts = (Int)(pSC->cNumCodingContext), i, k;
     if (iContexts > 0 && pSC->m_pCodingContext) {

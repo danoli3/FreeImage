@@ -1,3 +1,9 @@
+: go the the directory of this script
+: drive letter
+%~d0
+: directory
+cd %~dp0
+
 del dist\*.dll /s /q
 del dist\*.lib /s /q
 del dist\*.h /s /q
@@ -23,4 +29,6 @@ rd test\x64 /s /q
 rd test\Win32 /s /q
 rd test\Debug /s /q
 rd test\Release /s /q
+rd .vs /s /q
+
 

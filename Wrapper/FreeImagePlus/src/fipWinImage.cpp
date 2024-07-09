@@ -121,6 +121,10 @@ HANDLE fipWinImage::copyToHandle() const {
 
 		// Allocate a DIB
 		hMem = GlobalAlloc(GHND, dib_size);
+		if (!hMem) {
+			return NULL;
+		}
+
 		BYTE *dib = (BYTE*)GlobalLock(hMem);
 
 		memset(dib, 0, dib_size);

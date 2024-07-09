@@ -59,7 +59,6 @@ typedef unsigned long ULong;
 typedef unsigned char U8; // 8 bit uint
 typedef unsigned short U16;
 typedef unsigned int U32; // 32 bit uint
-typedef void Void;
 
 typedef void* CTXSTRCODEC;
 
@@ -107,12 +106,13 @@ typedef void* CTXSTRCODEC;
     enums
 *************************************************************************/
 typedef enum {
-    ICERR_OK = 0, ICERR_ERROR = -1
+    ICERR_OK = 0, 
+	ICERR_ERROR = -1
 } ERR_CODE;
 
 typedef enum BITDEPTH {
-    BD_SHORT, BD_LONG,
-
+    BD_SHORT, 
+	BD_LONG,
     /* add new BITDEPTH here */ BD_MAX
 } BITDEPTH;
 
@@ -130,8 +130,9 @@ typedef enum BITDEPTH_BITS {
 } BITDEPTH_BITS;
 
 typedef enum OVERLAP {
-    OL_NONE = 0, OL_ONE, OL_TWO,
-
+    OL_NONE = 0, 
+	OL_ONE, 
+	OL_TWO,
     /* add new OVERLAP here */ OL_MAX
 } OVERLAP;
 

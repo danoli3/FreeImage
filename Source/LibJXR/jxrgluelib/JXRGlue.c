@@ -52,13 +52,12 @@ ERR PKAlloc(void** ppv, size_t cb)
 
 ERR PKFree(void** ppv)
 {
-    if (ppv)
-    {
-        free(*ppv);
-        *ppv = NULL;
-    }
+	if (ppv) {
+		free(*ppv);
+		*ppv = NULL;
+	}
 
-    return WMP_errSuccess;
+	return WMP_errSuccess;
 }
 
 ERR PKAllocAligned(void** ppv, size_t cb, size_t iAlign)
@@ -70,13 +69,15 @@ ERR PKAllocAligned(void** ppv, size_t cb, size_t iAlign)
 
     *ppv = NULL;
     pOrigPtr = calloc(1, c_cbBlockSize);
-    if (NULL == pOrigPtr)
-        return WMP_errOutOfMemory;
+	if (NULL == pOrigPtr) {
+		return WMP_errOutOfMemory;
+	}
 
     iAlignmentCorrection = iAlign - ((size_t)pOrigPtr % iAlign);
-    if (iAlignmentCorrection < sizeof(void*))
-        // Alignment correction won't leave us enough space to store pOrigPtr - advance to next block
-        iAlignmentCorrection += iAlign;
+	if (iAlignmentCorrection < sizeof(void*)) {
+		// Alignment correction won't leave us enough space to store pOrigPtr - advance to next block
+		iAlignmentCorrection += iAlign;
+	}
 
     assert(iAlignmentCorrection >= sizeof(void*)); // Alignment correction must have space for pOrigPtr
     assert(iAlignmentCorrection + cb <= c_cbBlockSize); // Don't exceed right edge of memory block
@@ -91,8 +92,7 @@ ERR PKAllocAligned(void** ppv, size_t cb, size_t iAlign)
 
 ERR PKFreeAligned(void** ppv)
 {
-    if (ppv && *ppv)
-    {
+    if (ppv && *ppv) {
         U8 **ppOrigPtr = (U8**)((U8*)(*ppv) - sizeof(void*));
         assert(*ppOrigPtr <= (U8*)ppOrigPtr); // Something's wrong if pOrigPtr points forward
         free(*ppOrigPtr);
@@ -216,55 +216,49 @@ static const PKPixelInfo pixelInfo[] =
 //ERR GetPixelInfo(PKPixelFormatGUID enPixelFormat, const PKPixelInfo** ppPI)
 ERR PixelFormatLookup(PKPixelInfo* pPI, U8 uLookupType)
 {
-    ERR err = WMP_errSuccess;
-    size_t i;
+	ERR err = WMP_errSuccess;
+	size_t i;
 
-    for (i = 0; i < sizeof2(pixelInfo); ++i)
-    {
-        if (LOOKUP_FORWARD == uLookupType)
-        {
-            if (IsEqualGUID(pPI->pGUIDPixFmt, pixelInfo[i].pGUIDPixFmt))
-            {
-                *pPI = pixelInfo[i];
-                goto Cleanup;
-            }
-        }
-        else if (LOOKUP_BACKWARD_TIF == uLookupType)
-        {
-            if (pPI->uSamplePerPixel == pixelInfo[i].uSamplePerPixel &&
-                pPI->uBitsPerSample == pixelInfo[i].uBitsPerSample &&
-                pPI->uSampleFormat == pixelInfo[i].uSampleFormat &&
-                pPI->uInterpretation == pixelInfo[i].uInterpretation)
-            {
-                // match alpha & premult
-                if ((pPI->grBit & (PK_pixfmtHasAlpha | PK_pixfmtPreMul)) ==
-                    (pixelInfo[i].grBit & (PK_pixfmtHasAlpha | PK_pixfmtPreMul)))
-                {
-                    *pPI = pixelInfo[i];
-                    goto Cleanup;
-                }
-            }
-        }
-    }
-    Call(WMP_errUnsupportedFormat);
+	for (i = 0; i < sizeof2(pixelInfo); ++i) {
+		if (LOOKUP_FORWARD == uLookupType) {
+			if (IsEqualGUID(pPI->pGUIDPixFmt, pixelInfo[i].pGUIDPixFmt)) {
+				*pPI = pixelInfo[i];
+				goto Cleanup;
+			}
+		}
+		else if (LOOKUP_BACKWARD_TIF == uLookupType) {
+			if (pPI->uSamplePerPixel == pixelInfo[i].uSamplePerPixel &&
+				pPI->uBitsPerSample == pixelInfo[i].uBitsPerSample &&
+				pPI->uSampleFormat == pixelInfo[i].uSampleFormat &&
+				pPI->uInterpretation == pixelInfo[i].uInterpretation) {
+				// match alpha & premult
+				if ((pPI->grBit & (PK_pixfmtHasAlpha | PK_pixfmtPreMul)) ==
+					(pixelInfo[i].grBit & (PK_pixfmtHasAlpha | PK_pixfmtPreMul))) {
+					*pPI = pixelInfo[i];
+					goto Cleanup;
+				}
+			}
+		}
+	}
+	Call(WMP_errUnsupportedFormat);
 
 Cleanup:
-    return err;        
+	return err;
 }
 
 
 const PKPixelFormatGUID* GetPixelFormatFromHash(const U8 uPFHash)
 {
-    int i;
+	int i;
 
-    for (i = 0; i < sizeof2(pixelInfo); i++)
-    {
-        if (pixelInfo[i].pGUIDPixFmt->Data4[7] == uPFHash)
-            return pixelInfo[i].pGUIDPixFmt;
-    }
+	for (i = 0; i < sizeof2(pixelInfo); i++) {
+		if (pixelInfo[i].pGUIDPixFmt->Data4[7] == uPFHash) {
+			return pixelInfo[i].pGUIDPixFmt;
+		}
+	}
 
-    // If we reached this point, we did not find anything which matched the hash
-    return NULL;
+	// If we reached this point, we did not find anything which matched the hash
+	return NULL;
 }
 
 //----------------------------------------------------------------
@@ -277,29 +271,27 @@ typedef struct tagPKIIDInfo
 
 static ERR GetIIDInfo(const char* szExt, const PKIIDInfo** ppInfo)
 {
-    ERR err = WMP_errSuccess;
+	ERR err = WMP_errSuccess;
 
-    static PKIIDInfo iidInfo[] = {
-        {".jxr", &IID_PKImageWmpEncode, &IID_PKImageWmpDecode},
-        {".wdp", &IID_PKImageUnsupported, &IID_PKImageWmpDecode},
-        {".hdp", &IID_PKImageUnsupported, &IID_PKImageWmpDecode},
-    };
-    size_t i = 0;
+	static PKIIDInfo iidInfo[] = {
+		{".jxr", &IID_PKImageWmpEncode, &IID_PKImageWmpDecode},
+		{".wdp", &IID_PKImageUnsupported, &IID_PKImageWmpDecode},
+		{".hdp", &IID_PKImageUnsupported, &IID_PKImageWmpDecode},
+	};
+	size_t i = 0;
 
-    *ppInfo = NULL;
-    for (i = 0; i < sizeof2(iidInfo); ++i)
-    {
-        if (0 == PKStrnicmp(szExt, iidInfo[i].szExt, strlen(iidInfo[i].szExt)))
-        {
-            *ppInfo = &iidInfo[i];
-            goto Cleanup;
-        }
-    }
+	*ppInfo = NULL;
+	for (i = 0; i < sizeof2(iidInfo); ++i) {
+		if (0 == PKStrnicmp(szExt, iidInfo[i].szExt, strlen(iidInfo[i].szExt))) {
+			*ppInfo = &iidInfo[i];
+			goto Cleanup;
+		}
+	}
 
-    Call(WMP_errUnsupportedFormat);
+	Call(WMP_errUnsupportedFormat);
 
 Cleanup:
-    return err;
+	return err;
 }
 
 ERR GetImageEncodeIID(const char* szExt, const PKIID** ppIID)
@@ -379,23 +371,20 @@ Cleanup:
 //================================================================
 ERR PKCodecFactory_CreateCodec(const PKIID* iid, void** ppv)
 {
-    ERR err = WMP_errSuccess;
+	ERR err = WMP_errSuccess;
 
-    if (IID_PKImageWmpEncode == *iid)
-    {
-        Call(PKImageEncode_Create_WMP((PKImageEncode**)ppv));
-    }
-    else if (IID_PKImageWmpDecode == *iid)
-    {
-        Call(PKImageDecode_Create_WMP((PKImageDecode**)ppv));
-    }
-    else
-    {
-        Call(WMP_errUnsupportedFormat);
-    }
+	if (IID_PKImageWmpEncode == *iid) {
+		Call(PKImageEncode_Create_WMP((PKImageEncode**)ppv));
+	}
+	else if (IID_PKImageWmpDecode == *iid) {
+		Call(PKImageDecode_Create_WMP((PKImageDecode**)ppv));
+	}
+	else {
+		Call(WMP_errUnsupportedFormat);
+	}
 
 Cleanup:
-    return err;
+	return err;
 }
 
 ERR PKCodecFactory_CreateDecoderFromFile(const char* szFilename, PKImageDecode** ppDecoder)
@@ -485,11 +474,7 @@ Cleanup:
 //================================================================
 // PKImageEncode
 //================================================================
-ERR PKImageEncode_Initialize(
-    PKImageEncode* pIE,
-    struct WMPStream* pStream,
-    void* pvParam,
-    size_t cbParam)
+ERR PKImageEncode_Initialize(PKImageEncode* pIE, struct WMPStream* pStream, void* pvParam, size_t cbParam)
 {
     ERR err = WMP_errSuccess;
 
@@ -509,26 +494,20 @@ Cleanup:
     return err;
 }
 
-ERR PKImageEncode_Terminate(
-    PKImageEncode* pIE)
+ERR PKImageEncode_Terminate(PKImageEncode* pIE)
 {
     UNREFERENCED_PARAMETER( pIE );
     return WMP_errSuccess;
 }
 
-ERR PKImageEncode_SetPixelFormat(
-    PKImageEncode* pIE,
-    PKPixelFormatGUID enPixelFormat)
+ERR PKImageEncode_SetPixelFormat(PKImageEncode* pIE, PKPixelFormatGUID enPixelFormat)
 {
     pIE->guidPixFormat = enPixelFormat;
 
     return WMP_errSuccess;
 }
 
-ERR PKImageEncode_SetSize(
-    PKImageEncode* pIE,
-    I32 iWidth,
-    I32 iHeight)
+ERR PKImageEncode_SetSize(PKImageEncode* pIE, I32 iWidth, I32 iHeight)
 {
     ERR err = WMP_errSuccess;
 
@@ -538,10 +517,7 @@ ERR PKImageEncode_SetSize(
     return err;
 }
 
-ERR PKImageEncode_SetResolution(
-    PKImageEncode* pIE,
-    Float fResX, 
-    Float fResY)
+ERR PKImageEncode_SetResolution(PKImageEncode* pIE, Float fResX, Float fResY)
 {
     pIE->fResX = fResX;
     pIE->fResY = fResY;
@@ -549,9 +525,7 @@ ERR PKImageEncode_SetResolution(
     return WMP_errSuccess;
 }
 
-ERR PKImageEncode_SetColorContext(PKImageEncode *pIE,
-                                  const U8 *pbColorContext,
-                                  U32 cbColorContext)
+ERR PKImageEncode_SetColorContext(PKImageEncode *pIE, const U8 *pbColorContext, U32 cbColorContext)
 {
     UNREFERENCED_PARAMETER( pIE );
     UNREFERENCED_PARAMETER( pbColorContext );
@@ -567,11 +541,7 @@ ERR PKImageEncode_SetDescriptiveMetadata(PKImageEncode *pIE, const DESCRIPTIVEME
     return WMP_errNotYetImplemented;
 }
 
-ERR PKImageEncode_WritePixels(
-    PKImageEncode* pIE,
-    U32 cLine,
-    U8* pbPixels,
-    U32 cbStride)
+ERR PKImageEncode_WritePixels(PKImageEncode* pIE, U32 cLine, U8* pbPixels, U32 cbStride)
 {
     UNREFERENCED_PARAMETER( pIE );
     UNREFERENCED_PARAMETER( cLine );
@@ -580,10 +550,7 @@ ERR PKImageEncode_WritePixels(
     return WMP_errAbstractMethod;
 }
 
-ERR PKImageEncode_WriteSource(
-    PKImageEncode* pIE,
-    PKFormatConverter* pFC,
-    PKRect* pRect)
+ERR PKImageEncode_WriteSource(PKImageEncode* pIE, PKFormatConverter* pFC, PKRect* pRect)
 {
     ERR err = WMP_errSuccess;
 
@@ -665,10 +632,7 @@ ERR PKImageEncode_WritePixelsBandedEnd(PKImageEncode* pEncoder)
 }
 
 
-ERR PKImageEncode_Transcode(
-    PKImageEncode* pIE,
-    PKFormatConverter* pFC,
-    PKRect* pRect)
+ERR PKImageEncode_Transcode(PKImageEncode* pIE, PKFormatConverter* pFC, PKRect* pRect)
 {
     ERR err = WMP_errSuccess;
 
@@ -741,10 +705,7 @@ Cleanup:
     return err;
 }
 
-ERR PKImageEncode_CreateNewFrame(
-    PKImageEncode* pIE,
-    void* pvParam,
-    size_t cbParam)
+ERR PKImageEncode_CreateNewFrame(PKImageEncode* pIE, void* pvParam, size_t cbParam)
 {
     UNREFERENCED_PARAMETER( pIE );
     UNREFERENCED_PARAMETER( pvParam );
@@ -753,8 +714,7 @@ ERR PKImageEncode_CreateNewFrame(
     return WMP_errSuccess;
 }
 
-ERR PKImageEncode_Release(
-    PKImageEncode** ppIE)
+ERR PKImageEncode_Release(PKImageEncode** ppIE)
 {
     PKImageEncode *pIE = *ppIE;
     pIE->pStream->Close(&pIE->pStream);
@@ -796,9 +756,7 @@ Cleanup:
 //================================================================
 // PKImageDecode
 //================================================================
-ERR PKImageDecode_Initialize(
-    PKImageDecode* pID,
-    struct WMPStream* pStream)
+ERR PKImageDecode_Initialize(PKImageDecode* pID, struct WMPStream* pStream)
 {
     ERR err = WMP_errSuccess;
 
@@ -816,19 +774,14 @@ Cleanup:
     return WMP_errSuccess;
 }
 
-ERR PKImageDecode_GetPixelFormat(
-    PKImageDecode* pID,
-    PKPixelFormatGUID* pPF)
+ERR PKImageDecode_GetPixelFormat(PKImageDecode* pID, PKPixelFormatGUID* pPF)
 {
     *pPF = pID->guidPixFormat;
 
     return WMP_errSuccess;
 }
 
-ERR PKImageDecode_GetSize(
-    PKImageDecode* pID,
-    I32* piWidth,
-    I32* piHeight)
+ERR PKImageDecode_GetSize(PKImageDecode* pID, I32* piWidth, I32* piHeight)
 {
     *piWidth = (I32)pID->uWidth;
     *piHeight = (I32)pID->uHeight;
@@ -836,10 +789,7 @@ ERR PKImageDecode_GetSize(
     return WMP_errSuccess;
 }
 
-ERR PKImageDecode_GetResolution(
-    PKImageDecode* pID,
-    Float* pfResX,
-    Float* pfResY)
+ERR PKImageDecode_GetResolution(PKImageDecode* pID, Float* pfResX, Float* pfResY)
 {
     *pfResX = pID->fResX;
     *pfResY = pID->fResY;
@@ -862,11 +812,7 @@ ERR PKImageDecode_GetDescriptiveMetadata(PKImageDecode *pIE, DESCRIPTIVEMETADATA
     return WMP_errNotYetImplemented;
 }
 
-ERR PKImageDecode_Copy(
-    PKImageDecode* pID,
-    const PKRect* pRect,
-    U8* pb,
-    U32 cbStride)
+ERR PKImageDecode_Copy(PKImageDecode* pID, const PKRect* pRect, U8* pb, U32 cbStride)
 {
     UNREFERENCED_PARAMETER( pID );
     UNREFERENCED_PARAMETER( pRect );
@@ -875,18 +821,14 @@ ERR PKImageDecode_Copy(
     return WMP_errAbstractMethod;
 }
 
-ERR PKImageDecode_GetFrameCount(
-    PKImageDecode* pID,
-    U32* puCount)
+ERR PKImageDecode_GetFrameCount(PKImageDecode* pID, U32* puCount)
 {
     *puCount = pID->cFrame;
 
     return WMP_errSuccess;
 }
 
-ERR PKImageDecode_SelectFrame(
-    PKImageDecode* pID,
-    U32 uFrame)
+ERR PKImageDecode_SelectFrame(PKImageDecode* pID, U32 uFrame)
 {
     UNREFERENCED_PARAMETER( pID );
     UNREFERENCED_PARAMETER( uFrame );
@@ -894,8 +836,7 @@ ERR PKImageDecode_SelectFrame(
     return WMP_errSuccess;
 }
 
-ERR PKImageDecode_Release(
-    PKImageDecode** ppID)
+ERR PKImageDecode_Release(PKImageDecode** ppID)
 {
     PKImageDecode* pID = *ppID;
 
@@ -904,8 +845,7 @@ ERR PKImageDecode_Release(
     return PKFree((void **) ppID);
 }
 
-ERR PKImageDecode_Create(
-    PKImageDecode** ppID)
+ERR PKImageDecode_Create(PKImageDecode** ppID)
 {
     ERR err = WMP_errSuccess;
     PKImageDecode* pID = NULL;

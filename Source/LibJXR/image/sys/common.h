@@ -108,21 +108,21 @@ static const Int cblkChromas[] = {0,4,8,16, 16,16,16, 0,0};
     function declarations
 *************************************************************************/
 // common utilities
-Void Clean (CAdaptiveHuffman *pAdHuff);
+void Clean (CAdaptiveHuffman *pAdHuff);
 CAdaptiveHuffman *Allocate (Int iNSymbols, CODINGMODE cm);
 
 /* Timing functions */
-void    reset_timing(double *time);
-void    report_timing(const char *s, double time);
+void reset_timing(double *time);
+void report_timing(const char *s, double time);
 // static double   timeperclock;
 
 /** adaptive model functions **/
-Void UpdateModelMB (COLORFORMAT cf, Int iChannels, Int iLaplacianMean[], CAdaptiveModel *m_pModel);
+void UpdateModelMB (COLORFORMAT cf, Int iChannels, Int iLaplacianMean[], CAdaptiveModel *m_pModel);
 
 /** adaptive huffman encoder / decoder functions **/
-Void Adapt (CAdaptiveHuffman *pAdHuff, Bool bFixedTables);
-Void AdaptFixed (CAdaptiveHuffman *pAdHuff);
-Void AdaptDiscriminant (CAdaptiveHuffman *pAdHuff);
+void Adapt (CAdaptiveHuffman *pAdHuff, Bool bFixedTables);
+void AdaptFixed (CAdaptiveHuffman *pAdHuff);
+void AdaptDiscriminant (CAdaptiveHuffman *pAdHuff);
 
 #ifndef _PREFAST_
 #pragma warning(disable:4068)
