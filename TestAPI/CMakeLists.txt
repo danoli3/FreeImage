@@ -28,5 +28,12 @@ if (BUILD_TESTS)
         target_link_libraries(${MainTestSuite} ws2_32)
     endif()
 
+    if(APPLE)
+    set_target_properties(MainTestSuite PROPERTIES
+        MACOSX_BUNDLE TRUE
+        XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.yourcompany.MainTestSuite"
+    )
+    endif()
+
     add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
 endif ()
