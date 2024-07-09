@@ -23,10 +23,6 @@ if (BUILD_TESTS)
     if (DEFINED ZLIB_LIBRARY)
         target_link_libraries(MainTestSuite ${ZLIB_LIBRARY})
     endif()
-    if (WIN32)
-        # Add ws2_32.lib for Windows builds
-        target_link_libraries(${MainTestSuite} ws2_32)
-    endif()
 
     if(APPLE)
     set_target_properties(MainTestSuite PROPERTIES
