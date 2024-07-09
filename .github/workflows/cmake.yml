@@ -11,7 +11,7 @@ defaults:
 
 jobs:
   build:
-    name: ${{ matrix.toolchain }}
+    name: ${{ matrix.toolchain }} (C++${{ matrix.cppstandard }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,6 +21,9 @@ jobs:
           - macos-clang
           - windows-msvc
           - windows-mingw
+        cppstandard:
+          - 17
+          - 20
         configuration:
           - Debug
         include:
@@ -42,11 +45,11 @@ jobs:
       - name: Configure (${{ matrix.configuration }})
         run: |
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake -S . -B build -DBUILD_TESTS=ON
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }}
           elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -G "MinGW Makefiles"
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -G "MinGW Makefiles"
           else
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }}
           fi
       - name: Build with ${{ matrix.compiler }}
         run: |
