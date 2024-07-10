@@ -599,7 +599,7 @@ endif()
 # Emscripten support
 if(EMSCRIPTEN)
     add_executable(${PROJECT_NAME}_wasm ${FreeImage_SOURCES} )
-    target_link_libraries(${PROJECT_NAME}_wasm PRIVATE ${PROJECT_NAME}::${PROJECT_NAME})
+    target_link_libraries(${PROJECT_NAME}_wasm PRIVATE ${PROJECT_NAME})
 endif()
 
 # Apple-specific settings
