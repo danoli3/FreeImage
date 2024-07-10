@@ -598,7 +598,7 @@ endif()
 
 # Emscripten support
 if(EMSCRIPTEN)
-    add_executable(FreeImage_wasm ${FreeImage_SOURCES)
+    add_executable(FreeImage_wasm ${FreeImage_SOURCES))
     target_link_libraries(FreeImage_wasm PRIVATE ${PROJECT_NAME}::${PROJECT_NAME})
 endif()
 
