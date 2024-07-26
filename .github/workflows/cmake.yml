@@ -51,9 +51,9 @@ jobs:
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
             cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -G "MinGW Makefiles"
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DUNICODE -D_UNICODE -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -G "MinGW Makefiles"
           else
-            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DBUILD_TESTS=ON -DUNICODE -D_UNICODE -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           fi
       - name: Build with ${{ matrix.compiler }}
         run: |
