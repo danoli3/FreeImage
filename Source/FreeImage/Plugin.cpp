@@ -527,7 +527,7 @@ FreeImage_RegisterLocalPlugin(FI_InitProc proc_address, const char *format, cons
 FREE_IMAGE_FORMAT DLL_CALLCONV
 FreeImage_RegisterExternalPlugin(const wchar_t *path, const char *format, const char *description, const char *extension, const char *regexpr) {
 	if (path != NULL) {
-		HINSTANCE instance = LoadLibrary(path);
+		HINSTANCE instance = LoadLibraryW(path);
 
 		if (instance != NULL) {
 			FARPROC proc_address = GetProcAddress(instance, "_Init@8");
