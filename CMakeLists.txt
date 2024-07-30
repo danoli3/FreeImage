@@ -12,6 +12,11 @@ option(BUILD_WEBP "Build webp from source or link" ON)
 option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
 option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
 
+include(CheckTypeSize)
+include(CheckFunctionExists)
+include(CheckIncludeFile)
+include(CheckCSourceCompiles)
+
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building FreeImage as a shared library.")
 else()
@@ -205,14 +210,67 @@ if(BUILD_LIBTIFF)
 endif()
 
 if(BUILD_ZLIB)
+    check_include_file(sys/types.h HAVE_SYS_TYPES_H)
+    check_include_file(stdint.h    HAVE_STDINT_H)
+    check_include_file(stddef.h    HAVE_STDDEF_H)
+
+    if(HAVE_SYS_TYPES_H)
+        list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_SYS_TYPES_H)
+    endif()
+    if(HAVE_STDINT_H)
+        list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDINT_H)
+    endif()
+    if(HAVE_STDDEF_H)
+        list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDDEF_H)
+    endif()
+    check_type_size(off64_t OFF64_T)
+    if(HAVE_OFF64_T)
+       add_definitions(-D_LARGEFILE64_SOURCE=1)
+    endif()
+    set(CMAKE_REQUIRED_DEFINITIONS)
+
+    # Check for fseeko
+    check_function_exists(fseeko HAVE_FSEEKO)
+    if(NOT HAVE_FSEEKO)
+        add_definitions(-DNO_FSEEKO)
+    endif()
+
+    # Check for unistd.h
+    check_include_file(unistd.h HAVE_UNISTD_H)
+    if(NOT HAVE_UNISTD_H)
+        add_definitions(-DNO_FSEEKO)
+    endif()
+    if(MSVC)
+        set(CMAKE_DEBUG_POSTFIX "d")
+        add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+        add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
+    if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
+        # If we're doing an out of source build and the user has a zconf.h
+        # in their source tree...
+        if(EXISTS Source/ZLib/zconf.h)
+            message(STATUS "Renaming")
+            message(STATUS "    Source/ZLib/zconf.h")
+            message(STATUS "to 'zconf.h.included' because this file is included with zlib")
+            message(STATUS "but CMake generates it automatically in the build directory.")
+            file(RENAME Source/ZLib/zconf.h Source/ZLib/zconf.h.included)
+      endif()
+    endif()
+
+    configure_file( Source/ZLib/zconf.h.cmakein
+        ${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
+
     set(FreeImage_ZLIB_SRCS
+        ${CMAKE_CURRENT_BINARY_DIR}/zconf.h
         Source/ZLib/adler32.c Source/ZLib/compress.c Source/ZLib/crc32.c Source/ZLib/deflate.c
         Source/ZLib/gzclose.c Source/ZLib/gzlib.c Source/ZLib/gzread.c Source/ZLib/gzwrite.c
         Source/ZLib/infback.c Source/ZLib/inffast.c Source/ZLib/inflate.c Source/ZLib/inftrees.c
         Source/ZLib/trees.c Source/ZLib/uncompr.c Source/ZLib/zutil.c
         ./Source/ZLib/crc32.h ./Source/ZLib/deflate.h ./Source/ZLib/gzguts.h
         ./Source/ZLib/inffast.h ./Source/ZLib/inffixed.h ./Source/ZLib/inflate.h
-        ./Source/ZLib/inftrees.h ./Source/ZLib/trees.h ./Source/ZLib/zconf.h
+        ./Source/ZLib/inftrees.h ./Source/ZLib/trees.h 
         ./Source/ZLib/zlib.h ./Source/ZLib/zutil.h 
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_ZLIB_SRCS})
@@ -586,6 +644,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     OPJ_STATIC
     NO_LCMS
     NO_WINDOWS
+
 )
 
 # Set C++ standard
@@ -594,12 +653,6 @@ if (DEFINED C_STANDARD)
 endif()
 if (DEFINED CPP_STANDARD)
     set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
-endif()
-
-# Emscripten support
-if(EMSCRIPTEN)
-    add_executable(${PROJECT_NAME}_wasm ${FreeImage_SOURCES} )
-    target_link_libraries(${PROJECT_NAME}_wasm PRIVATE ${PROJECT_NAME})
 endif()
 
 # Apple-specific settings
