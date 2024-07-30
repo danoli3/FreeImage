@@ -398,7 +398,6 @@ extern "C"
     extern int _TIFFRewriteField(TIFF *, uint16_t, TIFFDataType, tmsize_t,
                                  void *);
     extern int TIFFSetCompressionScheme(TIFF *tif, int scheme);
-    extern int TIFFSetDefaultCompressionState(TIFF *tif);
     extern uint32_t _TIFFDefaultStripSize(TIFF *tif, uint32_t s);
     extern void _TIFFDefaultTileSize(TIFF *tif, uint32_t *tw, uint32_t *th);
 
