@@ -23,17 +23,21 @@
 # OF THIS SOFTWARE.
 
 # Generate headers
+# and update configuration settings and package / version information.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tif_config.h.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/tif_config.h
                @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tiffconf.h.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/tiffconf.h
                @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tiffvers.h.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/tiffvers.h
+               @ONLY)
 
 set(tiff_public_HEADERS
         tiff.h
         tiffio.h
-        tiffvers.h
+        ${CMAKE_CURRENT_BINARY_DIR}/tiffvers.h
         ${CMAKE_CURRENT_BINARY_DIR}/tiffconf.h)
 
 set(tiff_private_HEADERS
@@ -46,7 +50,7 @@ set(tiff_private_HEADERS
 
 
 add_library(tiff libtiff.def)
-add_library(TIFF::TIFF ALIAS tiff)
+add_library(TIFF::tiff ALIAS tiff)
 
 target_sources(tiff PRIVATE
         ${tiff_public_HEADERS}
@@ -104,6 +108,7 @@ target_include_directories(tiff
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE
         ${TIFF_INCLUDES}
 )
@@ -149,7 +154,7 @@ if(LERC_SUPPORT)
   endif()
 endif()
 if(LZMA_SUPPORT)
-  target_link_libraries(tiff PRIVATE LibLZMA::LibLZMA)
+  target_link_libraries(tiff PRIVATE liblzma::liblzma)
   string(APPEND tiff_requires_private " liblzma")
 endif()
 if(ZSTD_SUPPORT)
@@ -157,7 +162,7 @@ if(ZSTD_SUPPORT)
   string(APPEND tiff_requires_private " libzstd")
 endif()
 if(WEBP_SUPPORT)
-  target_link_libraries(tiff PRIVATE WebP::WebP)
+  target_link_libraries(tiff PRIVATE WebP::webp)
   string(APPEND tiff_requires_private " libwebp")
 endif()
 if(CMath_LIBRARY)
@@ -197,6 +202,17 @@ if(tiff-install)
           NAMESPACE TIFF::
           DESTINATION ${TIFF_CONFIGDIR}
   )
+
+  include(CMakePackageConfigHelpers)
+  write_basic_package_version_file(
+    TiffConfigVersion.cmake
+    VERSION ${LIBTIFF_VERSION}
+    COMPATIBILITY SameMajorVersion)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TiffConfigVersion.cmake DESTINATION ${TIFF_CONFIGDIR})
+
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/TiffConfig.cmake.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/TiffConfig.cmake @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TiffConfig.cmake DESTINATION ${TIFF_CONFIGDIR})
 endif()
 
 if(CXX_SUPPORT)
