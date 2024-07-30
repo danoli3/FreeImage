@@ -12,6 +12,11 @@ option(BUILD_WEBP "Build webp from source or link" ON)
 option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
 option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
 
+include(CheckTypeSize)
+include(CheckFunctionExists)
+include(CheckIncludeFile)
+include(CheckCSourceCompiles)
+
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building FreeImage as a shared library.")
 else()
