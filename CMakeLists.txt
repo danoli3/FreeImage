@@ -596,11 +596,6 @@ if (DEFINED CPP_STANDARD)
     set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
 endif()
 
-# Emscripten support
-if(EMSCRIPTEN)
-    add_executable(${PROJECT_NAME}_wasm ${FreeImage_SOURCES} )
-    target_link_libraries(${PROJECT_NAME}_wasm PRIVATE ${PROJECT_NAME})
-endif()
 
 # Apple-specific settings
 if (APPLE)
