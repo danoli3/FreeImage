@@ -515,15 +515,22 @@
     */
 #  include <float.h>
 
-/* Floating point headers — <fp.h> was removed from macOS SDK */
-# include <math.h>
-
-# if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
+#if (defined(__MWERKS__) && defined(macintosh)) || defined(applec) || \
+    defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)
+   /* <fp.h> was removed in macOS 15+ / Xcode 16+. The floating-point
+    * functions it provided are now in <math.h>.
+    */
+#    include <math.h>
+#  else
+#    include <math.h>
+#  endif
+#  if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
    /* Amiga SAS/C: We must include builtin FPU functions when compiling using
     * MATH=68881
     */
-# include <m68881.h>
-# endif
+#    include <m68881.h>
+#  endif
+#endif
 
 /* This provides the non-ANSI (far) memory allocation routines. */
 #if defined(__TURBOC__) && defined(__MSDOS__)
