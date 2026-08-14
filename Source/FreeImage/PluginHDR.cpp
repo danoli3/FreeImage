@@ -2,7 +2,7 @@
 // HDR Loader and writer
 //
 // Design and implementation by 
-// - Herv� Drolon (drolon@infonie.fr)
+// - Hervé Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
