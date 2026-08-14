@@ -37,7 +37,7 @@
 
 #include "FreeImage.h"
 #include "Utilities.h"
-#include "../LibTIFF4/tiffiop.h"
+#include <tiffio.h>
 #include "../Metadata/FreeImageTag.h"
 #include "../OpenEXR/Half/half.h"
 

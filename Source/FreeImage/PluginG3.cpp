@@ -2,7 +2,7 @@
 // G3 Fax Loader
 //
 // Design and implementation by
-// - Hervé Drolon (drolon@infonie.fr)
+// - Hervï¿½ Drolon (drolon@infonie.fr)
 // - Petr Pytelka (pyta@lightcomp.com)
 //
 // This file is part of FreeImage 3
@@ -20,7 +20,11 @@
 // Use at your own risk!
 // ==========================================================
 
+#ifdef FREEIMAGE_SYSTEM_LIBTIFF
+#include <tiffio.h>
+#else
 #include "../LibTIFF4/tiffiop.h"
+#endif
 
 #include "FreeImage.h"
 #include "Utilities.h"
@@ -99,7 +103,11 @@ G3ReadFile(FreeImageIO *io, fi_handle handle, uint8_t *tif_rawdata, tmsize_t tif
 // Internal functions
 // ==========================================================
 
-static int 
+#ifndef FREEIMAGE_SYSTEM_LIBTIFF
+// Manipulates libtiff's private TIFF struct fields directly (tif_rawdata,
+// tif_decoderow, ...), which a system libtiff's public tiffio.h doesn't
+// expose - only compiled in the bundled-libtiff build (see Load() below).
+static int
 copyFaxFile(FreeImageIO *io, fi_handle handle, TIFF* tifin, uint32_t xsize, int stretch, FIMEMORY *memory) {
 	BYTE *rowbuf = NULL;
 	BYTE *refbuf = NULL;
@@ -192,6 +200,7 @@ copyFaxFile(FreeImageIO *io, fi_handle handle, TIFF* tifin, uint32_t xsize, int 
 
 	return (row);
 }
+#endif // !FREEIMAGE_SYSTEM_LIBTIFF
 
 
 // ==========================================================
@@ -232,6 +241,13 @@ SupportsExportDepth(int depth) {
 
 static FIBITMAP * DLL_CALLCONV
 Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
+#ifdef FREEIMAGE_SYSTEM_LIBTIFF
+	// This decoder manipulates libtiff's private TIFF struct fields directly
+	// (tif_rawdata, tif_decoderow, ...), which aren't reachable through a
+	// system libtiff's public tiffio.h - report cleanly unsupported instead.
+	FreeImage_OutputMessageProc(s_format_id, "G3 fax loading is unavailable in this build (built against system libtiff)");
+	return NULL;
+#else
 	TIFF *faxTIFF = NULL;
 	FIBITMAP *dib = NULL;
 	FIMEMORY *memory = NULL;
@@ -405,6 +421,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 	return dib;
 
+#endif // FREEIMAGE_SYSTEM_LIBTIFF
 }
 
 // ==========================================================

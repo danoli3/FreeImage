@@ -7,7 +7,7 @@
 // - Jan L. Nauta (jln@magentammt.com)
 // - Markus Loibl (markus.loibl@epost.de)
 // - Karl-Heinz Bussian (khbussian@moss.de)
-// - Hervé Drolon (drolon@infonie.fr)
+// - Hervï¿½ Drolon (drolon@infonie.fr)
 // - Jascha Wetzel (jascha@mainia.de)
 // - Mihail Naydenov (mnaydenov@users.sourceforge.net)
 //
@@ -35,9 +35,15 @@ extern "C" {
 #undef FAR
 #include <setjmp.h>
 
+#ifdef FREEIMAGE_SYSTEM_LIBJPEG
+#include <stdio.h>
+#include <jpeglib.h>
+#include <jerror.h>
+#else
 #include "../LibJPEG/jinclude.h"
 #include "../LibJPEG/jpeglib.h"
 #include "../LibJPEG/jerror.h"
+#endif
 }
 
 #include "FreeImage.h"
@@ -503,7 +509,7 @@ marker_is_icc(jpeg_saved_marker_ptr marker) {
   return FALSE.  You might want to issue an error message instead.
 */
 static BOOL 
-jpeg_read_icc_profile(j_decompress_ptr cinfo, JOCTET **icc_data_ptr, unsigned *icc_data_len) {
+fi_jpeg_read_icc_profile(j_decompress_ptr cinfo, JOCTET **icc_data_ptr, unsigned *icc_data_len) {
 	jpeg_saved_marker_ptr marker;
 	int num_markers = 0;
 	int seq_no;
@@ -745,7 +751,7 @@ read_markers(j_decompress_ptr cinfo, FIBITMAP *dib) {
 	BYTE *icc_profile = NULL;
 	unsigned icc_length = 0;
 
-	if( jpeg_read_icc_profile(cinfo, &icc_profile, &icc_length) ) {
+	if( fi_jpeg_read_icc_profile(cinfo, &icc_profile, &icc_length) ) {
 		// copy ICC profile data
 		FreeImage_CreateICCProfile(dib, icc_profile, icc_length);
 		// clean up

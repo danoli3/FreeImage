@@ -19,10 +19,16 @@
 // Use at your own risk!
 // ==========================================================
 
+#ifdef FREEIMAGE_SYSTEM_ZLIB
+#include <zlib.h>
+#else
 #include "../ZLib/zlib.h"
+#endif
 #include "FreeImage.h"
 #include "Utilities.h"
+#ifndef FREEIMAGE_SYSTEM_ZLIB
 #include "../ZLib/zutil.h"	/* must be the last header because of error C3163 in VS2008 (_vsnprintf defined in stdio.h) */
+#endif
 
 /**
 Compresses a source buffer into a target buffer, using the ZLib library. 
@@ -115,7 +121,12 @@ FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_s
 			return 0;
         case Z_OK: {
             // patch header, setup crc and length (stolen from mod_trace_output)
-            BYTE *p = target + 8; *p++ = 2; *p = OS_CODE; // xflags, os_code
+#ifdef FREEIMAGE_SYSTEM_ZLIB
+            const BYTE gzip_os_code = 0x03; // unix - zutil.h's OS_CODE isn't part of zlib's public API
+#else
+            const BYTE gzip_os_code = OS_CODE;
+#endif
+            BYTE *p = target + 8; *p++ = 2; *p = gzip_os_code; // xflags, os_code
  	        crc = crc32(crc, source, source_size);
 	        memcpy(target + 4 + dest_len, &crc, 4);
 	        memcpy(target + 8 + dest_len, &source_size, 4);
