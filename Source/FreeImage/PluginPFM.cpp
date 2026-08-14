@@ -2,7 +2,7 @@
 // PFM Loader and Writer
 //
 // Design and implementation by
-// - Herv� Drolon (drolon@infonie.fr)
+// - Hervé Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
@@ -271,12 +271,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		// Read the image...
 
 		if(image_type == FIT_RGBF) {
-			// Compute in size_t (not int/unsigned) so a large, attacker-
-			// controlled width can't silently overflow the 32-bit multiply
-			// before it reaches malloc()'s size argument - an overflowed,
-			// too-small lineWidth here would still let the per-pixel unpack
-			// loop below (bounded by the untruncated `width`) read past the
-			// end of this smaller-than-expected lineBuffer allocation.
+			// size_t avoids a 32-bit overflow of 3 * width
 			const size_t lineWidth = (size_t)3 * (size_t)width;
 			lineBuffer = (float*)malloc(lineWidth * sizeof(float));
 			if(!lineBuffer) {
