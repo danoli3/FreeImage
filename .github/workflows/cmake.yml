@@ -65,3 +65,37 @@ jobs:
       - name: Test
         run: |
           ctest --test-dir build --build-config ${{ matrix.configuration }} --verbose
+
+  windows-mingw-w64:
+    # Dedicated job (rather than another `build` matrix entry) because it
+    # needs the msys2 shell and an explicitly installed, current mingw-w64
+    # GCC toolchain - closer to what a Windows 10 user following winlibs.com
+    # (see issue #48) actually builds with than whatever mingw happens to be
+    # preinstalled on the windows-latest runner for the `windows-mingw` entry
+    # above.
+    name: windows-mingw-w64 (MSYS2 GCC)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up MSYS2 mingw-w64 toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DUNICODE=ON -D_UNICODE=ON
+      - name: Build
+        run: |
+          cmake --build build
+      - name: Test
+        run: |
+          ctest --test-dir build --build-config Debug --verbose
