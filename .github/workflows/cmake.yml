@@ -99,3 +99,52 @@ jobs:
       - name: Test
         run: |
           ctest --test-dir build --build-config Debug --verbose
+
+  openframeworks-tests:
+    # Builds this FreeImage checkout and drops it into a real openFrameworks
+    # checkout in place of oF's own prebuilt copy, then runs oF's
+    # tests/graphics/imageFormats suite (save/load/pixel-verify round trip
+    # through ofImage for several formats) against it. Catches regressions
+    # that only show up when FreeImage is actually linked into a consuming
+    # application rather than exercised through FreeImage's own TestAPI.
+    name: openFrameworks image format tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout FreeImage
+        uses: actions/checkout@v4
+        with:
+          path: freeimage
+      - name: Checkout openFrameworks
+        uses: actions/checkout@v4
+        with:
+          repository: danoli3/openFrameworks
+          ref: master
+          path: openFrameworks
+          submodules: true
+      - name: Download openFrameworks prebuilt dependencies
+        run: openFrameworks/scripts/macos/download_libs.sh
+      - name: Build FreeImage against oF's own zlib/libpng
+        # oF's core already links its own zlib.a/libpng.a; bundling FreeImage's
+        # copies too would duplicate-symbol at final link time, so build
+        # against oF's copies instead, matching how oF's apothecary formula
+        # builds FreeImage for its own releases.
+        run: |
+          LIBPNG_DIR="$GITHUB_WORKSPACE/openFrameworks/libs/libpng"
+          ZLIB_DIR="$GITHUB_WORKSPACE/openFrameworks/libs/zlib"
+          cmake -S freeimage -B build-of \
+            -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+            -DBUILD_LIBPNG=OFF -DPNG_INCLUDE_DIR="$LIBPNG_DIR/include" -DPNG_LIBRARY="$LIBPNG_DIR/lib/macos/libpng.xcframework/macos-arm64_x86_64/libpng.a" \
+            -DBUILD_ZLIB=OFF -DZLIB_ROOT="$ZLIB_DIR" -DZLIB_INCLUDE_DIRS="$ZLIB_DIR/include" -DZLIB_LIBRARY="$ZLIB_DIR/lib/macos/zlib.xcframework/macos-arm64_x86_64/zlib.a"
+          cmake --build build-of -j"$(sysctl -n hw.ncpu)"
+      - name: Swap this FreeImage build into the openFrameworks checkout
+        run: |
+          OF_ARCH_DIR="$GITHUB_WORKSPACE/openFrameworks/libs/FreeImage/lib/macos/FreeImage.xcframework/macos-arm64_x86_64"
+          cp freeimage/Source/FreeImage.h openFrameworks/libs/FreeImage/include/FreeImage.h
+          cp freeimage/Source/FreeImage.h "$OF_ARCH_DIR/Headers/FreeImage.h"
+          cp build-of/libFreeImage.a "$OF_ARCH_DIR/FreeImage.a"
+      - name: Build and run the FreeImage image format test
+        working-directory: openFrameworks/tests/graphics/imageFormats
+        run: |
+          make -j"$(sysctl -n hw.ncpu)" Debug
+          make RunDebug
