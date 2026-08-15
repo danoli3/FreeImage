@@ -146,5 +146,9 @@ jobs:
       - name: Build and run the FreeImage image format test
         working-directory: openFrameworks/tests/graphics/imageFormats
         run: |
+          # Makefile/config.make are gitignored in oF's test dirs - the test
+          # harness is expected to supply them, same as oF's own run_tests.sh
+          cp ../../../scripts/templates/macos/Makefile .
+          cp ../../../scripts/templates/macos/config.make .
           make -j"$(sysctl -n hw.ncpu)" Debug
           make RunDebug
