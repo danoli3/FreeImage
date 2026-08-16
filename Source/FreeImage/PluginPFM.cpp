@@ -2,7 +2,7 @@
 // PFM Loader and Writer
 //
 // Design and implementation by
-// - Hervé Drolon (drolon@infonie.fr)
+// - HervÃ© Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
@@ -271,7 +271,8 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		// Read the image...
 
 		if(image_type == FIT_RGBF) {
-			const unsigned lineWidth = 3 * width;
+			// size_t avoids a 32-bit overflow of 3 * width
+			const size_t lineWidth = (size_t)3 * (size_t)width;
 			lineBuffer = (float*)malloc(lineWidth * sizeof(float));
 			if(!lineBuffer) {
 				throw FI_MSG_ERROR_MEMORY;
@@ -305,7 +306,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			lineBuffer = NULL;
 
 		} else if(image_type == FIT_FLOAT) {
-			const unsigned lineWidth = width;
+			const size_t lineWidth = (size_t)width;
 			lineBuffer = (float*)malloc(lineWidth * sizeof(float));
 			if(!lineBuffer) {
 				throw FI_MSG_ERROR_MEMORY;
