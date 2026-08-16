@@ -8,9 +8,47 @@ option(BUILD_TESTS "Build the test suite" OFF)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
 option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
+option(BUILD_LIBJPEG "Build libjpeg from source or link" ON)
+option(BUILD_LIBOPENJPEG "Build OpenJPEG from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
 option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
 option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
+
+# When ON, sets the default for every USE_SYSTEM_* option below to ON (each
+# can still be overridden individually). Mirrors what MSYS2's
+# mingw-w64-freeimage package does by unbundling all vendored sub-deps.
+option(FREEIMAGE_USE_SYSTEM_LIBS "Link against system copies of vendored sub-dependencies instead of bundling them" OFF)
+if(FREEIMAGE_USE_SYSTEM_LIBS)
+    set(FREEIMAGE_SYSTEM_DEFAULT ON)
+else()
+    set(FREEIMAGE_SYSTEM_DEFAULT OFF)
+endif()
+
+# Per-library toggles: only take effect when the matching BUILD_* option is
+# ON. They select whether that dependency is compiled from the bundled
+# Source/Lib* copy (OFF, default) or located on the system via
+# find_package()/pkg-config (ON).
+option(USE_SYSTEM_ZLIB "Link against system zlib instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_LIBPNG "Link against system libpng instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_LIBTIFF "Link against system libtiff instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_LIBJPEG "Link against system libjpeg instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_LIBOPENJPEG "Link against system openjpeg instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_WEBP "Link against system libwebp instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_LIBRAWLITE "Link against system libraw instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_OPENEXR "Link against system OpenEXR/Imath instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+option(USE_SYSTEM_JXR "Link against system jxrlib instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+
+# find_package(PNG)/find_package(ZLIB)'s actual include-dir hint variables
+# (PNG_PNG_INCLUDE_DIR, ZLIB_INCLUDE_DIR) don't match the names older
+# FreeImage.cmake consumers (e.g. openFrameworks' apothecary formula) pass
+# for the same purpose (PNG_INCLUDE_DIR, ZLIB_INCLUDE_DIRS) - map them over
+# so those older invocations keep working.
+if(DEFINED PNG_INCLUDE_DIR AND NOT DEFINED PNG_PNG_INCLUDE_DIR)
+    set(PNG_PNG_INCLUDE_DIR ${PNG_INCLUDE_DIR} CACHE PATH "Path to libpng include directory")
+endif()
+if(DEFINED ZLIB_INCLUDE_DIRS AND NOT DEFINED ZLIB_INCLUDE_DIR)
+    set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS} CACHE PATH "Path to zlib include directory")
+endif()
 
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building FreeImage as a shared library.")
@@ -32,31 +70,6 @@ if(BUILD_SHARED_LIBS)
 else()
     message(STATUS "Building FreeImage as a static library.")
     add_definitions(-DFREEIMAGE_LIB)
-endif()
-
-# Fetch and set external library paths
-if (DEFINED PNG_ROOT)
-    set(PNG_ROOT ${PNG_ROOT} CACHE PATH "Path to libpng root")
-endif()
-
-if (DEFINED PNG_INCLUDE_DIR)
-    set(FreeImage_LIBPNG_SRCS ${PNG_INCLUDE_DIR} CACHE PATH "Path to libpng include directory")
-endif()
-
-if (DEFINED PNG_LIBRARY)
-    set(PNG_LIBRARY ${PNG_LIBRARY} CACHE FILEPATH "Path to libpng library")
-endif()
-
-if (DEFINED ZLIB_ROOT)
-    set(ZLIB_ROOT ${ZLIB_ROOT} CACHE PATH "Path to zlib root")
-endif()
-
-if (DEFINED ZLIB_LIBRARY)
-    set(ZLIB_LIBRARY ${ZLIB_LIBRARY} CACHE FILEPATH "Path to zlib library")
-endif()
-
-if (DEFINED ZLIB_INCLUDE_DIRS)
-    set(FreeImage_ZLIB_SRCS ${ZLIB_INCLUDE_DIRS} CACHE PATH "Path to zlib include directories")
 endif()
 
 #set(NO_BUILD_OPTIONS LIBRAWLITE LIBTIFF)
@@ -117,64 +130,100 @@ set(FreeImage_SOURCES
     ./Source/FreeImageToolkit/CopyPaste.cpp ./Source/FreeImageToolkit/Display.cpp
     ./Source/FreeImageToolkit/Flip.cpp ./Source/FreeImageToolkit/JPEGTransform.cpp
     ./Source/FreeImageToolkit/MultigridPoissonSolver.cpp ./Source/FreeImageToolkit/Rescale.cpp
-    ./Source/FreeImageToolkit/Resize.cpp Source/LibJPEG/jaricom.c Source/LibJPEG/jcapimin.c
-    Source/LibJPEG/jcapistd.c Source/LibJPEG/jcarith.c Source/LibJPEG/jccoefct.c
-    Source/LibJPEG/jccolor.c Source/LibJPEG/jcdctmgr.c Source/LibJPEG/jchuff.c
-    Source/LibJPEG/jcinit.c Source/LibJPEG/jcmainct.c Source/LibJPEG/jcmarker.c
-    Source/LibJPEG/jcmaster.c Source/LibJPEG/jcomapi.c Source/LibJPEG/jcparam.c
-    Source/LibJPEG/jcprepct.c Source/LibJPEG/jcsample.c Source/LibJPEG/jctrans.c
-    Source/LibJPEG/jdapimin.c Source/LibJPEG/jdapistd.c Source/LibJPEG/jdarith.c
-    Source/LibJPEG/jdatadst.c Source/LibJPEG/jdatasrc.c Source/LibJPEG/jdcoefct.c
-    Source/LibJPEG/jdcolor.c Source/LibJPEG/jddctmgr.c Source/LibJPEG/jdhuff.c
-    Source/LibJPEG/jdinput.c Source/LibJPEG/jdmainct.c Source/LibJPEG/jdmarker.c
-    Source/LibJPEG/jdmaster.c Source/LibJPEG/jdmerge.c Source/LibJPEG/jdpostct.c
-    Source/LibJPEG/jdsample.c Source/LibJPEG/jdtrans.c Source/LibJPEG/jerror.c
-    Source/LibJPEG/jfdctflt.c Source/LibJPEG/jfdctfst.c Source/LibJPEG/jfdctint.c
-    Source/LibJPEG/jidctflt.c Source/LibJPEG/jidctfst.c Source/LibJPEG/jidctint.c
-    Source/LibJPEG/jmemmgr.c Source/LibJPEG/jmemnobs.c Source/LibJPEG/jquant1.c
-    Source/LibJPEG/jquant2.c Source/LibJPEG/jutils.c Source/LibJPEG/transupp.c
-    Source/LibOpenJPEG/bio.c Source/LibOpenJPEG/cio.c Source/LibOpenJPEG/dwt.c
-    Source/LibOpenJPEG/event.c Source/LibOpenJPEG/function_list.c Source/LibOpenJPEG/image.c
-    Source/LibOpenJPEG/invert.c Source/LibOpenJPEG/j2k.c Source/LibOpenJPEG/jp2.c
-    Source/LibOpenJPEG/mct.c Source/LibOpenJPEG/mqc.c Source/LibOpenJPEG/openjpeg.c
-    Source/LibOpenJPEG/opj_clock.c Source/LibOpenJPEG/pi.c Source/LibOpenJPEG/raw.c
-    Source/LibOpenJPEG/t1.c Source/LibOpenJPEG/t2.c Source/LibOpenJPEG/tcd.c
-    Source/LibOpenJPEG/tgt.c ./Source/CacheFile.h ./Source/FreeImage ./Source/FreeImage.h
-    ./Source/FreeImageIO.h ./Source/LibJPEG/cderror.h ./Source/LibJPEG/cdjpeg.h
-    ./Source/LibJPEG/jconfig.h ./Source/LibJPEG/jdct.h ./Source/LibJPEG/jerror.h
-    ./Source/LibJPEG/jinclude.h ./Source/LibJPEG/jpegint.h ./Source/LibJPEG/jpeglib.h
-    ./Source/LibJPEG/jmemsys.h ./Source/LibJPEG/jmorecfg.h ./Source/LibJPEG/transupp.h
-    ./Source/LibJPEG/jversion.h ./Source/LibOpenJPEG/bio.c ./Source/LibOpenJPEG/cio.c
-    ./Source/LibOpenJPEG/dwt.c ./Source/LibOpenJPEG/event.c ./Source/LibOpenJPEG/function_list.c
-    ./Source/LibOpenJPEG/image.c ./Source/LibOpenJPEG/invert.c ./Source/LibOpenJPEG/j2k.c
-    ./Source/LibOpenJPEG/jp2.c ./Source/LibOpenJPEG/mct.c ./Source/LibOpenJPEG/mqc.c
-    ./Source/LibOpenJPEG/openjpeg.c ./Source/LibOpenJPEG/opj_clock.c ./Source/LibOpenJPEG/pi.c
-    ./Source/LibOpenJPEG/raw.c ./Source/LibOpenJPEG/t1.c ./Source/LibOpenJPEG/t2.c
-    ./Source/LibOpenJPEG/tcd.c ./Source/LibOpenJPEG/tgt.c ./Source/MapIntrospector.h
+    ./Source/FreeImageToolkit/Resize.cpp
+    ./Source/CacheFile.h ./Source/FreeImage ./Source/FreeImage.h
+    ./Source/FreeImageIO.h ./Source/MapIntrospector.h
     ./Source/Metadata/FIRational.h ./Source/Metadata/FreeImageTag.h ./Source/Plugin.h
     ./Source/Quantizers.h ./Source/ToneMapping.h ./Source/Utilities.h ./TestAPI/TestSuite.h
 )
 
-if(BUILD_LIBPNG)
-    set(FreeImage_LIBPNG_SRCS
-        Source/LibPNG/png.c Source/LibPNG/pngerror.c Source/LibPNG/pngget.c
-        Source/LibPNG/pngmem.c Source/LibPNG/pngpread.c Source/LibPNG/pngread.c
-        Source/LibPNG/pngrio.c Source/LibPNG/pngrtran.c Source/LibPNG/pngrutil.c
-        Source/LibPNG/pngset.c Source/LibPNG/pngtrans.c Source/LibPNG/pngwio.c
-        Source/LibPNG/pngwrite.c Source/LibPNG/pngwtran.c Source/LibPNG/pngwutil.c
-        ./Source/LibPNG/png.h ./Source/LibPNG/pngconf.h ./Source/LibPNG/pngdebug.h
-        ./Source/LibPNG/pnginfo.h ./Source/LibPNG/pnglibconf.h ./Source/LibPNG/pngpriv.h
-        ./Source/LibPNG/pngstruct.h
-    )
-    list(APPEND FreeImage_SOURCES ${FreeImage_LIBPNG_SRCS})
-    include_directories(Source/LibPNG)
-elseif (DEFINED PNG_LIBRARY)
-    list(APPEND FreeImage_LIBS ${PNG_LIBRARY})
-    include_directories(${FreeImage_LIBPNG_SRCS})
+if(BUILD_LIBJPEG)
+    if(USE_SYSTEM_LIBJPEG)
+        find_package(JPEG REQUIRED)
+        list(APPEND FreeImage_LIBS JPEG::JPEG)
+        add_definitions(-DFREEIMAGE_SYSTEM_LIBJPEG)
+    else()
+        set(FreeImage_LIBJPEG_SRCS
+            Source/LibJPEG/jaricom.c Source/LibJPEG/jcapimin.c
+            Source/LibJPEG/jcapistd.c Source/LibJPEG/jcarith.c Source/LibJPEG/jccoefct.c
+            Source/LibJPEG/jccolor.c Source/LibJPEG/jcdctmgr.c Source/LibJPEG/jchuff.c
+            Source/LibJPEG/jcinit.c Source/LibJPEG/jcmainct.c Source/LibJPEG/jcmarker.c
+            Source/LibJPEG/jcmaster.c Source/LibJPEG/jcomapi.c Source/LibJPEG/jcparam.c
+            Source/LibJPEG/jcprepct.c Source/LibJPEG/jcsample.c Source/LibJPEG/jctrans.c
+            Source/LibJPEG/jdapimin.c Source/LibJPEG/jdapistd.c Source/LibJPEG/jdarith.c
+            Source/LibJPEG/jdatadst.c Source/LibJPEG/jdatasrc.c Source/LibJPEG/jdcoefct.c
+            Source/LibJPEG/jdcolor.c Source/LibJPEG/jddctmgr.c Source/LibJPEG/jdhuff.c
+            Source/LibJPEG/jdinput.c Source/LibJPEG/jdmainct.c Source/LibJPEG/jdmarker.c
+            Source/LibJPEG/jdmaster.c Source/LibJPEG/jdmerge.c Source/LibJPEG/jdpostct.c
+            Source/LibJPEG/jdsample.c Source/LibJPEG/jdtrans.c Source/LibJPEG/jerror.c
+            Source/LibJPEG/jfdctflt.c Source/LibJPEG/jfdctfst.c Source/LibJPEG/jfdctint.c
+            Source/LibJPEG/jidctflt.c Source/LibJPEG/jidctfst.c Source/LibJPEG/jidctint.c
+            Source/LibJPEG/jmemmgr.c Source/LibJPEG/jmemnobs.c Source/LibJPEG/jquant1.c
+            Source/LibJPEG/jquant2.c Source/LibJPEG/jutils.c Source/LibJPEG/transupp.c
+            ./Source/LibJPEG/cderror.h ./Source/LibJPEG/cdjpeg.h
+            ./Source/LibJPEG/jconfig.h ./Source/LibJPEG/jdct.h ./Source/LibJPEG/jerror.h
+            ./Source/LibJPEG/jinclude.h ./Source/LibJPEG/jpegint.h ./Source/LibJPEG/jpeglib.h
+            ./Source/LibJPEG/jmemsys.h ./Source/LibJPEG/jmorecfg.h ./Source/LibJPEG/transupp.h
+            ./Source/LibJPEG/jversion.h
+        )
+        list(APPEND FreeImage_SOURCES ${FreeImage_LIBJPEG_SRCS})
+        include_directories(Source/LibJPEG)
+    endif()
+endif()
+
+if(BUILD_LIBOPENJPEG)
+    if(USE_SYSTEM_LIBOPENJPEG)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(OPENJPEG REQUIRED IMPORTED_TARGET libopenjp2)
+        list(APPEND FreeImage_LIBS PkgConfig::OPENJPEG)
+        add_definitions(-DFREEIMAGE_SYSTEM_LIBOPENJPEG)
+    else()
+        set(FreeImage_LIBOPENJPEG_SRCS
+            Source/LibOpenJPEG/bio.c Source/LibOpenJPEG/cio.c Source/LibOpenJPEG/dwt.c
+            Source/LibOpenJPEG/event.c Source/LibOpenJPEG/function_list.c Source/LibOpenJPEG/image.c
+            Source/LibOpenJPEG/invert.c Source/LibOpenJPEG/j2k.c Source/LibOpenJPEG/jp2.c
+            Source/LibOpenJPEG/mct.c Source/LibOpenJPEG/mqc.c Source/LibOpenJPEG/openjpeg.c
+            Source/LibOpenJPEG/opj_clock.c Source/LibOpenJPEG/pi.c Source/LibOpenJPEG/raw.c
+            Source/LibOpenJPEG/t1.c Source/LibOpenJPEG/t2.c Source/LibOpenJPEG/tcd.c
+            Source/LibOpenJPEG/tgt.c
+        )
+        list(APPEND FreeImage_SOURCES ${FreeImage_LIBOPENJPEG_SRCS})
+        include_directories(Source/LibOpenJPEG)
+    endif()
+endif()
+
+    # DEFINED PNG_LIBRARY: back-compat with older FreeImage.cmake consumers
+    # (e.g. openFrameworks' apothecary formula) that used -DBUILD_LIBPNG=OFF
+    # itself (not just USE_SYSTEM_LIBPNG) to mean "link a system libpng"
+    # rather than "no PNG support at all".
+if(BUILD_LIBPNG OR DEFINED PNG_LIBRARY)
+    if(USE_SYSTEM_LIBPNG OR DEFINED PNG_LIBRARY)
+        find_package(PNG REQUIRED)
+        list(APPEND FreeImage_LIBS PNG::PNG)
+        add_definitions(-DFREEIMAGE_SYSTEM_LIBPNG)
+    else()
+        set(FreeImage_LIBPNG_SRCS
+            Source/LibPNG/png.c Source/LibPNG/pngerror.c Source/LibPNG/pngget.c
+            Source/LibPNG/pngmem.c Source/LibPNG/pngpread.c Source/LibPNG/pngread.c
+            Source/LibPNG/pngrio.c Source/LibPNG/pngrtran.c Source/LibPNG/pngrutil.c
+            Source/LibPNG/pngset.c Source/LibPNG/pngtrans.c Source/LibPNG/pngwio.c
+            Source/LibPNG/pngwrite.c Source/LibPNG/pngwtran.c Source/LibPNG/pngwutil.c
+            ./Source/LibPNG/png.h ./Source/LibPNG/pngconf.h ./Source/LibPNG/pngdebug.h
+            ./Source/LibPNG/pnginfo.h ./Source/LibPNG/pnglibconf.h ./Source/LibPNG/pngpriv.h
+            ./Source/LibPNG/pngstruct.h
+        )
+        list(APPEND FreeImage_SOURCES ${FreeImage_LIBPNG_SRCS})
+        include_directories(Source/LibPNG)
+    endif()
 endif()
 
 if(BUILD_LIBTIFF)
-    set(FreeImage_LIBTIFF_SRCS 
+    if(USE_SYSTEM_LIBTIFF)
+        find_package(TIFF REQUIRED)
+        list(APPEND FreeImage_LIBS TIFF::TIFF)
+        add_definitions(-DFREEIMAGE_SYSTEM_LIBTIFF)
+    else()
+    set(FreeImage_LIBTIFF_SRCS
         Source/LibTIFF4/tif_error.c Source/LibTIFF4/tif_aux.c
         Source/LibTIFF4/tif_close.c Source/LibTIFF4/tif_codec.c Source/LibTIFF4/tif_color.c
         Source/LibTIFF4/tif_compress.c Source/LibTIFF4/tif_config.h
@@ -201,10 +250,21 @@ if(BUILD_LIBTIFF)
         list(APPEND FreeImage_LIBTIFF_SRCS Source/LibTIFF4/tif_win32.c)
     endif()
     list(APPEND FreeImage_SOURCES ${FreeImage_LIBTIFF_SRCS})
+    include_directories(Source/LibTIFF4)
     add_definitions(-DINCLUDE_LIB_TIFF4)
+    endif()
 endif()
 
-if(BUILD_ZLIB)
+    # DEFINED ZLIB_LIBRARY: back-compat with older FreeImage.cmake consumers
+    # (e.g. openFrameworks' apothecary formula) that used -DBUILD_ZLIB=OFF
+    # itself (not just USE_SYSTEM_ZLIB) to mean "link a system zlib" rather
+    # than "no zlib support at all".
+if(BUILD_ZLIB OR DEFINED ZLIB_LIBRARY)
+    if(USE_SYSTEM_ZLIB OR DEFINED ZLIB_LIBRARY)
+        find_package(ZLIB REQUIRED)
+        list(APPEND FreeImage_LIBS ZLIB::ZLIB)
+        add_definitions(-DFREEIMAGE_SYSTEM_ZLIB)
+    else()
     set(FreeImage_ZLIB_SRCS
         Source/ZLib/adler32.c Source/ZLib/compress.c Source/ZLib/crc32.c Source/ZLib/deflate.c
         Source/ZLib/gzclose.c Source/ZLib/gzlib.c Source/ZLib/gzread.c Source/ZLib/gzwrite.c
@@ -213,7 +273,7 @@ if(BUILD_ZLIB)
         ./Source/ZLib/crc32.h ./Source/ZLib/deflate.h ./Source/ZLib/gzguts.h
         ./Source/ZLib/inffast.h ./Source/ZLib/inffixed.h ./Source/ZLib/inflate.h
         ./Source/ZLib/inftrees.h ./Source/ZLib/trees.h ./Source/ZLib/zconf.h
-        ./Source/ZLib/zlib.h ./Source/ZLib/zutil.h 
+        ./Source/ZLib/zlib.h ./Source/ZLib/zutil.h
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_ZLIB_SRCS})
     include_directories(Source/ZLib)
@@ -225,12 +285,17 @@ if(BUILD_ZLIB)
         # its sources directly rather than through that build system.
         add_definitions(-DHAVE_UNISTD_H)
     endif()
-elseif (DEFINED ZLIB_LIBRARY)
-    list(APPEND FreeImage_LIBS ${ZLIB_LIBRARY})
-    include_directories(${FreeImage_ZLIB_SRCS})
+    endif()
 endif()
 
 if(BUILD_JXR)
+    if(USE_SYSTEM_JXR)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(JXR REQUIRED IMPORTED_TARGET libjxr)
+        list(APPEND FreeImage_LIBS PkgConfig::JXR)
+        list(APPEND FreeImage_SOURCES ./Source/FreeImage/PluginJXR.cpp)
+        add_definitions(-DFREEIMAGE_SYSTEM_JXR -DINCLUDE_LIB_JXR)
+    else()
     set(FreeImage_JXR_SRCS
         ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c
         ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c
@@ -246,16 +311,35 @@ if(BUILD_JXR)
         ./Source/LibJXR/image/sys/strTransform.h ./Source/LibJXR/image/sys/windowsmediaphoto.h
         ./Source/LibJXR/image/sys/xplatform_image.h ./Source/LibJXR/image/x86/x86.h
         ./Source/LibJXR/jxrgluelib/JXRGlue.h ./Source/LibJXR/jxrgluelib/JXRMeta.h
-    )    
+    )
     list(APPEND FreeImage_SOURCES ${FreeImage_JXR_SRCS})
     include_directories(Source/LibJXR)
     include_directories(Source/LibJXR/image/sys)
     include_directories(Source/LibJXR/common/include)
     include_directories(Source/LibJXR/jxrgluelib)
     add_definitions(-DINCLUDE_LIB_JXR)
+    endif()
 endif()
 
 if(BUILD_WEBP)
+    if(USE_SYSTEM_WEBP)
+        find_package(WebP CONFIG QUIET)
+        if(NOT WebP_FOUND)
+            find_package(PkgConfig REQUIRED)
+            pkg_check_modules(WEBP REQUIRED IMPORTED_TARGET libwebp libwebpdemux libwebpmux)
+            list(APPEND FreeImage_LIBS PkgConfig::WEBP)
+        else()
+            # The mux target's name has varied across libwebp CMake config
+            # versions (WebP::webpmux vs. WebP::libwebpmux) - probe for both.
+            list(APPEND FreeImage_LIBS WebP::webp WebP::webpdemux)
+            if(TARGET WebP::webpmux)
+                list(APPEND FreeImage_LIBS WebP::webpmux)
+            elseif(TARGET WebP::libwebpmux)
+                list(APPEND FreeImage_LIBS WebP::libwebpmux)
+            endif()
+        endif()
+        add_definitions(-DFREEIMAGE_SYSTEM_WEBP -DINCLUDE_LIB_WEBP)
+    else()
     set(FreeImage_WEBP_SRCS
         Source/LibWebP/src/dec/alpha_dec.c Source/LibWebP/src/dec/buffer_dec.c
         Source/LibWebP/src/dec/frame_dec.c Source/LibWebP/src/dec/idec_dec.c
@@ -343,10 +427,21 @@ if(BUILD_WEBP)
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_WEBP_SRCS})
     include_directories(Source/LibWebP)
+    # LibWebP's own sources include each other as "src/dec/foo.h" (relative
+    # to Source/LibWebP above), but PluginWebP.cpp includes the public API
+    # as <webp/decode.h>, which needs Source/LibWebP/src on the path too.
+    include_directories(Source/LibWebP/src)
     add_definitions(-DINCLUDE_LIB_WEBP)
+    endif()
 endif()
 
 if(BUILD_LIBRAWLITE)
+    if(USE_SYSTEM_LIBRAWLITE)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(LIBRAW REQUIRED IMPORTED_TARGET libraw)
+        list(APPEND FreeImage_LIBS PkgConfig::LIBRAW)
+        add_definitions(-DFREEIMAGE_SYSTEM_LIBRAWLITE -DINCLUDE_LIB_RAW)
+    else()
     set(FreeImage_LIBRAWLITE_SRCS
         Source/LibRawLite/src/decoders/canon_600.cpp Source/LibRawLite/src/decoders/crx.cpp
         Source/LibRawLite/src/decoders/decoders_dcraw.cpp Source/LibRawLite/src/decoders/decoders_libraw.cpp
@@ -402,6 +497,7 @@ if(BUILD_LIBRAWLITE)
     include_directories(Source/LibRawLite/libraw)
     include_directories(Source/LibRawLite/src)
     add_definitions(-DINCLUDE_LIB_RAW)
+    endif()
 endif()
 
 set(FreeImage_OPENEXR_HALF_SRCS
@@ -410,9 +506,20 @@ set(FreeImage_OPENEXR_HALF_SRCS
     ./Source/OpenEXR/Half/halfFunction.h ./Source/OpenEXR/Half/halfLimits.h ./Source/OpenEXR/Half/toFloat.h
 )
 list(APPEND FreeImage_SOURCES ${FreeImage_OPENEXR_HALF_SRCS})
-include_directories(Source/OpenEXR/Half)
+# Not added to the global include path: half.cpp/eLut.cpp/toFloat.cpp include
+# their own headers with quotes (resolved relative to their own directory),
+# and PluginTIFF.cpp/PluginEXR.cpp's bundled-mode "../OpenEXR/Half/half.h"
+# include is likewise a quoted relative path. Keeping this off the global -I
+# search path avoids it winning over system Imath's <half.h> when
+# USE_SYSTEM_OPENEXR pulls in an unqualified <half.h> transitively.
 
 if(BUILD_OPENEXR)
+    if(USE_SYSTEM_OPENEXR)
+        find_package(Imath CONFIG REQUIRED)
+        find_package(OpenEXR CONFIG REQUIRED)
+        list(APPEND FreeImage_LIBS OpenEXR::OpenEXR Imath::Imath)
+        add_definitions(-DFREEIMAGE_SYSTEM_OPENEXR -DINCLUDE_LIB_OPENEXR)
+    else()
     set(FreeImage_OPENEXR_SRCS
         Source/OpenEXR/IexMath/IexMathFpu.cpp Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
         Source/OpenEXR/IlmImf/ImfAcesFile.cpp Source/OpenEXR/IlmImf/ImfAttribute.cpp
@@ -561,16 +668,15 @@ if(BUILD_OPENEXR)
     include_directories(Source/OpenEXR/IexMath)
     include_directories(Source/OpenEXR/Imath)
     add_definitions(-DINCLUDE_LIB_OPENEXR)
+    endif()
 endif()
 
-# Need include directories for FreeImage and all the sub libs
+# Need include directories for FreeImage itself. Per-sub-lib include dirs
+# (bundled Source/Lib* vs. system) are added above, inside each BUILD_*
+# block, so a system-lib build doesn't also see the bundled headers.
 include_directories(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
-include_directories(Source/LibJPEG)
-
-include_directories(Source/LibTIFF4)
-include_directories(Source/LibOpenJPEG)
 
 if(BUILD_SHARED_LIBS)
     add_library(${PROJECT_NAME} SHARED 

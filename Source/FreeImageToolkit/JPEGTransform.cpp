@@ -26,10 +26,19 @@ extern "C" {
 #undef FAR
 #include <setjmp.h>
 
+#ifdef FREEIMAGE_SYSTEM_LIBJPEG
+#include <stdio.h>
+#include <jpeglib.h>
+#include <jerror.h>
+// transupp.h isn't installed by system libjpeg/libjpeg-turbo packages; the
+// jtransform_*/jpeg_transform_info API it declares is only used in the
+// bundled-libjpeg branch below.
+#else
 #include "../LibJPEG/jinclude.h"
 #include "../LibJPEG/jpeglib.h"
 #include "../LibJPEG/jerror.h"
 #include "../LibJPEG/transupp.h"
+#endif
 }
 
 #include "FreeImage.h"
@@ -148,6 +157,17 @@ getCropString(char* crop, int* left, int* top, int* right, int* bottom, int widt
 	return TRUE;
 }
 
+#ifdef FREEIMAGE_SYSTEM_LIBJPEG
+// Lossless JPEG transforms need transupp.h's jtransform_* API, which isn't
+// installed by system libjpeg/libjpeg-turbo packages (it ships only as
+// jpegtran example source, not a public dev header) - report cleanly
+// unsupported rather than failing the build.
+static BOOL
+JPEGTransformFromHandle(FreeImageIO* src_io, fi_handle src_handle, FreeImageIO* dst_io, fi_handle dst_handle, FREE_IMAGE_JPEG_OPERATION operation, int* left, int* top, int* right, int* bottom, BOOL perfect) {
+	FreeImage_OutputMessageProc(FIF_JPEG, "Lossless JPEG transforms are unavailable in this build (built against system libjpeg)");
+	return FALSE;
+}
+#else
 static BOOL
 JPEGTransformFromHandle(FreeImageIO* src_io, fi_handle src_handle, FreeImageIO* dst_io, fi_handle dst_handle, FREE_IMAGE_JPEG_OPERATION operation, int* left, int* top, int* right, int* bottom, BOOL perfect) {
 	const BOOL onlyReturnCropRect = (dst_io == NULL) || (dst_handle == NULL);
@@ -361,6 +381,7 @@ JPEGTransformFromHandle(FreeImageIO* src_io, fi_handle src_handle, FreeImageIO* 
 
 	return TRUE;
 }
+#endif // FREEIMAGE_SYSTEM_LIBJPEG
 
 // ----------------------------------------------------------
 //   FreeImage interface

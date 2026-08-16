@@ -2,7 +2,7 @@
 // EXR Loader and writer
 //
 // Design and implementation by 
-// - Hervé Drolon (drolon@infonie.fr)
+// - Hervï¿½ Drolon (drolon@infonie.fr)
 // - Mihail Naydenov (mnaydenov@users.sourceforge.net)
 //
 // This file is part of FreeImage 3
@@ -30,6 +30,22 @@
 #pragma warning (disable : 4800) // ImfVersion.h - 'const int' : forcing value to bool 'true' or 'false' (performance warning)
 #endif 
 
+#ifdef FREEIMAGE_SYSTEM_OPENEXR
+// The bundled Source/OpenEXR/Half type isn't binary-compatible with a system
+// OpenEXR build's own Imath::half (which its Imf* API surface is built
+// against), so this file - unlike PluginTIFF.cpp's standalone LogLuv use of
+// half.h - must switch to the matching system Imath header too.
+#include <OpenEXR/ImfIO.h>
+#include <OpenEXR/Iex.h>
+#include <OpenEXR/ImfOutputFile.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfRgbaFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfRgba.h>
+#include <OpenEXR/ImfArray.h>
+#include <OpenEXR/ImfPreviewImage.h>
+#include <Imath/half.h>
+#else
 #include "../OpenEXR/IlmImf/ImfIO.h"
 #include "../OpenEXR/Iex/Iex.h"
 #include "../OpenEXR/IlmImf/ImfOutputFile.h"
@@ -40,6 +56,7 @@
 #include "../OpenEXR/IlmImf/ImfArray.h"
 #include "../OpenEXR/IlmImf/ImfPreviewImage.h"
 #include "../OpenEXR/Half/half.h"
+#endif
 
 
 // ==========================================================
@@ -47,6 +64,16 @@
 // ==========================================================
 
 static int s_format_id;
+
+// IStream/OStream's tellg/seekg/tellp/seekp use Imath::Int64 in the bundled
+// (OpenEXR 2.x-era) headers, but that type was removed from Imath 3.x in
+// favor of plain uint64_t, which is what a system OpenEXR 3.x's ImfIO.h
+// virtuals now use.
+#ifdef FREEIMAGE_SYSTEM_OPENEXR
+typedef uint64_t exr_offset_t;
+#else
+typedef Imath::Int64 exr_offset_t;
+#endif
 
 // ----------------------------------------------------------
 
@@ -68,11 +95,11 @@ public:
 		return ((unsigned)n != _io->read_proc(c, 1, n, _handle));
 	}
 
-	virtual Imath::Int64 tellg() {
+	virtual exr_offset_t tellg() {
 		return _io->tell_proc(_handle);
 	}
 
-	virtual void seekg(Imath::Int64 pos) {
+	virtual void seekg(exr_offset_t pos) {
 		_io->seek_proc(_handle, (unsigned)pos, SEEK_SET);
 	}
 
@@ -102,11 +129,11 @@ public:
 		}
 	}
 
-	virtual Imath::Int64 tellp() {
+	virtual exr_offset_t tellp() {
 		return _io->tell_proc(_handle);
 	}
 
-	virtual void seekp(Imath::Int64 pos) {
+	virtual void seekp(exr_offset_t pos) {
 		_io->seek_proc(_handle, (unsigned)pos, SEEK_SET);
 	}
 };
