@@ -218,6 +218,13 @@ if(BUILD_ZLIB)
     list(APPEND FreeImage_SOURCES ${FreeImage_ZLIB_SRCS})
     include_directories(Source/ZLib)
     add_definitions(-DINCLUDE_LIB_ZLIB)
+    if(NOT WIN32)
+        # zlib >= 1.3 needs HAVE_UNISTD_H defined (normally set by zlib's own
+        # configure/CMake auto-detection) for gzread.c/gzwrite.c to see
+        # read()/write()/close() via zconf.h's Z_HAVE_UNISTD_H gate; we build
+        # its sources directly rather than through that build system.
+        add_definitions(-DHAVE_UNISTD_H)
+    endif()
 elseif (DEFINED ZLIB_LIBRARY)
     list(APPEND FreeImage_LIBS ${ZLIB_LIBRARY})
     include_directories(${FreeImage_ZLIB_SRCS})
