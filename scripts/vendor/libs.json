@@ -1,0 +1,74 @@
+{
+  "webp": {
+    "vendor_dir": "Source/LibWebP",
+    "source_subdirs": ["src", "sharpyuv"],
+    "root_files": ["AUTHORS", "COPYING", "ChangeLog", "NEWS", "PATENTS", "README.md"],
+    "cmake_var": "FreeImage_WEBP_SRCS",
+    "url_template": "https://github.com/webmproject/libwebp/archive/refs/tags/v{version}.tar.gz",
+    "notes": "sharpyuv/ was split out of src/enc in 1.3.x and is now a hard dependency of the encoder - already handled here, but flag any *new* top-level dirs a future release adds."
+  },
+  "zlib": {
+    "vendor_dir": "Source/ZLib",
+    "source_subdirs": ["."],
+    "root_files": [],
+    "cmake_var": "FreeImage_ZLIB_SRCS",
+    "url_template": "https://github.com/madler/zlib/archive/refs/tags/v{version}.tar.gz",
+    "notes": "Flat layout - merge-copy so ZLib.2017.vcxproj* (FreeImage's own, not upstream) survive. zlib >= 1.3 needs -DHAVE_UNISTD_H on non-Windows (see CMakeLists.txt comment) - re-check this is still needed/correct after bumping."
+  },
+  "libpng": {
+    "vendor_dir": "Source/LibPNG",
+    "source_subdirs": ["."],
+    "root_files": [],
+    "cmake_var": "FreeImage_LIBPNG_SRCS",
+    "url_template": "https://github.com/pnggroup/libpng/archive/refs/tags/v{version}.tar.gz",
+    "notes": "Flat layout - merge-copy so LibPNG.2017.vcxproj* survive. pnglibconf.h is a generated/checked-in config header, not part of the upstream tarball - diff it against pnglibconf.h.prebuilt after bumping in case new PNG_*_SUPPORTED toggles were added."
+  },
+  "libtiff": {
+    "vendor_dir": "Source/LibTIFF4",
+    "source_subdirs": ["."],
+    "root_files": [],
+    "cmake_var": "FreeImage_LIBTIFF_SRCS",
+    "url_template": "https://gitlab.com/libtiff/libtiff/-/archive/v{version}/libtiff-v{version}.tar.gz",
+    "notes": "Flat layout - merge-copy so LibTIFF4.2017.vcxproj* survive. Official repo moved to GitLab; tif_config.h/tiffconf.h are checked-in generated headers, not part of upstream - review after bumping."
+  },
+  "libjpeg": {
+    "vendor_dir": "Source/LibJPEG",
+    "source_subdirs": ["."],
+    "root_files": [],
+    "cmake_var": "FreeImage_LIBJPEG_SRCS",
+    "url_template": "https://www.ijg.org/files/jpegsrc.v{version}.tar.gz",
+    "notes": "This is IJG's original libjpeg (jversion.h says e.g. '9d'), NOT libjpeg-turbo - pass --version as IJG's own scheme (e.g. '9f', '10'), not a semver. Flat layout - merge-copy so LibJPEG.2017.vcxproj* and jconfig.h (checked-in, not upstream) survive."
+  },
+  "libopenjpeg": {
+    "vendor_dir": "Source/LibOpenJPEG",
+    "source_subdirs": ["."],
+    "root_files": [],
+    "cmake_var": "FreeImage_LIBOPENJPEG_SRCS",
+    "url_template": "https://github.com/uclouvain/openjpeg/archive/refs/tags/v{version}.tar.gz",
+    "notes": "Flat layout - merge-copy so LibOpenJPEG.2017.vcxproj* and opj_config*.h (checked-in generated headers, not upstream) survive. Bundled is 2.0.0; upstream has restructured some internal APIs since - check PluginJ2K.cpp/PluginJP2.cpp/J2KHelper.cpp compile cleanly, this is a large multi-version jump."
+  },
+  "libraw": {
+    "vendor_dir": "Source/LibRawLite",
+    "source_subdirs": ["internal", "libraw", "src"],
+    "root_files": [],
+    "cmake_var": "FreeImage_LIBRAWLITE_SRCS",
+    "url_template": "https://github.com/LibRaw/LibRaw/archive/refs/tags/{version}.tar.gz",
+    "notes": "No 'v' prefix on LibRaw's git tags (e.g. '0.22.1', not 'v0.22.1')."
+  },
+  "openexr": {
+    "vendor_dir": "Source/OpenEXR",
+    "source_subdirs": [],
+    "root_files": [],
+    "cmake_var": null,
+    "url_template": "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v{version}.tar.gz",
+    "notes": "DO NOT use this script for OpenEXR - bundled is 2.2.0 (2017), and OpenEXR 3.x restructured the whole tree (Imath split into its own separate repo/library, IlmImf/IlmThread reorganized into OpenEXRCore, CMake-only build). This needs a manual, from-scratch integration, not a subdir replace. Flagged as high priority: the 3.4.14 release notes cite 15 CVE fixes over 2.2.0."
+  },
+  "jxrlib": {
+    "vendor_dir": "Source/LibJXR",
+    "source_subdirs": [],
+    "root_files": [],
+    "cmake_var": null,
+    "url_template": null,
+    "notes": "Microsoft's original jxrlib is dead/unmaintained (last real upstream activity ~2017); there is no canonical current release to bump to. Only community forks exist (e.g. github.com/cgohlke/jxrlib). Low priority - JPEG XR is a rarely-used format and switching source entirely would need its own evaluation, not a version bump."
+  }
+}

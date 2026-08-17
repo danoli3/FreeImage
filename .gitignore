@@ -13,6 +13,8 @@
 *.la
 *.a
 *.d
+__pycache__/
+*.pyc
 
 # Make #
 ########
