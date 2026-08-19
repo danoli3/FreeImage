@@ -801,4 +801,52 @@ InitEXR(Plugin *plugin, int format_id) {
 	plugin->supports_no_pixels_proc = SupportsNoPixels;
 }
 
-#endif
+#else // !INCLUDE_LIB_OPENEXR
+
+#include "FreeImage.h"
+
+// This build was compiled without OpenEXR support (BUILD_OPENEXR=OFF).
+// Still register the EXR format so its slot in the FREE_IMAGE_FORMAT
+// enum stays occupied - otherwise every plugin registered after it
+// would silently shift down one runtime index while FreeImage.h's
+// compile-time FIF_* constants stay fixed, breaking whichever plugin
+// happens to land on the now-mismatched index (see issue #38). All
+// procs other than format/description/extension are left NULL, which
+// the rest of Plugin.cpp already treats as "unsupported" everywhere.
+
+static const char * DLL_CALLCONV
+Format() {
+	return "EXR";
+}
+
+static const char * DLL_CALLCONV
+Description() {
+	return "ILM OpenEXR (not compiled in this build)";
+}
+
+static const char * DLL_CALLCONV
+Extension() {
+	return "exr";
+}
+
+void DLL_CALLCONV
+InitEXR(Plugin *plugin, int format_id) {
+	plugin->format_proc = Format;
+	plugin->description_proc = Description;
+	plugin->extension_proc = Extension;
+	plugin->regexpr_proc = NULL;
+	plugin->open_proc = NULL;
+	plugin->close_proc = NULL;
+	plugin->pagecount_proc = NULL;
+	plugin->pagecapability_proc = NULL;
+	plugin->load_proc = NULL;
+	plugin->save_proc = NULL;
+	plugin->validate_proc = NULL;
+	plugin->mime_proc = NULL;
+	plugin->supports_export_bpp_proc = NULL;
+	plugin->supports_export_type_proc = NULL;
+	plugin->supports_icc_profiles_proc = NULL;
+	plugin->supports_no_pixels_proc = NULL;
+}
+
+#endif // INCLUDE_LIB_OPENEXR
