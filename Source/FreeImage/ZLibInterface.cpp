@@ -53,14 +53,14 @@ FreeImage_ZLibCompress(BYTE *target, DWORD target_size, BYTE *source, DWORD sour
 			FreeImage_OutputMessageProc(FIF_UNKNOWN, "Zlib error : %s", zError(zerr));
 			return 0;
 		case Z_OK:
-			return dest_len;
+			return (DWORD)dest_len;
 	}
 
 	return 0;
 }
 
 /**
-Decompresses a source buffer into a target buffer, using the ZLib library. 
+Decompresses a source buffer into a target buffer, using the ZLib library.
 Upon entry, target_size is the total size of the destination buffer, 
 which must be large enough to hold the entire uncompressed data. 
 The size of the uncompressed data must have been saved previously by the compressor 
@@ -86,14 +86,14 @@ FreeImage_ZLibUncompress(BYTE *target, DWORD target_size, BYTE *source, DWORD so
 			FreeImage_OutputMessageProc(FIF_UNKNOWN, "Zlib error : %s", zError(zerr));
 			return 0;
 		case Z_OK:
-			return dest_len;
+			return (DWORD)dest_len;
 	}
 
 	return 0;
 }
 
 /**
-Compresses a source buffer into a target buffer, using the ZLib library. 
+Compresses a source buffer into a target buffer, using the ZLib library.
 On success, the target buffer contains a GZIP compatible layout.
 Upon entry, target_size is the total size of the destination buffer, 
 which must be at least 0.1% larger than source_size plus 24 bytes. 
@@ -108,7 +108,7 @@ which must be at least 0.1% larger than source_size plus 24 bytes.
 DWORD DLL_CALLCONV 
 FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size) {
 	uLongf dest_len = (uLongf)target_size - 12;
-	DWORD crc = crc32(0L, NULL, 0);
+	DWORD crc = (DWORD)crc32(0L, NULL, 0);
 
     // set up header (stolen from zlib/gzio.c)
     sprintf((char *)target, "%c%c%c%c%c%c%c%c", 0x1f, 0x8b,
@@ -127,10 +127,10 @@ FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_s
             const BYTE gzip_os_code = OS_CODE;
 #endif
             BYTE *p = target + 8; *p++ = 2; *p = gzip_os_code; // xflags, os_code
- 	        crc = crc32(crc, source, source_size);
+ 	        crc = (DWORD)crc32(crc, source, source_size);
 	        memcpy(target + 4 + dest_len, &crc, 4);
 	        memcpy(target + 8 + dest_len, &source_size, 4);
-            return dest_len + 12;
+            return (DWORD)(dest_len + 12);
         }
 	}
 	return 0;
@@ -230,5 +230,5 @@ If source is NULL, this function returns the required initial value for the crc.
 DWORD DLL_CALLCONV 
 FreeImage_ZLibCRC32(DWORD crc, BYTE *source, DWORD source_size) {
 
-    return crc32(crc, source, source_size);
+    return (DWORD)crc32(crc, source, source_size);
 }

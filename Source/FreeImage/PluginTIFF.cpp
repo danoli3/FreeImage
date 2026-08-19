@@ -636,6 +636,8 @@ WriteImageType(TIFF *tiff, FREE_IMAGE_TYPE fit) {
 		case FIT_COMPLEX:	// array of COMPLEX : 2 x 64-bit
 			TIFFSetField(tiff, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_COMPLEXIEEEFP);
 			break;
+		default:
+			break;
 	}
 }
 
@@ -1182,7 +1184,7 @@ IsValidBitsPerSample(uint16_t photometric, uint16_t bitspersample, uint16_t samp
 		case 32:
 			if((photometric == PHOTOMETRIC_MINISWHITE) || (photometric == PHOTOMETRIC_MINISBLACK) || (photometric == PHOTOMETRIC_LOGLUV)) {
 				return TRUE;
-			} else if((photometric == PHOTOMETRIC_RGB) && (samplesperpixel == 3) || (samplesperpixel == 4)) {
+			} else if((photometric == PHOTOMETRIC_RGB) && ((samplesperpixel == 3) || (samplesperpixel == 4))) {
 				// RGB[A]F
 				return TRUE;
 			} else {

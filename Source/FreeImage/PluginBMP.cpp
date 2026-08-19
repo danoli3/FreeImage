@@ -1224,18 +1224,18 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		switch(type) {
 			case 12:
 				// OS/2 and also all Windows versions since Windows 3.0
-				return LoadOS21XBMP(io, handle, flags, offset_in_file + bitmapfileheader.bfOffBits);
+				return LoadOS21XBMP(io, handle, flags, (unsigned)(offset_in_file + bitmapfileheader.bfOffBits));
 
 			case 64:
 				// OS/2
-				return LoadOS22XBMP(io, handle, flags, offset_in_file + bitmapfileheader.bfOffBits);
+				return LoadOS22XBMP(io, handle, flags, (unsigned)(offset_in_file + bitmapfileheader.bfOffBits));
 
 			case 40:	// BITMAPINFOHEADER - all Windows versions since Windows 3.0
 			case 52:	// BITMAPV2INFOHEADER (undocumented, partially supported)
 			case 56:	// BITMAPV3INFOHEADER (undocumented, partially supported)
 			case 108:	// BITMAPV4HEADER - all Windows versions since Windows 95/NT4 (partially supported)
 			case 124:	// BITMAPV5HEADER - Windows 98/2000 and newer (partially supported)
-				return LoadWindowsBMP(io, handle, flags, offset_in_file + bitmapfileheader.bfOffBits, type);
+				return LoadWindowsBMP(io, handle, flags, (unsigned)(offset_in_file + bitmapfileheader.bfOffBits), type);
 
 			default:
 				break;

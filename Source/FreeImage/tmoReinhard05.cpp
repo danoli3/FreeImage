@@ -81,7 +81,7 @@ ToneMappingReinhard05(FIBITMAP *dib, FIBITMAP *Y, float f, float m, float a, flo
 	// get statistics about the data (but only if its really needed)
 
 	f = exp(-f);
-	if((m == 0) || (a != 1) && (c != 1)) {
+	if((m == 0) || ((a != 1) && (c != 1))) {
 		// avoid these calculations if its not needed after ...
 		LuminanceFromY(Y, &maxLum, &minLum, &Lav, &Llav);
 		k = (log(maxLum) - Llav) / (log(maxLum) - log(minLum));

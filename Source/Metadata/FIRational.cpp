@@ -63,6 +63,8 @@ FIRational::FIRational(const FITAG *tag) {
 			initialize((LONG)pvalue[0], (LONG)pvalue[1]);
 			break;
 		}
+		default:
+			break;
 	}
 }
 

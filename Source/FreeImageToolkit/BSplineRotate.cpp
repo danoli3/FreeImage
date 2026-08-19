@@ -573,7 +573,7 @@ Rotate8Bit(FIBITMAP *dib, double angle, double x_shift, double y_shift, double x
 	// copy data samples
 	for(y = 0; y < height; y++) {
 		double *pImage = &ImageRasterArray[y*width];
-		BYTE *src_bits = FreeImage_GetScanLine(dib, height-1-y);
+		BYTE *src_bits = FreeImage_GetScanLine(dib, (int)(height-1-y));
 
 		for(x = 0; x < width; x++) {
 			pImage[x] = (double)src_bits[x];
@@ -602,7 +602,7 @@ Rotate8Bit(FIBITMAP *dib, double angle, double x_shift, double y_shift, double x
 
 	// visit all pixels of the output image and assign their value
 	for(y = 0; y < height; y++) {
-		BYTE *dst_bits = FreeImage_GetScanLine(dst, height-1-y);
+		BYTE *dst_bits = FreeImage_GetScanLine(dst, (int)(height-1-y));
 		
 		x0 = a12 * (double)y + x_shift;
 		y0 = a22 * (double)y + y_shift;
