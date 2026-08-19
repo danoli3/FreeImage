@@ -31,6 +31,41 @@ cmake . -B cmake-build
 cmake --build cmake-build # On Linux, add -j$(nproc) for multicore build
 ```
 
+### Platform-specific examples
+
+**Linux (gcc) / macOS (clang)**
+```bash
+cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build -- -j$(nproc)   # macOS: -j$(sysctl -n hw.ncpu)
+```
+
+**Windows (MSVC, Visual Studio toolchain)**
+```bash
+cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=17
+cmake --build build --config Debug
+```
+See [Generate Visual Studio project files](#generate-visual-studio-project-files) below for opening the solution directly in the IDE.
+
+**Windows (MinGW, e.g. a toolchain already on `PATH`)**
+```bash
+cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"
+cmake --build build
+```
+
+**Windows (MinGW-w64 via [MSYS2](https://www.msys2.org/), see [#30](https://github.com/danoli3/FreeImage/issues/30))**
+
+From an MSYS2 `MINGW64` shell:
+```bash
+pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+**Plain `make` (Linux, no CMake)**
+```bash
+make -j$(nproc)
+```
+
 ### Build and install Debug and Release configuration
 
 ```bash
