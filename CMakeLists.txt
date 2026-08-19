@@ -990,8 +990,8 @@ if (APPLE)
     endif()
 endif()
 
-# Enable Multi-core compilation in MSVC
-if (MSVC)
+# Enable Multi-core compilation in MSVC (not supported by clang-cl)
+if (MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 endif()
 if (WIN32)

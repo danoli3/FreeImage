@@ -100,6 +100,25 @@ jobs:
         run: |
           ctest --test-dir build --build-config Debug --verbose
 
+  windows-clang-cl:
+    # Issue #29: build with Clang on Windows via clang-cl, the MSVC-ABI-compatible
+    # driver windows-latest ships preinstalled as a VS toolset. Same generator as
+    # the windows-msvc entry above, just switching the toolset with -T ClangCL.
+    name: windows-clang-cl
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure
+        run: |
+          cmake -S . -B build -T ClangCL -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=17 -DUNICODE=ON -D_UNICODE=ON
+      - name: Build
+        run: |
+          cmake --build build --config Debug
+      - name: Test
+        run: |
+          ctest --test-dir build --build-config Debug --verbose
+
   openframeworks-tests:
     # Builds this FreeImage checkout and drops it into a real openFrameworks
     # checkout in place of oF's own prebuilt copy, then runs oF's
