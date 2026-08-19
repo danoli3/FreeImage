@@ -214,6 +214,13 @@ if(BUILD_LIBPNG OR DEFINED PNG_LIBRARY)
         )
         list(APPEND FreeImage_SOURCES ${FreeImage_LIBPNG_SRCS})
         include_directories(Source/LibPNG)
+        # pngpriv.h auto-enables ARM NEON codepaths (pngrtran.c/pngrutil.c)
+        # whenever the compiler defines __ARM_NEON, referencing functions
+        # from arm/*.c - which isn't part of this bundled, non-SIMD source
+        # set, so force it off. The other arch accel paths (MIPS/PowerPC/
+        # LoongArch) only auto-enable on those targets, which this project
+        # doesn't build for, so they're not an issue here.
+        add_definitions(-DPNG_ARM_NEON_OPT=0)
     endif()
 endif()
 

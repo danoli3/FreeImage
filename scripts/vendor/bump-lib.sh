@@ -77,27 +77,58 @@ COUNT=$(echo "$EXTRACTED_ROOT" | wc -l | tr -d ' ')
 [ "$COUNT" = "1" ] || { echo "Expected exactly one top-level dir in the tarball, found $COUNT" >&2; exit 1; }
 
 VENDOR_PATH="$REPO_ROOT/$VENDOR_DIR"
+CMAKE_FILE="$REPO_ROOT/CMakeLists.txt"
 
 echo "Merging source subdirs into $VENDOR_DIR"
-# Merge-copy (overwrite matching names, keep anything local-only like
-# FreeImage's own .vcxproj files) rather than deleting first, so files
-# that only exist in this repo (not upstream) are never removed. Files
-# upstream has since removed will linger locally - check `git status`
-# after running and `git rm` anything that's genuinely gone upstream.
 for sub in $SOURCE_SUBDIRS; do
 	if [ "$sub" = "." ]; then
+		# "." means this library's original layout is flat (no subdirs),
+		# and - as libpng's release tree showed - a flat upstream root
+		# usually mixes real library sources with CLI tools, tests, and
+		# demo programs (each with their own main()) that must NOT be
+		# compiled in, plus newer releases tend to add contrib/, ci/,
+		# arch-specific SIMD dirs, etc. There's no reliable way to tell
+		# "real source" from "tool/test/example" by filename alone, so
+		# instead of discovering files from disk, only UPDATE files whose
+		# basename is already listed in this library's existing
+		# CMakeLists.txt entry (CMAKE_VAR) - never add or remove files.
+		# If upstream genuinely added/removed a required source file,
+		# that's rare enough to warrant a human updating CMakeLists.txt
+		# by hand rather than trusting a glob to guess correctly.
 		SRC="$EXTRACTED_ROOT"
 		DST="$VENDOR_PATH"
+		mkdir -p "$DST"
+		if [ -z "${CMAKE_VAR:-}" ]; then
+			echo "'.' (flat) layout requires CMAKE_VAR to be set so the known file list can be read - see scripts/vendor/libs/$LIB.sh" >&2
+			exit 1
+		fi
+		KNOWN_FILES=$("$SCRIPT_DIR/list-cmake-basenames.sh" "$CMAKE_FILE" "$CMAKE_VAR")
+		for name in $KNOWN_FILES; do
+			if [ -f "$SRC/$name" ]; then
+				cp "$SRC/$name" "$DST/$name"
+			else
+				echo "  warning: '$name' is in $CMAKE_VAR but upstream no longer ships it at the root - check manually" >&2
+			fi
+		done
+		NEW_FILES=$(find "$SRC" -maxdepth 1 -type f \( -name "*.c" -o -name "*.h" \) -exec basename {} \; | sort)
+		UNKNOWN=$(comm -23 <(echo "$NEW_FILES") <(echo "$KNOWN_FILES" | tr ' ' '\n' | sort))
+		if [ -n "$UNKNOWN" ]; then
+			echo "  note: upstream root also has these .c/.h files, not currently compiled - review and add to CMakeLists.txt by hand if needed:"
+			echo "$UNKNOWN" | sed 's/^/    /'
+		fi
 	else
+		# Named subdir - trusted to be the library's real source tree
+		# (e.g. webp's src/, libraw's internal/libraw/src), safe to merge
+		# and recompute the compiled file list in full.
 		SRC="$EXTRACTED_ROOT/$sub"
 		DST="$VENDOR_PATH/$sub"
+		if [ ! -d "$SRC" ]; then
+			echo "Expected subdir '$sub' not found in upstream release - library layout may have changed, check manually." >&2
+			exit 1
+		fi
+		mkdir -p "$DST"
+		cp -R "$SRC/." "$DST/"
 	fi
-	if [ ! -d "$SRC" ]; then
-		echo "Expected subdir '$sub' not found in upstream release - library layout may have changed, check manually." >&2
-		exit 1
-	fi
-	mkdir -p "$DST"
-	cp -R "$SRC/." "$DST/"
 	echo "  merged into ${DST#"$REPO_ROOT"/}"
 done
 
@@ -113,9 +144,12 @@ if [ -n "${ROOT_FILES:-}" ]; then
 	done
 fi
 
-if [ -n "${CMAKE_VAR:-}" ]; then
+# Only regenerate the CMakeLists.txt file list for named-subdir libraries
+# (full source tree, safe to recompute). Flat "." libraries keep whatever
+# was already there - see the note above.
+if [ -n "${CMAKE_VAR:-}" ] && [ "$SOURCE_SUBDIRS" != "." ]; then
 	echo "Regenerating $CMAKE_VAR in CMakeLists.txt"
-	"$SCRIPT_DIR/regen-cmake-list.sh" "$REPO_ROOT/CMakeLists.txt" "$CMAKE_VAR" "$VENDOR_PATH" "$SOURCE_SUBDIRS"
+	"$SCRIPT_DIR/regen-cmake-list.sh" "$CMAKE_FILE" "$CMAKE_VAR" "$VENDOR_PATH" "$SOURCE_SUBDIRS"
 fi
 
 echo
