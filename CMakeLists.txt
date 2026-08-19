@@ -181,12 +181,13 @@ if(BUILD_LIBOPENJPEG)
     else()
         set(FreeImage_LIBOPENJPEG_SRCS
             Source/LibOpenJPEG/bio.c Source/LibOpenJPEG/cio.c Source/LibOpenJPEG/dwt.c
-            Source/LibOpenJPEG/event.c Source/LibOpenJPEG/function_list.c Source/LibOpenJPEG/image.c
-            Source/LibOpenJPEG/invert.c Source/LibOpenJPEG/j2k.c Source/LibOpenJPEG/jp2.c
-            Source/LibOpenJPEG/mct.c Source/LibOpenJPEG/mqc.c Source/LibOpenJPEG/openjpeg.c
-            Source/LibOpenJPEG/opj_clock.c Source/LibOpenJPEG/pi.c Source/LibOpenJPEG/raw.c
-            Source/LibOpenJPEG/t1.c Source/LibOpenJPEG/t2.c Source/LibOpenJPEG/tcd.c
-            Source/LibOpenJPEG/tgt.c
+            Source/LibOpenJPEG/event.c Source/LibOpenJPEG/function_list.c Source/LibOpenJPEG/ht_dec.c
+            Source/LibOpenJPEG/image.c Source/LibOpenJPEG/invert.c Source/LibOpenJPEG/j2k.c
+            Source/LibOpenJPEG/jp2.c Source/LibOpenJPEG/mct.c Source/LibOpenJPEG/mqc.c
+            Source/LibOpenJPEG/openjpeg.c Source/LibOpenJPEG/opj_clock.c Source/LibOpenJPEG/opj_malloc.c
+            Source/LibOpenJPEG/pi.c Source/LibOpenJPEG/sparse_array.c Source/LibOpenJPEG/t1.c
+            Source/LibOpenJPEG/t2.c Source/LibOpenJPEG/tcd.c Source/LibOpenJPEG/tgt.c
+            Source/LibOpenJPEG/thread.c
         )
         list(APPEND FreeImage_SOURCES ${FreeImage_LIBOPENJPEG_SRCS})
         include_directories(Source/LibOpenJPEG)
