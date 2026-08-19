@@ -119,6 +119,31 @@ jobs:
         run: |
           ctest --test-dir build --build-config Debug --verbose
 
+  windows-clang-cl-ninja:
+    # Issue #29 also asks for clang-cl driven directly via Ninja (not just
+    # the VS-generator toolset switch above), which needs the MSVC dev
+    # environment (INCLUDE/LIB/PATH) set up explicitly since Ninja has no
+    # equivalent of the VS generator's own toolset detection.
+    name: windows-clang-cl (Ninja)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=17 -DUNICODE=ON -D_UNICODE=ON -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+      - name: Build
+        run: |
+          cmake --build build
+      - name: Test
+        run: |
+          ctest --test-dir build --build-config Debug --verbose
+
   openframeworks-tests:
     # Builds this FreeImage checkout and drops it into a real openFrameworks
     # checkout in place of oF's own prebuilt copy, then runs oF's
