@@ -329,7 +329,7 @@ mng_CountPNGChunks(FreeImageIO *io, fi_handle handle, long inPos, unsigned *m_To
 				case IEND:
 					mEnd = TRUE;		
 					// the length below includes 4 bytes CRC, but no bytes for Length
-					*m_TotalBytesOfChunks = io->tell_proc(handle) - inPos;
+					*m_TotalBytesOfChunks = (unsigned)(io->tell_proc(handle) - inPos);
 					break;		
 				
 				case UNKNOWN_CHUNCK:
@@ -375,7 +375,7 @@ mng_FindChunk(FIMEMORY *hPngMemory, BYTE *chunk_name, long offset, DWORD *start_
 	try {
 	
 		// skip the signature and/or any following chunk(s)
-		DWORD chunk_pos = offset;
+		DWORD chunk_pos = (DWORD)offset;
 
 		while(1) {
 			// get chunk length

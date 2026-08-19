@@ -183,6 +183,8 @@ FreeImage_ConvertToFloat(FIBITMAP *dib) {
 			}
 		}
 		break;
+		default:
+			break;
 	}
 
 	if(src != dib) {

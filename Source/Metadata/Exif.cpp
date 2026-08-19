@@ -1193,7 +1193,7 @@ tiff_write_ifd(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, FIMEMORY *hmem) {
 			unsigned ifd_size = 2 + 12 * metadata_count;
 			FreeImage_WriteMemory(&empty_byte, 1, ifd_size, hmem);
 			// record the offset used to write values > 4-bytes
-			ifd_offset = FreeImage_TellMemory(hmem);
+			ifd_offset = (DWORD)FreeImage_TellMemory(hmem);
 			// rewind
 			FreeImage_SeekMemory(hmem, start_of_file, SEEK_SET);
 		}
@@ -1237,7 +1237,7 @@ tiff_write_ifd(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, FIMEMORY *hmem) {
 					FreeImage_WriteMemory(&empty_byte, 1, 1, hmem);
 				}
 				// next offset to use
-				ifd_offset = FreeImage_TellMemory(hmem);
+				ifd_offset = (DWORD)FreeImage_TellMemory(hmem);
 				// rewind
 				FreeImage_SeekMemory(hmem, current_position, SEEK_SET);
 			}

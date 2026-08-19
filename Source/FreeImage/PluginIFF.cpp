@@ -240,7 +240,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			SwapLong(&ch_size);
 #endif
 
-			unsigned ch_end = io->tell_proc(handle) + ch_size;
+			unsigned ch_end = (unsigned)(io->tell_proc(handle) + ch_size);
 
 			if (ch_type == ID_BMHD) {			// Bitmap Header
 				if (dib)

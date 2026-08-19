@@ -281,7 +281,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			for (int y = 0; y < height; y++) {	
 				FIRGBF *bits = (FIRGBF*)FreeImage_GetScanLine(dib, height - 1 - y);
 
-				if(io->read_proc(lineBuffer, sizeof(float), lineWidth, handle) != lineWidth) {
+				if(io->read_proc(lineBuffer, sizeof(float), (unsigned)lineWidth, handle) != lineWidth) {
 					throw "Read error";
 				}
 				float *channel = lineBuffer;
@@ -315,7 +315,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			for (int y = 0; y < height; y++) {	
 				float *bits = (float*)FreeImage_GetScanLine(dib, height - 1 - y);
 
-				if(io->read_proc(lineBuffer, sizeof(float), lineWidth, handle) != lineWidth) {
+				if(io->read_proc(lineBuffer, sizeof(float), (unsigned)lineWidth, handle) != lineWidth) {
 					throw "Read error";
 				}
 				float *channel = lineBuffer;

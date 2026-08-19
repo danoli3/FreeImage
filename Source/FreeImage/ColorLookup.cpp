@@ -574,7 +574,7 @@ FreeImage_LookupX11Color(const char *szColor, BYTE *nRed, BYTE *nGreen, BYTE *nB
          (szColor[3] == 'y' || szColor[3] == 'Y' ) )  {
 
         // grey<num>, or gray<num>, num 1...100
-        i = strtol(szColor+4, NULL, 10);
+        i = (int)strtol(szColor+4, NULL, 10);
         *nRed   = (BYTE)(255.0/100.0 * i);
         *nGreen = *nRed;
         *nBlue  = *nRed;
@@ -768,7 +768,7 @@ FreeImage_LookupSVGColor(const char *szColor, BYTE *nRed, BYTE *nGreen, BYTE *nB
          (szColor[3] == 'y' || szColor[3] == 'Y' ) )  {
 
         // grey<num>, or gray<num>, num 1...100
-        i = strtol(szColor+4, NULL, 10);
+        i = (int)strtol(szColor+4, NULL, 10);
         *nRed   = (BYTE)(255.0/100.0 * i);
         *nGreen = *nRed;
         *nBlue  = *nRed;
