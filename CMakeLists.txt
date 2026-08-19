@@ -622,11 +622,17 @@ if(BUILD_OPENEXR)
         list(APPEND FreeImage_LIBS OpenEXR::OpenEXR Imath::Imath)
         add_definitions(-DFREEIMAGE_SYSTEM_OPENEXR -DINCLUDE_LIB_OPENEXR)
     else()
-        # OpenEXR >= 3 requires C++14 - this is upstream's own minimum, not
-        # something this project imposes; BUILD_OPENEXR defaults OFF so this
-        # only matters if a caller explicitly opts in on an old-standard build.
-        if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD LESS 14)
-            message(FATAL_ERROR "BUILD_OPENEXR requires C++14 or newer (OpenEXR's own minimum) - CMAKE_CXX_STANDARD is currently ${CMAKE_CXX_STANDARD}.")
+        # The bundled OpenEXR 3.3.13's IlmImf (ImfMultiPartInputFile.cpp) uses
+        # std::any, which requires C++17 - this is upstream's own minimum,
+        # not something this project imposes. BUILD_OPENEXR defaults OFF, so
+        # this only matters if a caller explicitly opts in. Error out if an
+        # explicit older standard was requested; otherwise default to C++17
+        # so BUILD_OPENEXR=ON works out of the box without also requiring
+        # -DCPP_STANDARD=17.
+        if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD LESS 17)
+            message(FATAL_ERROR "BUILD_OPENEXR requires C++17 or newer (OpenEXR's IlmImf uses std::any) - CMAKE_CXX_STANDARD is currently ${CMAKE_CXX_STANDARD}.")
+        elseif(NOT CMAKE_CXX_STANDARD)
+            set(CMAKE_CXX_STANDARD 17)
         endif()
 
     set(FreeImage_IMATH_SRCS
