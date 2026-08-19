@@ -443,52 +443,89 @@ if(BUILD_LIBRAWLITE)
         add_definitions(-DFREEIMAGE_SYSTEM_LIBRAWLITE -DINCLUDE_LIB_RAW)
     else()
     set(FreeImage_LIBRAWLITE_SRCS
-        Source/LibRawLite/src/decoders/canon_600.cpp Source/LibRawLite/src/decoders/crx.cpp
-        Source/LibRawLite/src/decoders/decoders_dcraw.cpp Source/LibRawLite/src/decoders/decoders_libraw.cpp
-        Source/LibRawLite/src/decoders/decoders_libraw_dcrdefs.cpp Source/LibRawLite/src/decoders/dng.cpp
-        Source/LibRawLite/src/decoders/fp_dng.cpp Source/LibRawLite/src/decoders/fuji_compressed.cpp
-        Source/LibRawLite/src/decoders/generic.cpp Source/LibRawLite/src/decoders/kodak_decoders.cpp
-        Source/LibRawLite/src/decoders/load_mfbacks.cpp Source/LibRawLite/src/decoders/smal.cpp
-        Source/LibRawLite/src/decoders/unpack.cpp Source/LibRawLite/src/decoders/unpack_thumb.cpp
-        Source/LibRawLite/src/demosaic/aahd_demosaic.cpp Source/LibRawLite/src/demosaic/ahd_demosaic.cpp
-        Source/LibRawLite/src/demosaic/dcb_demosaic.cpp Source/LibRawLite/src/demosaic/dht_demosaic.cpp
-        Source/LibRawLite/src/demosaic/misc_demosaic.cpp Source/LibRawLite/src/demosaic/xtrans_demosaic.cpp
-        Source/LibRawLite/src/integration/dngsdk_glue.cpp Source/LibRawLite/src/integration/rawspeed_glue.cpp
-        Source/LibRawLite/src/libraw_datastream.cpp Source/LibRawLite/src/metadata/adobepano.cpp
-        Source/LibRawLite/src/metadata/canon.cpp Source/LibRawLite/src/metadata/ciff.cpp
-        Source/LibRawLite/src/metadata/cr3_parser.cpp Source/LibRawLite/src/metadata/epson.cpp
-        Source/LibRawLite/src/metadata/exif_gps.cpp Source/LibRawLite/src/metadata/fuji.cpp
-        Source/LibRawLite/src/metadata/hasselblad_model.cpp Source/LibRawLite/src/metadata/identify.cpp
-        Source/LibRawLite/src/metadata/identify_tools.cpp Source/LibRawLite/src/metadata/kodak.cpp
-        Source/LibRawLite/src/metadata/leica.cpp Source/LibRawLite/src/metadata/makernotes.cpp
-        Source/LibRawLite/src/metadata/mediumformat.cpp Source/LibRawLite/src/metadata/minolta.cpp
-        Source/LibRawLite/src/metadata/misc_parsers.cpp Source/LibRawLite/src/metadata/nikon.cpp
-        Source/LibRawLite/src/metadata/normalize_model.cpp Source/LibRawLite/src/metadata/olympus.cpp
-        Source/LibRawLite/src/metadata/p1.cpp Source/LibRawLite/src/metadata/pentax.cpp
-        Source/LibRawLite/src/metadata/samsung.cpp Source/LibRawLite/src/metadata/sony.cpp
-        Source/LibRawLite/src/metadata/tiff.cpp Source/LibRawLite/src/postprocessing/aspect_ratio.cpp
-        Source/LibRawLite/src/postprocessing/dcraw_process.cpp Source/LibRawLite/src/postprocessing/mem_image.cpp
-        Source/LibRawLite/src/postprocessing/postprocessing_aux.cpp
-        Source/LibRawLite/src/postprocessing/postprocessing_utils.cpp
-        Source/LibRawLite/src/postprocessing/postprocessing_utils_dcrdefs.cpp
-        Source/LibRawLite/src/preprocessing/ext_preprocess.cpp Source/LibRawLite/src/preprocessing/raw2image.cpp
-        Source/LibRawLite/src/preprocessing/subtract_black.cpp Source/LibRawLite/src/tables/cameralist.cpp
-        Source/LibRawLite/src/tables/colorconst.cpp Source/LibRawLite/src/tables/colordata.cpp
-        Source/LibRawLite/src/tables/wblists.cpp Source/LibRawLite/src/utils/curves.cpp
-        Source/LibRawLite/src/utils/decoder_info.cpp Source/LibRawLite/src/utils/init_close_utils.cpp
-        Source/LibRawLite/src/utils/open.cpp Source/LibRawLite/src/utils/phaseone_processing.cpp
-        Source/LibRawLite/src/utils/read_utils.cpp Source/LibRawLite/src/utils/thumb_utils.cpp
-        Source/LibRawLite/src/utils/utils_dcraw.cpp Source/LibRawLite/src/utils/utils_libraw.cpp
-        Source/LibRawLite/src/write/file_write.cpp Source/LibRawLite/src/x3f/x3f_parse_process.cpp
-        Source/LibRawLite/src/x3f/x3f_utils_patched.cpp
-        ./Source/LibRawLite/internal/dcraw_defs.h ./Source/LibRawLite/internal/dcraw_fileio_defs.h
-        ./Source/LibRawLite/internal/defines.h ./Source/LibRawLite/internal/dmp_include.h
-        ./Source/LibRawLite/internal/libraw_cameraids.h ./Source/LibRawLite/internal/libraw_cxx_defs.h
-        ./Source/LibRawLite/internal/libraw_internal_funcs.h ./Source/LibRawLite/internal/var_defines.h
+        ./Source/LibRawLite/internal/dcraw_defs.h
+        ./Source/LibRawLite/internal/dcraw_fileio_defs.h ./Source/LibRawLite/internal/defines.h
+        ./Source/LibRawLite/internal/dmp_include.h
+        ./Source/LibRawLite/internal/libraw_cameraids.h
+        ./Source/LibRawLite/internal/libraw_checked_buffer.h
+        ./Source/LibRawLite/internal/libraw_cxx_defs.h
+        ./Source/LibRawLite/internal/libraw_internal_funcs.h
+        ./Source/LibRawLite/internal/losslessjpeg.h ./Source/LibRawLite/internal/var_defines.h
         ./Source/LibRawLite/internal/x3f_tools.h ./Source/LibRawLite/libraw/libraw.h
         ./Source/LibRawLite/libraw/libraw_alloc.h ./Source/LibRawLite/libraw/libraw_const.h
-        ./Source/LibRawLite/libraw/libraw_datastream.h ./Source/LibRawLite/libraw/libraw_internal.h
-        ./Source/LibRawLite/libraw/libraw_types.h ./Source/LibRawLite/libraw/libraw_version.h
+        ./Source/LibRawLite/libraw/libraw_datastream.h
+        ./Source/LibRawLite/libraw/libraw_internal.h ./Source/LibRawLite/libraw/libraw_types.h
+        ./Source/LibRawLite/libraw/libraw_version.h
+        ./Source/LibRawLite/src/decoders/canon_600.cpp ./Source/LibRawLite/src/decoders/crx.cpp
+        ./Source/LibRawLite/src/decoders/decoders_dcraw.cpp
+        ./Source/LibRawLite/src/decoders/decoders_libraw.cpp
+        ./Source/LibRawLite/src/decoders/decoders_libraw_dcrdefs.cpp
+        ./Source/LibRawLite/src/decoders/dng.cpp ./Source/LibRawLite/src/decoders/fp_dng.cpp
+        ./Source/LibRawLite/src/decoders/fuji_compressed.cpp
+        ./Source/LibRawLite/src/decoders/generic.cpp
+        ./Source/LibRawLite/src/decoders/kodak_decoders.cpp
+        ./Source/LibRawLite/src/decoders/load_mfbacks.cpp
+        ./Source/LibRawLite/src/decoders/olympus14.cpp
+        ./Source/LibRawLite/src/decoders/pana8.cpp ./Source/LibRawLite/src/decoders/smal.cpp
+        ./Source/LibRawLite/src/decoders/sonycc.cpp ./Source/LibRawLite/src/decoders/unpack.cpp
+        ./Source/LibRawLite/src/decoders/unpack_thumb.cpp
+        ./Source/LibRawLite/src/decompressors/losslessjpeg.cpp
+        ./Source/LibRawLite/src/demosaic/aahd_demosaic.cpp
+        ./Source/LibRawLite/src/demosaic/ahd_demosaic.cpp
+        ./Source/LibRawLite/src/demosaic/dcb_demosaic.cpp
+        ./Source/LibRawLite/src/demosaic/dht_demosaic.cpp
+        ./Source/LibRawLite/src/demosaic/misc_demosaic.cpp
+        ./Source/LibRawLite/src/demosaic/xtrans_demosaic.cpp
+        ./Source/LibRawLite/src/integration/dngsdk_glue.cpp
+        ./Source/LibRawLite/src/integration/rawspeed_glue.cpp
+        ./Source/LibRawLite/src/libraw_c_api.cpp ./Source/LibRawLite/src/libraw_datastream.cpp
+        ./Source/LibRawLite/src/metadata/adobepano.cpp
+        ./Source/LibRawLite/src/metadata/canon.cpp ./Source/LibRawLite/src/metadata/ciff.cpp
+        ./Source/LibRawLite/src/metadata/cr3_parser.cpp
+        ./Source/LibRawLite/src/metadata/epson.cpp
+        ./Source/LibRawLite/src/metadata/exif_gps.cpp ./Source/LibRawLite/src/metadata/fuji.cpp
+        ./Source/LibRawLite/src/metadata/hasselblad_model.cpp
+        ./Source/LibRawLite/src/metadata/identify.cpp
+        ./Source/LibRawLite/src/metadata/identify_tools.cpp
+        ./Source/LibRawLite/src/metadata/kodak.cpp ./Source/LibRawLite/src/metadata/leica.cpp
+        ./Source/LibRawLite/src/metadata/makernotes.cpp
+        ./Source/LibRawLite/src/metadata/mediumformat.cpp
+        ./Source/LibRawLite/src/metadata/minolta.cpp
+        ./Source/LibRawLite/src/metadata/misc_parsers.cpp
+        ./Source/LibRawLite/src/metadata/nikon.cpp
+        ./Source/LibRawLite/src/metadata/normalize_model.cpp
+        ./Source/LibRawLite/src/metadata/olympus.cpp ./Source/LibRawLite/src/metadata/p1.cpp
+        ./Source/LibRawLite/src/metadata/pentax.cpp
+        ./Source/LibRawLite/src/metadata/samsung.cpp ./Source/LibRawLite/src/metadata/sony.cpp
+        ./Source/LibRawLite/src/metadata/tiff.cpp
+        ./Source/LibRawLite/src/postprocessing/aspect_ratio.cpp
+        ./Source/LibRawLite/src/postprocessing/dcraw_process.cpp
+        ./Source/LibRawLite/src/postprocessing/mem_image.cpp
+        ./Source/LibRawLite/src/postprocessing/postprocessing_aux.cpp
+        ./Source/LibRawLite/src/postprocessing/postprocessing_ph.cpp
+        ./Source/LibRawLite/src/postprocessing/postprocessing_utils.cpp
+        ./Source/LibRawLite/src/postprocessing/postprocessing_utils_dcrdefs.cpp
+        ./Source/LibRawLite/src/preprocessing/ext_preprocess.cpp
+        ./Source/LibRawLite/src/preprocessing/preprocessing_ph.cpp
+        ./Source/LibRawLite/src/preprocessing/raw2image.cpp
+        ./Source/LibRawLite/src/preprocessing/subtract_black.cpp
+        ./Source/LibRawLite/src/tables/cameralist.cpp
+        ./Source/LibRawLite/src/tables/colorconst.cpp
+        ./Source/LibRawLite/src/tables/colordata.cpp ./Source/LibRawLite/src/tables/wblists.cpp
+        ./Source/LibRawLite/src/utils/curves.cpp ./Source/LibRawLite/src/utils/decoder_info.cpp
+        ./Source/LibRawLite/src/utils/init_close_utils.cpp
+        ./Source/LibRawLite/src/utils/open.cpp
+        ./Source/LibRawLite/src/utils/phaseone_processing.cpp
+        ./Source/LibRawLite/src/utils/read_utils.cpp
+        ./Source/LibRawLite/src/utils/thumb_utils.cpp
+        ./Source/LibRawLite/src/utils/utils_dcraw.cpp
+        ./Source/LibRawLite/src/utils/utils_libraw.cpp
+        ./Source/LibRawLite/src/write/apply_profile.cpp
+        ./Source/LibRawLite/src/write/file_write.cpp
+        ./Source/LibRawLite/src/write/tiff_writer.cpp
+        ./Source/LibRawLite/src/write/write_ph.cpp
+        ./Source/LibRawLite/src/x3f/x3f_parse_process.cpp
+        ./Source/LibRawLite/src/x3f/x3f_utils_patched.cpp
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_LIBRAWLITE_SRCS})
     include_directories(Source/LibRawLite)
