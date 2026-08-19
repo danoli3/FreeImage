@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 project(FreeImage VERSION 3.19.0 LANGUAGES C CXX)
 
+# Set C and C++ standards if provided. Applied early (before any option()
+# calls below) so BUILD_OPENEXR's default, further down, can see whichever
+# standard was actually requested.
+if (DEFINED C_STANDARD)
+    set(CMAKE_C_STANDARD ${C_STANDARD})
+endif()
+if (DEFINED CPP_STANDARD)
+    set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
+endif()
+
 # Options for configuring the build
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
@@ -27,7 +37,13 @@ option(BUILD_LIBJPEG "Build libjpeg from source or link" ON)
 option(BUILD_LIBOPENJPEG "Build OpenJPEG from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
 option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
-option(BUILD_OPENEXR "Build OpenEXR from source or link" OFF)
+# Default ON, but only when C++17+ is actually in effect (OpenEXR needs it).
+if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+    set(BUILD_OPENEXR_DEFAULT ON)
+else()
+    set(BUILD_OPENEXR_DEFAULT OFF)
+endif()
+option(BUILD_OPENEXR "Build OpenEXR from source or link" ${BUILD_OPENEXR_DEFAULT})
 
 # When ON, sets the default for every USE_SYSTEM_* option below to ON (each
 # can still be overridden individually). Mirrors what MSYS2's
@@ -70,14 +86,6 @@ if(FREEIMAGE_STATIC)
     add_definitions(-DFREEIMAGE_LIB)
 else()
     message(STATUS "Building FreeImage as a shared library.")
-endif()
-
-# Set C and C++ standards if provided
-if (DEFINED C_STANDARD)
-    set(CMAKE_C_STANDARD ${C_STANDARD})
-endif()
-if (DEFINED CPP_STANDARD)
-    set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
 endif()
 
 #set(NO_BUILD_OPTIONS LIBRAWLITE LIBTIFF)
@@ -972,14 +980,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     NO_LCMS
     NO_WINDOWS
 )
-
-# Set C++ standard
-if (DEFINED C_STANDARD)
-    set(CMAKE_C_STANDARD ${C_STANDARD})
-endif()
-if (DEFINED CPP_STANDARD)
-    set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
-endif()
 
 
 # Apple-specific settings
