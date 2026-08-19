@@ -3,7 +3,7 @@
 //
 // Design and implementation by
 // - Ryan Rubley <ryan@lostreality.org>
-// - Rapha�l Gaquer <raphael.gaquer@alcer.com>
+// - Raphaël Gaquer <raphael.gaquer@alcer.com>
 // - Aaron Shumate <aaron@shumate.us>
 //
 // References
