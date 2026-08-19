@@ -1009,6 +1009,16 @@ if(BUILD_OPENEXR)
         include_directories(Source/Imath)
         include_directories(Source/LibDeflate)
         add_definitions(-DINCLUDE_LIB_OPENEXR)
+
+        # Same clang-cl vs real-MSVC target-feature gating issue as LibWebP
+        # above: OpenEXR's own runtime-dispatched SSE2/SSSE3/SSE4.1/AVX2
+        # paths (ImfZip.cpp, internal_zip.c, internal_dwa.c, unpack.c, ...)
+        # compile unconditionally, real MSVC doesn't need /arch: for them,
+        # clang-cl does.
+        if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            set_source_files_properties(${FreeImage_OPENEXR_SRCS} ${FreeImage_OPENEXRCORE_SRCS}
+                PROPERTIES COMPILE_OPTIONS "/clang:-mssse3;/clang:-msse4.1;/clang:-mavx;/clang:-mavx2")
+        endif()
     endif()
 endif()
 
