@@ -503,6 +503,20 @@ if(BUILD_WEBP)
     # as <webp/decode.h>, which needs Source/LibWebP/src on the path too.
     include_directories(Source/LibWebP/src)
     add_definitions(-DINCLUDE_LIB_WEBP)
+
+    # Real MSVC doesn't gate SIMD intrinsics on /arch:, but clang-cl (which
+    # also defines _MSC_VER) does enforce per-function target features - so
+    # LibWebP's hand-dispatched SSE4.1/AVX2 sources need the matching -m
+    # flags explicitly under clang-cl, passed through via its /clang: prefix.
+    if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        foreach(_webp_simd_src ${FreeImage_WEBP_SRCS})
+            if(_webp_simd_src MATCHES "_sse41\\.c$")
+                set_source_files_properties(${_webp_simd_src} PROPERTIES COMPILE_OPTIONS "/clang:-msse4.1")
+            elseif(_webp_simd_src MATCHES "_avx2\\.c$")
+                set_source_files_properties(${_webp_simd_src} PROPERTIES COMPILE_OPTIONS "/clang:-mavx2")
+            endif()
+        endforeach()
+    endif()
     endif()
 endif()
 
