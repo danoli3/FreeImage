@@ -266,24 +266,16 @@ FreeImage_Initialise(BOOL load_local_plugins_only) {
 	        s_plugins->AddNode(InitHDR);
 			s_plugins->AddNode(InitG3);
 			s_plugins->AddNode(InitSGI);
-			#if INCLUDE_LIB_OPENEXR
 			s_plugins->AddNode(InitEXR);
-			#endif
 			s_plugins->AddNode(InitJ2K);
 			s_plugins->AddNode(InitJP2);
 			s_plugins->AddNode(InitPFM);
 			s_plugins->AddNode(InitPICT);
-			#if INCLUDE_LIB_RAW
 			s_plugins->AddNode(InitRAW);
-			#endif
-			#if INCLUDE_LIB_WEBP
 			s_plugins->AddNode(InitWEBP);
-			#endif
-			#if INCLUDE_LIB_JXR
 #if !(defined(_MSC_VER) && (_MSC_VER <= 1310))
 			s_plugins->AddNode(InitJXR);
 #endif // unsupported by MS Visual Studio 2003 !!!
-			#endif
 			
 			// external plugin initialization
 

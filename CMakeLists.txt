@@ -99,7 +99,8 @@ set(FreeImage_SOURCES
     ./Source/FreeImage/PluginHDR.cpp ./Source/FreeImage/PluginICO.cpp
     ./Source/FreeImage/PluginIFF.cpp ./Source/FreeImage/PluginJ2K.cpp
     ./Source/FreeImage/PluginJNG.cpp ./Source/FreeImage/PluginJP2.cpp
-    ./Source/FreeImage/PluginJPEG.cpp ./Source/FreeImage/PluginKOALA.cpp
+    ./Source/FreeImage/PluginJPEG.cpp ./Source/FreeImage/PluginJXR.cpp
+    ./Source/FreeImage/PluginKOALA.cpp
     ./Source/FreeImage/PluginMNG.cpp ./Source/FreeImage/PluginPCD.cpp
     ./Source/FreeImage/PluginPCX.cpp ./Source/FreeImage/PluginPFM.cpp
     ./Source/FreeImage/PluginPICT.cpp ./Source/FreeImage/PluginPNG.cpp
@@ -337,14 +338,12 @@ if(BUILD_JXR)
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(JXR REQUIRED IMPORTED_TARGET libjxr)
         list(APPEND FreeImage_LIBS PkgConfig::JXR)
-        list(APPEND FreeImage_SOURCES ./Source/FreeImage/PluginJXR.cpp)
         add_definitions(-DFREEIMAGE_SYSTEM_JXR -DINCLUDE_LIB_JXR)
     else()
     set(FreeImage_JXR_SRCS
         ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c
         ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c
         ./Source/LibJXR/image/decode/strInvTransform.c ./Source/LibJXR/image/
-        ./Source/FreeImage/PluginJXR.cpp
         ./Source/LibJXR/common/include/wmspecstring.h
         ./Source/LibJXR/common/include/wmspecstrings_adt.h
         ./Source/LibJXR/common/include/wmspecstrings_strict.h
