@@ -3,6 +3,21 @@ project(FreeImage VERSION 3.19.0 LANGUAGES C CXX)
 
 # Options for configuring the build
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
+# Whether the FreeImage target itself is built STATIC or SHARED, decoupled
+# from the global BUILD_SHARED_LIBS: it only sets this option's *default*,
+# so a project embedding FreeImage via add_subdirectory() can flip
+# FREEIMAGE_STATIC independently of its own BUILD_SHARED_LIBS setting
+# (which still governs any of *their* own add_library() calls with no
+# explicit STATIC/SHARED). Mirrors libtiff's tiff-static option
+# (https://gitlab.com/libtiff/libtiff/-/commit/e47dce81cd0190d124a08cbbb6f78a3e89d9511f).
+if(BUILD_SHARED_LIBS)
+    set(FREEIMAGE_STATIC_DEFAULT OFF)
+else()
+    set(FREEIMAGE_STATIC_DEFAULT ON)
+endif()
+option(FREEIMAGE_STATIC "Build FreeImage as a static library" ${FREEIMAGE_STATIC_DEFAULT})
+
 option(BUILD_JXR "Build JPEG-XR support" WIN32)
 option(BUILD_TESTS "Build the test suite" OFF)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
@@ -50,11 +65,11 @@ if(DEFINED ZLIB_INCLUDE_DIRS AND NOT DEFINED ZLIB_INCLUDE_DIR)
     set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS} CACHE PATH "Path to zlib include directory")
 endif()
 
-if(BUILD_SHARED_LIBS)
-    message(STATUS "Building FreeImage as a shared library.")
-else()
+if(FREEIMAGE_STATIC)
     message(STATUS "Building FreeImage as a static library.")
     add_definitions(-DFREEIMAGE_LIB)
+else()
+    message(STATUS "Building FreeImage as a shared library.")
 endif()
 
 # Set C and C++ standards if provided
@@ -63,13 +78,6 @@ if (DEFINED C_STANDARD)
 endif()
 if (DEFINED CPP_STANDARD)
     set(CMAKE_CXX_STANDARD ${CPP_STANDARD})
-endif()
-
-if(BUILD_SHARED_LIBS)
-    message(STATUS "Building FreeImage as a shared library.")
-else()
-    message(STATUS "Building FreeImage as a static library.")
-    add_definitions(-DFREEIMAGE_LIB)
 endif()
 
 #set(NO_BUILD_OPTIONS LIBRAWLITE LIBTIFF)
@@ -942,13 +950,13 @@ include_directories(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
 
-if(BUILD_SHARED_LIBS)
-    add_library(${PROJECT_NAME} SHARED 
+if(FREEIMAGE_STATIC)
+    # Define the FreeImage library
+    add_library(${PROJECT_NAME} STATIC
         ${FreeImage_SOURCES}
 )
 else()
-    # Define the FreeImage library
-    add_library(${PROJECT_NAME} STATIC 
+    add_library(${PROJECT_NAME} SHARED
         ${FreeImage_SOURCES}
 )
 endif()
