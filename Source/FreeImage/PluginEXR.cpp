@@ -65,15 +65,11 @@
 
 static int s_format_id;
 
-// IStream/OStream's tellg/seekg/tellp/seekp use Imath::Int64 in the bundled
-// (OpenEXR 2.x-era) headers, but that type was removed from Imath 3.x in
-// favor of plain uint64_t, which is what a system OpenEXR 3.x's ImfIO.h
-// virtuals now use.
-#ifdef FREEIMAGE_SYSTEM_OPENEXR
+// IStream/OStream's tellg/seekg/tellp/seekp used Imath::Int64 in OpenEXR
+// 2.x-era headers, but that type was removed from Imath 3.x in favor of
+// plain uint64_t - both the bundled copy (now OpenEXR 3.x) and a system
+// OpenEXR 3.x agree on uint64_t.
 typedef uint64_t exr_offset_t;
-#else
-typedef Imath::Int64 exr_offset_t;
-#endif
 
 // ----------------------------------------------------------
 
