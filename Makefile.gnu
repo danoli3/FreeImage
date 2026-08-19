@@ -23,6 +23,10 @@ MODULES := $(MODULES:.cpp=.o)
 
 # C flags
 CFLAGS ?= -std=c99 -O3 -fPIC -fexceptions -fvisibility=hidden
+# -std=c99 implies __STRICT_ANSI__, which on glibc hides POSIX/GNU
+# declarations (e.g. O_CLOEXEC, used unconditionally by OpenEXRCore's
+# internal_posix_file_impl.h) unless a feature-test macro says otherwise.
+CFLAGS += -D_GNU_SOURCE
 # ZLib: needed for gzlib.c/gzread.c/gzwrite.c to see read()/write()/lseek()
 # via zconf.h's Z_HAVE_UNISTD_H gate (normally set by zlib's own ./configure)
 CFLAGS += -DHAVE_UNISTD_H
@@ -38,6 +42,8 @@ CFLAGS += $(INCLUDE)
 # OpenEXR's IlmImf (ImfMultiPartInputFile.cpp) uses std::any, which needs
 # C++17 - this is unconditionally in SRCS, so the whole build needs it.
 CXXFLAGS ?= -std=c++17 -O3 -fPIC -fexceptions -fvisibility=hidden -Wno-ctor-dtor-privacy
+# See the CFLAGS comment above - -std=c++17 also implies __STRICT_ANSI__.
+CXXFLAGS += -D_GNU_SOURCE
 # LibJXR
 CXXFLAGS += -D__ANSI__
 # OpenEXR, LibRaw, and WebP sources are unconditionally in SRCS, so tell
