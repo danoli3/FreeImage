@@ -2,7 +2,7 @@
 // XBM Loader
 //
 // Design and implementation by
-// - Hervé Drolon <drolon@infonie.fr>
+// - HervÃ© Drolon <drolon@infonie.fr>
 // part of the code adapted from the netPBM package (xbmtopbm.c)
 //
 // This file is part of FreeImage 3

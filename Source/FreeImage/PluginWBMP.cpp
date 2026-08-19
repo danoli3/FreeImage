@@ -2,7 +2,7 @@
 // Wireless Bitmap Format Loader and Writer
 //
 // Design and implementation by
-// - Hervé Drolon <drolon@infonie.fr>
+// - HervÃ© Drolon <drolon@infonie.fr>
 //
 // This file is part of FreeImage 3
 //
@@ -32,10 +32,10 @@
 // ------------------------
 // The WBMP format is configured according to a type field value (TypeField below),
 // which maps to all relevant image encoding information, such as:
-// · Pixel organisation and encoding
-// · Palette organisation and encoding
-// · Compression characteristics
-// · Animation encoding
+// Â· Pixel organisation and encoding
+// Â· Palette organisation and encoding
+// Â· Compression characteristics
+// Â· Animation encoding
 // For each TypeField value, all relevant image characteristics are 
 // fully specified as part of the WAP documentation.
 // Currently, a simple compact, monochrome image format is defined

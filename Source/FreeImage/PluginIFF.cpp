@@ -5,7 +5,7 @@
 // - Floris van den Berg (flvdberg@wxs.nl)
 // - Mark Sibly (marksibly@blitzbasic.com)
 // - Aaron Shumate (trek@startreker.com)
-// - Hervé Drolon (drolon@infonie.fr)
+// - HervÃ© Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
