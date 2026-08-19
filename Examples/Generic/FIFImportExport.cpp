@@ -2,7 +2,7 @@
 // Plugin functions demonstration
 //
 // Design and implementation by 
-// - Hervé Drolon
+// - HervÃ© Drolon
 //
 // This file is part of FreeImage 3
 //

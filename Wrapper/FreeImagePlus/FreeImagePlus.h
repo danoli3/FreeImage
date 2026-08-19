@@ -2,7 +2,7 @@
 // FreeImagePlus 3
 //
 // Design and implementation by
-// - Hervé Drolon (drolon@infonie.fr)
+// - HervÃ© Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
@@ -70,7 +70,7 @@
 
 /** Abstract base class for all objects used by the library.
 	@version FreeImage 3
-	@author Hervé Drolon
+	@author HervÃ© Drolon
 */
 
 class FIP_API fipObject
@@ -97,7 +97,7 @@ class fipTag;
 	fipImage encapsulates the FIBITMAP format. It relies on the FreeImage library, especially for 
 	loading / saving images and for bit depth conversion.
 	@version FreeImage 3
-	@author Hervé Drolon
+	@author HervÃ© Drolon
 */
 
 class FIP_API fipImage : public fipObject
@@ -570,7 +570,7 @@ public:
 	*/
 	BYTE* accessPixels() const;
 
-	/** @brief Returns a pointer to the start of the given scanline in the bitmap’s data-bits.
+	/** @brief Returns a pointer to the start of the given scanline in the bitmapÂ’s data-bits.
 		This pointer can be cast according to the result returned by getImageType.<br>
 		Use this function with getScanWidth to iterates through the pixels. 
 		@see FreeImage_GetScanLine, FreeImage documentation
@@ -780,14 +780,14 @@ public:
 	unsigned getTransparencyCount() const;
 
 	/**
-	8-bit transparency : get the bitmap’s transparency table.
-	@return Returns a pointer to the bitmap’s transparency table.
+	8-bit transparency : get the bitmapÂ’s transparency table.
+	@return Returns a pointer to the bitmapÂ’s transparency table.
 	@see FreeImage_GetTransparencyTable
 	*/
 	BYTE* getTransparencyTable() const;
 
 	/** 
-	8-bit transparency : set the bitmap’s transparency table.
+	8-bit transparency : set the bitmapÂ’s transparency table.
 	@see FreeImage_SetTransparencyTable
 	*/
 	void setTransparencyTable(BYTE *table, int count);
@@ -1079,7 +1079,7 @@ public:
 	<li>Capture a window (HWND) and convert it to an image
 	</ul>
 	@version FreeImage 3
-	@author Hervé Drolon
+	@author HervÃ© Drolon
 */
 #ifdef _WIN32
 
@@ -1255,7 +1255,7 @@ protected:
 	
 	fipMemoryIO is a class that allows you to load / save images from / to a memory stream.
 	@version FreeImage 3
-	@author Hervé Drolon
+	@author HervÃ© Drolon
 */
 class FIP_API fipMemoryIO : public fipObject
 {

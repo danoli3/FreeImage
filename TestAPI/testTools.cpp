@@ -2,7 +2,7 @@
 // FreeImage 3 Test Script
 //
 // Design and implementation by
-// - Hervé Drolon (drolon@infonie.fr)
+// - HervÃ© Drolon (drolon@infonie.fr)
 //
 // This file is part of FreeImage 3
 //
@@ -34,7 +34,7 @@
   <li> evaluate image compression 
   <li> evaluate filter properties 
   <li> evaluate the quality of resampling algorithms 
-  <li> adjust gamma correction - at the proper gamma setting, the møires should be minimized 
+  <li> adjust gamma correction - at the proper gamma setting, the mÃ¸ires should be minimized 
   </ul>
   Reference: 
   [1] Ken Turkowski, Open Source Repository. [Online] http://www.worldserver.com/turk/opensource/

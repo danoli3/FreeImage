@@ -5,7 +5,7 @@
 // - Floris van den Berg (flvdberg@wxs.nl)
 // - Jani Kajala (janik@remedy.fi)
 // - Markus Loibl (markus.loibl@epost.de)
-// - Hervé Drolon (drolon@infonie.fr)
+// - HervÃ© Drolon (drolon@infonie.fr)
 // - Juergen Riecker (j.riecker@gmx.de)
 //
 // This file is part of FreeImage 3
