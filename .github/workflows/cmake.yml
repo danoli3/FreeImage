@@ -152,3 +152,21 @@ jobs:
           cp ../../../scripts/templates/macos/config.make .
           make -j"$(sysctl -n hw.ncpu)" Debug
           make RunDebug
+
+  make-build:
+    # Plain `make` (Makefile.gnu, via the top-level Makefile dispatcher) is
+    # a separate build path from CMake with its own hand-maintained file
+    # list in Makefile.srcs - nothing else in this workflow exercises it, so
+    # it can silently drift out of sync with the source tree (see #33, and
+    # the OpenEXR/openjpeg bump breaking it entirely) without any CI signal.
+    name: make build (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build
+        run: make -j"$(nproc)"
+      - name: Verify build artifacts exist
+        run: |
+          test -f "libfreeimage.a"
+          test -f "libfreeimage-3.19.0.so"
