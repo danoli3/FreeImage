@@ -99,6 +99,10 @@ bin/
 bin64/
 lib/
 lib64/
+# LibDeflate's real sources live under Source/LibDeflate/lib/ - not a build
+# output directory, just an unfortunate name collision with the ignore
+# rules above.
+!Source/LibDeflate/lib/
 pocomsg.h
 
 # Eclipse generated files #
