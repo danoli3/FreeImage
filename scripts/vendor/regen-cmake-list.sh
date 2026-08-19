@@ -19,11 +19,18 @@ trap 'rm -f "$TMP_LIST"' EXIT
 
 for sub in $SOURCE_SUBDIRS; do
 	if [ "$sub" = "." ]; then
+		# "." means this library's original layout is flat (no subdirs) -
+		# stay at maxdepth 1 so any new top-level dirs a newer release adds
+		# (contrib/, ci/, arch-specific SIMD dirs like arm/intel/mips/...)
+		# don't get swept into the build. Named subdirs below are trusted
+		# to recurse fully, since those are the library's real source tree.
 		BASE="$VENDOR_PATH"
+		DEPTH_ARGS="-maxdepth 1"
 	else
 		BASE="$VENDOR_PATH/$sub"
+		DEPTH_ARGS=""
 	fi
-	find "$BASE" \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -print
+	find "$BASE" $DEPTH_ARGS \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -print
 done | sed "s|^$REPO_ROOT/|./|" | sort > "$TMP_LIST"
 
 FORMATTED=$(awk '
