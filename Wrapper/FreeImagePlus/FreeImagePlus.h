@@ -570,7 +570,7 @@ public:
 	*/
 	BYTE* accessPixels() const;
 
-	/** @brief Returns a pointer to the start of the given scanline in the bitmaps data-bits.
+	/** @brief Returns a pointer to the start of the given scanline in the bitmap's data-bits.
 		This pointer can be cast according to the result returned by getImageType.<br>
 		Use this function with getScanWidth to iterates through the pixels. 
 		@see FreeImage_GetScanLine, FreeImage documentation
@@ -780,14 +780,14 @@ public:
 	unsigned getTransparencyCount() const;
 
 	/**
-	8-bit transparency : get the bitmaps transparency table.
-	@return Returns a pointer to the bitmaps transparency table.
+	8-bit transparency : get the bitmap's transparency table.
+	@return Returns a pointer to the bitmap's transparency table.
 	@see FreeImage_GetTransparencyTable
 	*/
 	BYTE* getTransparencyTable() const;
 
 	/** 
-	8-bit transparency : set the bitmaps transparency table.
+	8-bit transparency : set the bitmap's transparency table.
 	@see FreeImage_SetTransparencyTable
 	*/
 	void setTransparencyTable(BYTE *table, int count);
