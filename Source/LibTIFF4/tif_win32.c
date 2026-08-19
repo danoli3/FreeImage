@@ -375,37 +375,9 @@ TIFF *TIFFOpenWExt(const wchar_t *name, const char *mode, TIFFOpenOptions *opts)
 
 #endif /* ndef _WIN32_WCE */
 
-void *_TIFFmalloc(tmsize_t s)
-{
-    if (s == 0)
-        return ((void *)NULL);
-
-    return (malloc((size_t)s));
-}
-
-void *_TIFFcalloc(tmsize_t nmemb, tmsize_t siz)
-{
-    if (nmemb == 0 || siz == 0)
-        return ((void *)NULL);
-
-    return calloc((size_t)nmemb, (size_t)siz);
-}
-
-void _TIFFfree(void *p) { free(p); }
-
-void *_TIFFrealloc(void *p, tmsize_t s) { return (realloc(p, (size_t)s)); }
-
-void _TIFFmemset(void *p, int v, tmsize_t c) { memset(p, v, (size_t)c); }
-
-void _TIFFmemcpy(void *d, const void *s, tmsize_t c)
-{
-    memcpy(d, s, (size_t)c);
-}
-
-int _TIFFmemcmp(const void *p1, const void *p2, tmsize_t c)
-{
-    return (memcmp(p1, p2, (size_t)c));
-}
+/* _TIFFmalloc/_TIFFcalloc/_TIFFfree/_TIFFrealloc/_TIFFmemset/_TIFFmemcpy/
+ * _TIFFmemcmp are provided by FreeImage itself (see PluginTIFF.cpp) rather
+ * than by this file, to avoid duplicate-symbol link errors. */
 
 #ifndef _WIN32_WCE
 
