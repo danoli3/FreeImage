@@ -159,6 +159,14 @@ jobs:
     # build), so this is the only real signal for that workflow.
     name: Visual Studio project generation (CMakePresets)
     runs-on: windows-latest
+    defaults:
+      run:
+        # Not bash (the workflow-level default): Git Bash can't represent
+        # env var names with parentheses, so ProgramFiles(x86) gets dropped
+        # - which is what CMake's VS-instance detection reads, causing
+        # "could not find any instance of Visual Studio" even though it's
+        # actually installed.
+        shell: pwsh
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

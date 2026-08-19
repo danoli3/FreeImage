@@ -1,34 +1,13 @@
 #!/bin/sh
-rm -rf Release
-rm -rf Debug
-rm -rf Source/FreeImageLib/Debug
-rm -rf Source/FreeImageLib/Release
-rm -rf Source/Source/Release
-rm -rf Source/Source/Debug
-rm -rf Source/LibJPEG/Debug
-rm -rf Source/LibJPEG/Release
-rm -rf Source/LibPNG/Debug
-rm -rf Source/LibPNG/Release
-rm -rf Source/LibMNG/Debug
-rm -rf Source/LibMNG/Release
-rm -rf Source/LibTIFF/Debug
-rm -rf Source/LibTIFF/Release
-rm -rf Source/LibTIFF4/Debug
-rm -rf Source/LibTIFF4/Release
-rm -rf Source/Zlib/Debug
-rm -rf Source/Zlib/Release
-rm -rf Source/OpenEXR/Debug
-rm -rf Source/OpenEXR/Release
-rm -rf Source/LibOpenJPEG/Debug
-rm -rf Source/LibOpenJPEG/Release
-rm -rf Source/LibRawLite/Debug
-rm -rf Source/LibRawLite/Release
-rm -rf Source/LibWebP/Debug
-rm -rf Source/LibWebP/Release
-rm -rf Source/LibJXR/Debug
-rm -rf Source/LibJXR/Release
-rm -rf TestAPI/Debug
-rm -rf TestAPI/Release
+# CMake build directories (cmake-build*/, cmake-build-debug/, build/,
+# build-vs2022/, build-vs2026/, etc. - matches .gitignore's build*/ and
+# cmake-build-*/ patterns) and their caches.
+find . -maxdepth 1 -type d \( -name 'build*' -o -name 'cmake-build*' \) -exec rm -rf {} +
+find . -name 'CMakeCache.txt' -exec rm -f {} ";"
+find . -name 'CMakeFiles' -type d -exec rm -rf {} +
+find . -name 'cmake_install.cmake' -exec rm -f {} ";"
+find . -name 'CTestTestfile.cmake' -exec rm -f {} ";"
+
 find . -name '*.pch' -exec rm -f {} ";"
 find . -name '*.ncb' -exec rm -f {} ";"
 find . -name '*.opt' -exec rm -f {} ";"
