@@ -27,6 +27,10 @@
  * Scott Wagner (wagner@itek.com), Itek Graphix, Rochester, NY USA
  */
 
+#ifdef TIFF_DO_NOT_USE_NON_EXT_ALLOC_FUNCTIONS
+#undef TIFF_DO_NOT_USE_NON_EXT_ALLOC_FUNCTIONS
+#endif
+
 #include "tiffiop.h"
 #include <stdlib.h>
 
@@ -154,14 +158,6 @@ static uint64_t _tiffSizeProc(thandle_t fd)
         return (0);
 }
 
-static int _tiffDummyMapProc(thandle_t fd, void **pbase, toff_t *psize)
-{
-    (void)fd;
-    (void)pbase;
-    (void)psize;
-    return (0);
-}
-
 /*
  * From "Hermann Josef Hill" <lhill@rhein-zeitung.de>:
  *
@@ -195,13 +191,6 @@ static int _tiffMapProc(thandle_t fd, void **pbase, toff_t *psize)
         return (0);
     *psize = size;
     return (1);
-}
-
-static void _tiffDummyUnmapProc(thandle_t fd, void *base, toff_t size)
-{
-    (void)fd;
-    (void)base;
-    (void)size;
 }
 
 static void _tiffUnmapProc(thandle_t fd, void *base, toff_t size)
@@ -383,6 +372,14 @@ TIFF *TIFFOpenWExt(const wchar_t *name, const char *mode, TIFFOpenOptions *opts)
 
     return tif;
 }
+
+#endif /* ndef _WIN32_WCE */
+
+/* _TIFFmalloc/_TIFFcalloc/_TIFFfree/_TIFFrealloc/_TIFFmemset/_TIFFmemcpy/
+ * _TIFFmemcmp are provided by FreeImage itself (see PluginTIFF.cpp) rather
+ * than by this file, to avoid duplicate-symbol link errors. */
+
+#ifndef _WIN32_WCE
 
 static void Win32WarningHandler(const char *module, const char *fmt, va_list ap)
 {
