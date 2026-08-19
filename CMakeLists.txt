@@ -565,11 +565,9 @@ if(BUILD_LIBRAWLITE)
         ./Source/LibRawLite/src/postprocessing/dcraw_process.cpp
         ./Source/LibRawLite/src/postprocessing/mem_image.cpp
         ./Source/LibRawLite/src/postprocessing/postprocessing_aux.cpp
-        ./Source/LibRawLite/src/postprocessing/postprocessing_ph.cpp
         ./Source/LibRawLite/src/postprocessing/postprocessing_utils.cpp
         ./Source/LibRawLite/src/postprocessing/postprocessing_utils_dcrdefs.cpp
         ./Source/LibRawLite/src/preprocessing/ext_preprocess.cpp
-        ./Source/LibRawLite/src/preprocessing/preprocessing_ph.cpp
         ./Source/LibRawLite/src/preprocessing/raw2image.cpp
         ./Source/LibRawLite/src/preprocessing/subtract_black.cpp
         ./Source/LibRawLite/src/tables/cameralist.cpp
@@ -586,7 +584,6 @@ if(BUILD_LIBRAWLITE)
         ./Source/LibRawLite/src/write/apply_profile.cpp
         ./Source/LibRawLite/src/write/file_write.cpp
         ./Source/LibRawLite/src/write/tiff_writer.cpp
-        ./Source/LibRawLite/src/write/write_ph.cpp
         ./Source/LibRawLite/src/x3f/x3f_parse_process.cpp
         ./Source/LibRawLite/src/x3f/x3f_utils_patched.cpp
     )
