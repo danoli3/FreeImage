@@ -911,10 +911,18 @@ if(BUILD_OPENEXR)
         ./Source/OpenEXR/IlmImf/ImfWav.cpp ./Source/OpenEXR/IlmImf/ImfWav.h 
         ./Source/OpenEXR/IlmImf/ImfXdr.h ./Source/OpenEXR/IlmImf/ImfZip.cpp 
         ./Source/OpenEXR/IlmImf/ImfZip.h ./Source/OpenEXR/IlmImf/ImfZipCompressor.cpp 
-        ./Source/OpenEXR/IlmImf/ImfZipCompressor.h ./Source/OpenEXR/IlmImf/b44ExpLogTable.cpp 
-        ./Source/OpenEXR/IlmImf/dwaLookups.cpp ./Source/OpenEXR/IlmThreadConfig.h 
-        ./Source/OpenEXR/OpenEXRConfig.h ./Source/OpenEXR/OpenEXRConfigInternal.h 
+        ./Source/OpenEXR/IlmImf/ImfZipCompressor.h ./Source/OpenEXR/IlmThreadConfig.h
+        ./Source/OpenEXR/OpenEXRConfig.h ./Source/OpenEXR/OpenEXRConfigInternal.h
     )
+    # NOTE: Source/OpenEXR/IlmImf/b44ExpLogTable.cpp and dwaLookups.cpp are
+    # deliberately NOT listed above. Both are standalone maintainer tools
+    # (unguarded `main()`, print a C array literal to stdout) used to
+    # regenerate lookup-table data - not library code. The real, already-
+    # generated tables the library uses at runtime live in
+    # Source/OpenEXR/OpenEXRCore/dwaLookups.h and internal_b44_table.c.
+    # Compiling these two into the library works fine for a static build
+    # (nothing ever resolves the unused `main` symbols in an archive), but
+    # breaks any shared/executable link with "multiple definition of main".
         list(APPEND FreeImage_SOURCES ${FreeImage_IMATH_SRCS} ${FreeImage_IEX_SRCS}
             ${FreeImage_ILMTHREAD_SRCS} ${FreeImage_OPENEXRCORE_SRCS}
             ${FreeImage_LIBDEFLATE_SRCS} ${FreeImage_OPENEXR_SRCS})
