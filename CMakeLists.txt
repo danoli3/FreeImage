@@ -1,5 +1,52 @@
 cmake_minimum_required(VERSION 3.16)
-project(FreeImage VERSION 3.19.0 LANGUAGES C CXX)
+
+# Determine the version from the latest git tag (e.g. "3.19.12"), falling
+# back to a static default when building from a source archive without
+# .git history (or when git isn't installed). This has to run before
+# project() below, since its VERSION argument needs a literal
+# MAJOR.MINOR.PATCH at parse time - it can't be computed afterwards.
+set(FREEIMAGE_VERSION_FALLBACK 3.19.12)
+set(FREEIMAGE_VERSION_COMMITS 0)
+set(FREEIMAGE_VERSION_HASH "unknown")
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --long --match "[0-9]*.[0-9]*.[0-9]*"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE FREEIMAGE_GIT_DESCRIBE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        RESULT_VARIABLE FREEIMAGE_GIT_DESCRIBE_RESULT
+    )
+    if(FREEIMAGE_GIT_DESCRIBE_RESULT EQUAL 0)
+        # e.g. "3.19.12-45-ge32af9e" -> tag 3.19.12, 45 commits past it, hash ge32af9e
+        string(REGEX MATCH "^([0-9]+\\.[0-9]+\\.[0-9]+)-([0-9]+)-(g[0-9a-f]+)$" _fi_ver_match "${FREEIMAGE_GIT_DESCRIBE}")
+        if(_fi_ver_match)
+            set(FREEIMAGE_VERSION ${CMAKE_MATCH_1})
+            set(FREEIMAGE_VERSION_COMMITS ${CMAKE_MATCH_2})
+            set(FREEIMAGE_VERSION_HASH ${CMAKE_MATCH_3})
+        endif()
+    endif()
+endif()
+if(NOT FREEIMAGE_VERSION)
+    set(FREEIMAGE_VERSION ${FREEIMAGE_VERSION_FALLBACK})
+endif()
+
+project(FreeImage VERSION ${FREEIMAGE_VERSION} LANGUAGES C CXX)
+
+set(FREEIMAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(FREEIMAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(FREEIMAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+# Human-readable version string: bare "3.19.12" exactly on a tag, or
+# "3.19.12+45.ge32af9e" (build metadata suffix, SemVer-style) in between.
+if(FREEIMAGE_VERSION_COMMITS EQUAL 0)
+    set(FREEIMAGE_VERSION_STRING "${FREEIMAGE_VERSION}")
+else()
+    set(FREEIMAGE_VERSION_STRING "${FREEIMAGE_VERSION}+${FREEIMAGE_VERSION_COMMITS}.${FREEIMAGE_VERSION_HASH}")
+endif()
+string(TIMESTAMP FREEIMAGE_COPYRIGHT_YEAR "%Y")
+message(STATUS "FreeImage version: ${FREEIMAGE_VERSION_STRING}")
 
 # Options for configuring the build
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -949,6 +996,19 @@ endif()
 include_directories(Source)
 include_directories(Source/Metadata)
 include_directories(Source/FreeImageToolkit)
+
+# Generate the Windows version resource from the git-tag-derived version
+# computed above, so FILEVERSION/PRODUCTVERSION (and the copyright year)
+# never need a manual bump again. Only meaningful on Windows, but
+# configure_file() is cheap enough to just always run it.
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/FreeImage.rc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/FreeImage.rc"
+    @ONLY
+)
+if(WIN32)
+    list(APPEND FreeImage_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/FreeImage.rc")
+endif()
 
 if(FREEIMAGE_STATIC)
     # Define the FreeImage library
