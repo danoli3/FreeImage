@@ -10,7 +10,7 @@ FreeImage is easy to use, fast, multithreading safe, and cross-platform (works w
 
 Thanks to it's ANSI C interface, FreeImage is usable in many languages including C, C++, VB, C#, Delphi, Java and also in common scripting languages such as Perl, Python, PHP, TCL, Lua or Ruby.
 The library comes in two versions: a binary DLL distribution that can be linked against any WIN32/WIN64 C/C++ compiler and a source distribution.
-Workspace files for Microsoft Visual Studio provided, as well as makefiles for Linux, Mac OS X and other systems.
+Built with CMake for Windows, Linux, Mac OS X and other systems - see [Building this fork](#building-this-fork) below, including generating Visual Studio project files.
 
 ## Original Source Code Upstream
 https://sourceforge.net/projects/freeimage
@@ -65,6 +65,13 @@ cmake --build build
 ```bash
 make -j$(nproc)
 ```
+
+### Generate Visual Studio project files
+
+```bash
+cmake --preset vs2022   # or: cmake --preset vs2026
+```
+Generates a full solution under `build-vs2022/` (or `build-vs2026/`) - open `FreeImage.sln` from there in Visual Studio. See `CMakePresets.json` for the exact generator/options used.
 
 ### Build and install Debug and Release configuration
 
