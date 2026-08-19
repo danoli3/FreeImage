@@ -95,7 +95,17 @@ for sub in $SOURCE_SUBDIRS; do
 		# If upstream genuinely added/removed a required source file,
 		# that's rare enough to warrant a human updating CMakeLists.txt
 		# by hand rather than trusting a glob to guess correctly.
-		SRC="$EXTRACTED_ROOT"
+		# UPSTREAM_SUBDIR (optional) lets a library's config say "read the
+		# flat file set from this subdir of the tarball, not the tarball
+		# root itself" - e.g. modern libtiff moved its actual library
+		# source into a libtiff/ subdir (CLI tools moved to tools/), while
+		# this repo still keeps it flattened directly under Source/LibTIFF4
+		# with no nesting, matching the pre-existing layout.
+		if [ -n "${UPSTREAM_SUBDIR:-}" ]; then
+			SRC="$EXTRACTED_ROOT/$UPSTREAM_SUBDIR"
+		else
+			SRC="$EXTRACTED_ROOT"
+		fi
 		DST="$VENDOR_PATH"
 		mkdir -p "$DST"
 		if [ -z "${CMAKE_VAR:-}" ]; then
