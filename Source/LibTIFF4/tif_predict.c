@@ -30,7 +30,10 @@
 #include "tif_predict.h"
 #include "tiffiop.h"
 
-#if defined(__x86_64__) || defined(_M_X64)
+/* _M_X64 is also defined for ARM64EC, where MSVC's emmintrin.h requires
+ * going through intrin.h - not worth chasing, just fall back to the
+ * portable path there. */
+#if defined(__x86_64__) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #include <emmintrin.h>
 #endif
 
@@ -590,7 +593,10 @@ static int fpAcc(TIFF *tif, uint8_t *cp0, tmsize_t cc)
     cp = (uint8_t *)cp0;
     count = 0;
 
-#if defined(__x86_64__) || defined(_M_X64)
+/* _M_X64 is also defined for ARM64EC, where MSVC's emmintrin.h requires
+ * going through intrin.h - not worth chasing, just fall back to the
+ * portable path there. */
+#if defined(__x86_64__) || (defined(_M_X64) && !defined(_M_ARM64EC))
     if (bps == 4)
     {
         /* Optimization of general case */

@@ -72,8 +72,11 @@ static WEBP_INLINE uint64_t xgetbv(void) {
     : "=a"(eax), "=d"(edx) : "c" (ecx));
   return ((uint64_t)edx << 32) | eax;
 }
-#elif (defined(_M_X64) || defined(_M_IX86)) && \
+#elif (defined(_M_X64) || defined(_M_IX86)) && !defined(_M_ARM64EC) && \
       defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 160040219  // >= VS2010 SP1
+// _M_X64 is also defined for ARM64EC, where MSVC's immintrin.h requires
+// going through intrin.h - excluded above, falls through to the portable
+// __asm path below instead.
 #include <immintrin.h>
 #define xgetbv() _xgetbv(0)
 #elif defined(_MSC_VER) && defined(_M_IX86)
