@@ -127,7 +127,15 @@ read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen) {
 				FreeImage_SetTagType(tag, FIDT_SSHORT);
 				FreeImage_SetTagCount(tag, 1);
 				short *pvalue = (short*)&iptc_value[0];
-				*pvalue = (short)((profile[offset] << 8) | profile[offset + 1]);
+				// tagByteCount is attacker-controlled and only guaranteed to
+				// leave at least 1 byte available (see the bounds check
+				// above) - reading profile[offset + 1] unconditionally can
+				// read one byte past the end of the profile buffer.
+				if (tagByteCount >= 2) {
+					*pvalue = (short)((profile[offset] << 8) | profile[offset + 1]);
+				} else {
+					*pvalue = (short)(profile[offset] << 8);
+				}
 				FreeImage_SetTagValue(tag, pvalue);
 				break;
 			}

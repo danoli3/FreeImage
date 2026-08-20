@@ -203,7 +203,11 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 	FIBITMAP *dib = NULL;
 	BYTE *bits;			// Pointer to dib data
-	WORD x, y;
+	// DWORD, not WORD: header.width/height are DWORD, and x/y are compared
+	// against them below - a WORD x or y would wrap at 65536 for a crafted
+	// large image, turning "for (x = 0; x < header.width; x++)" into an
+	// effectively unbounded loop that walks bits/buf far past their real size.
+	DWORD x, y;
 
 	if(!handle) {
 		return NULL;
@@ -398,7 +402,17 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			{
 				BYTE *buf, *bp;
 
+				// header.width * 3 is DWORD arithmetic and can wrap for a
+				// crafted huge width - the per-pixel copy loop below still
+				// iterates the real (unwrapped) header.width times, so a
+				// wrapped, undersized buf would be read/written past its end.
+				if (header.width > ((DWORD)-1) / 3) {
+					throw "RAS: invalid width";
+				}
 				buf = (BYTE*)malloc(header.width * 3);
+				if (!buf) {
+					throw FI_MSG_ERROR_MEMORY;
+				}
 
 				for (y = 0; y < header.height; y++) {
 					bits = FreeImage_GetBits(dib) + (header.height - 1 - y) * pitch;
@@ -438,7 +452,14 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			{
 				BYTE *buf, *bp;
 
+				// see the case 24 comment above - same overflow risk, *4 instead of *3.
+				if (header.width > ((DWORD)-1) / 4) {
+					throw "RAS: invalid width";
+				}
 				buf = (BYTE*)malloc(header.width * 4);
+				if (!buf) {
+					throw FI_MSG_ERROR_MEMORY;
+				}
 
 				for (y = 0; y < header.height; y++) {
 					bits = FreeImage_GetBits(dib) + (header.height - 1 - y) * pitch;
