@@ -152,6 +152,41 @@ jobs:
         run: |
           ctest --test-dir build --build-config Debug --verbose
 
+  windows-vs-presets:
+    # Verifies the vs2022/vs2026 CMakePresets.json entries actually generate
+    # a working Visual Studio solution - can't be tested from a non-Windows
+    # host at all (the VS generators don't exist in a macOS/Linux CMake
+    # build), so this is the only real signal for that workflow.
+    name: Visual Studio project generation (CMakePresets)
+    runs-on: windows-latest
+    defaults:
+      run:
+        # Not bash (the workflow-level default): Git Bash can't represent
+        # env var names with parentheses, so ProgramFiles(x86) gets dropped
+        # - which is what CMake's VS-instance detection reads, causing
+        # "could not find any instance of Visual Studio" even though it's
+        # actually installed.
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: cmake --version
+        run: cmake --version
+      - name: Generate and build vs2022 preset
+        run: |
+          cmake --preset vs2022
+          cmake --build build-vs2022 --config Debug
+          ctest --test-dir build-vs2022 --build-config Debug --verbose
+      - name: Generate and build vs2026 preset (best-effort)
+        # VS2026/a new-enough CMake for the "Visual Studio 18 2026" generator
+        # may not be on the runner image yet - report status without failing
+        # the job over it.
+        continue-on-error: true
+        run: |
+          cmake --preset vs2026
+          cmake --build build-vs2026 --config Debug
+          ctest --test-dir build-vs2026 --build-config Debug --verbose
+
   openframeworks-tests:
     # Builds this FreeImage checkout and drops it into a real openFrameworks
     # checkout in place of oF's own prebuilt copy, then runs oF's
