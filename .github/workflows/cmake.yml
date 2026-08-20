@@ -55,10 +55,10 @@ jobs:
             # test binary before main() even runs on this job's preinstalled
             # mingw toolchain - reproduces on master, narrowed down to some
             # static/module-load-time initializer in the OpenEXR dependency
-            # chain, not yet root-caused. windows-mingw-w64 below (a current
-            # MSYS2 GCC toolchain, not whatever ships on windows-latest)
-            # doesn't hit this, so it's specific to this toolchain rather
-            # than mingw/GCC in general. Force it off here until root-caused.
+            # chain, not yet root-caused. windows-msys2 below (current MSYS2
+            # toolchains, not whatever ships on windows-latest) doesn't hit
+            # this, so it's specific to this toolchain rather than mingw/GCC
+            # in general. Force it off here until root-caused.
             cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -DBUILD_OPENEXR=OFF -G "MinGW Makefiles"
           else
             cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
@@ -74,30 +74,46 @@ jobs:
         run: |
           ctest --test-dir build --build-config ${{ matrix.configuration }} --verbose
 
-  windows-mingw-w64:
+  windows-msys2:
     # Dedicated job (rather than another `build` matrix entry) because it
     # needs the msys2 shell and an explicitly installed, current mingw-w64
-    # GCC toolchain - closer to what a Windows 10 user following winlibs.com
-    # (see issue #48) actually builds with than whatever mingw happens to be
-    # preinstalled on the windows-latest runner for the `windows-mingw` entry
-    # above.
-    name: windows-mingw-w64 (MSYS2 GCC)
+    # toolchain - closer to what a Windows 10 user following winlibs.com
+    # (see issue #48) or MSYS2's own docs actually builds with than whatever
+    # mingw happens to be preinstalled on the windows-latest runner for the
+    # `windows-mingw` entry above. Covers the three MSYS2 environments
+    # people actually build FreeImage with on x86_64 (see issue #29 for the
+    # clang ones): MINGW64 (legacy GCC/msvcrt), UCRT64 (GCC/UCRT, MSYS2's
+    # current default), CLANG64 (Clang/UCRT). CLANGARM64 is deliberately not
+    # covered here: its own toolchain binaries are native ARM64, so they
+    # can't even execute on this x86_64 runner ("Exec format error") - it
+    # would need a real ARM64 Windows runner, not a cross-compile setup.
+    name: windows-msys2 (${{ matrix.msystem }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - msystem: MINGW64
+            prefix: mingw-w64-x86_64
+          - msystem: UCRT64
+            prefix: mingw-w64-ucrt-x86_64
+          - msystem: CLANG64
+            prefix: mingw-w64-clang-x86_64
     defaults:
       run:
         shell: msys2 {0}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up MSYS2 mingw-w64 toolchain
+      - name: Set up MSYS2 (${{ matrix.msystem }})
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ${{ matrix.msystem }}
           update: true
           install: >-
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
+            ${{ matrix.prefix }}-toolchain
+            ${{ matrix.prefix }}-cmake
+            ${{ matrix.prefix }}-ninja
       - name: Configure
         run: |
           cmake -S . -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DUNICODE=ON -D_UNICODE=ON
