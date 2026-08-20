@@ -35,6 +35,22 @@
             "cacheVariables": {
                 "BUILD_TESTS": "ON"
             }
+        },
+        {
+            "name": "ninja-msvc",
+            "displayName": "Ninja (MSVC)",
+            "description": "Builds with cl.exe via Ninja under build-ninja-msvc/ - run from a Developer Command Prompt/PowerShell (or after vcvarsall.bat) so cl.exe is on PATH.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-ninja-msvc",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "BUILD_TESTS": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
         }
     ]
 }

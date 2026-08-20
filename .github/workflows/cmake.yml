@@ -202,6 +202,15 @@ jobs:
           cmake --preset vs2026
           cmake --build build-vs2026 --config Debug
           ctest --test-dir build-vs2026 --build-config Debug --verbose
+      - name: Set up MSVC developer environment
+        # Only needed for the Ninja preset below - unlike the VS generator
+        # above, Ninja doesn't do its own VS-instance detection.
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Generate and build ninja-msvc preset
+        run: |
+          cmake --preset ninja-msvc
+          cmake --build build-ninja-msvc
+          ctest --test-dir build-ninja-msvc --build-config Debug --verbose
 
   openframeworks-tests:
     # Builds this FreeImage checkout and drops it into a real openFrameworks
