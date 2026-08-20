@@ -12,6 +12,29 @@ Thanks to it's ANSI C interface, FreeImage is usable in many languages including
 The library comes in two versions: a binary DLL distribution that can be linked against any WIN32/WIN64 C/C++ compiler and a source distribution.
 Built with CMake for Windows, Linux, Mac OS X and other systems - see [Building this fork](#building-this-fork) below, including generating Visual Studio project files.
 
+### Why use FreeImage instead of linking each format library yourself?
+
+Loading a PNG, a GIF and a JPEG from scratch in C++ means three different APIs (`libpng`, `giflib`-or-hand-rolled-LZW, `libjpeg`), three different error-handling conventions, and three sets of build flags to get right across platforms. FreeImage wraps [all of the libraries below](#supported-formats--bundled-libraries) behind one API - one `FreeImage_Load()`/`FreeImage_Save()` pair, one pixel format model (`FIBITMAP`), one metadata API (EXIF/IPTC/XMP) - so format-specific code doesn't leak into the rest of your application. Swapping a PNG for a WebP, or reading a RAW file the same way you read a BMP, is a one-line change rather than a new dependency.
+
+This fork additionally builds the whole stack (FreeImage plus every bundled library) from one `CMakeLists.txt`, so `find_package(FreeImage)` is the only thing a consuming CMake project needs - see [Using compiled binaries](#using-compiled-binaries) below.
+
+## Supported formats & bundled libraries
+
+Formats implemented directly in FreeImage's own plugin code (no external library): BMP, ICO, TARGA/TGA, PCX, DDS, GIF, PSD, PICT, PFM, RAS/Sun Raster, SGI, XBM, XPM, Amiga IFF/LBM, Kodak PCD, PNM/PBM/PGM/PPM, CUT, and WBMP.
+
+Everything else is backed by a bundled, patched copy of the format's reference library - each can also be linked against a system copy instead via the matching `USE_SYSTEM_*`/`BUILD_*` CMake option (see `CMakeLists.txt`):
+
+| Formats | Library | Bundled version |
+|---|---|---|
+| PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.58 (zlib 1.3.2) |
+| JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 |
+| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.1 |
+| JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouwain/openjpeg) | 2.5.4 |
+| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ Imath) | 3.3.13 (Imath 3.1.12) |
+| WebP | [libwebp](https://developers.google.com/speed/webp) | current (see `Source/LibWebP`) |
+| Camera RAW | [LibRaw](https://www.libraw.org/) | 0.22.1 |
+| JPEG-XR (Windows by default, see [Building this fork](#building-this-fork)) | [jxrlib](https://jxrlib.codeplex.com/) | - |
+
 ## Original Source Code Upstream
 https://sourceforge.net/projects/freeimage
 Original library can be found : https://freeimage.sourceforge.io 
