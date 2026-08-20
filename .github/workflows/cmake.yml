@@ -51,7 +51,15 @@ jobs:
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
             cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -G "MinGW Makefiles"
+            # BUILD_OPENEXR=ON (the default for C++17+ since #85) hangs the
+            # test binary before main() even runs on this job's preinstalled
+            # mingw toolchain - reproduces on master, narrowed down to some
+            # static/module-load-time initializer in the OpenEXR dependency
+            # chain, not yet root-caused. windows-mingw-w64 below (a current
+            # MSYS2 GCC toolchain, not whatever ships on windows-latest)
+            # doesn't hit this, so it's specific to this toolchain rather
+            # than mingw/GCC in general. Force it off here until root-caused.
+            cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }} -DBUILD_OPENEXR=OFF -G "MinGW Makefiles"
           else
             cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DUNICODE=ON -D_UNICODE=ON -DCMAKE_CXX_STANDARD=${{ matrix.cppstandard }} -DCMAKE_C_STANDARD=${{ matrix.cstandard }}
           fi
