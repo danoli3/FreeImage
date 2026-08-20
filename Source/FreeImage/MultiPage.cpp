@@ -108,10 +108,11 @@ struct MULTIBITMAPHEADER {
 		, read_only(TRUE)
 		, cache_fif(fif)
 		, load_flags(0)
+		, read_data(NULL)
 	{
 		SetDefaultIO(&io);
 	}
-	
+
 	PluginNode *node;
 	FREE_IMAGE_FORMAT fif;
 	FreeImageIO io;
@@ -125,6 +126,12 @@ struct MULTIBITMAPHEADER {
 	BOOL read_only;
 	FREE_IMAGE_FORMAT cache_fif;
 	int load_flags;
+	// plugin decoder state kept open for the lifetime of the multi-bitmap
+	// (lazily opened on the first FreeImage_LockPage() call), so plugins
+	// that keep their own state - e.g. PluginGIF.cpp's GIF_PLAYBACK cache -
+	// can see it survive across sequential page requests instead of being
+	// torn down and rebuilt on every single FreeImage_LockPage() call.
+	void *read_data;
 };
 
 // =====================================================================
@@ -482,8 +489,14 @@ FreeImage_CloseMultiBitmap(FIMULTIBITMAP *bitmap, int flags) {
 		BOOL success = TRUE;
 		
 		if (bitmap->data) {
-			MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);			
-			
+			MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
+
+			// close the decoder state FreeImage_LockPage() kept open, if any
+			if (header->read_data != NULL) {
+				FreeImage_Close(header->node, &header->io, header->handle, header->read_data);
+				header->read_data = NULL;
+			}
+
 			// saves changes only of images loaded directly from a file
 			if (header->changed && !header->m_filename.empty()) {
 				try {
@@ -698,28 +711,27 @@ FreeImage_LockPage(FIMULTIBITMAP *bitmap, int page) {
 			}
 		}
 
-		// open the bitmap
-		
-		header->io.seek_proc(header->handle, 0, SEEK_SET);
-		
-		void *data = FreeImage_Open(header->node, &header->io, header->handle, TRUE);
-		
+		// open the bitmap decoder once and keep it open for the lifetime of
+		// the multi-bitmap, instead of reopening it on every single page -
+		// this both avoids re-parsing the file from scratch each call and
+		// lets plugins retain their own state across sequential page
+		// requests (see PluginGIF.cpp's GIF_PLAYBACK cache)
+
+		if (header->read_data == NULL) {
+			header->io.seek_proc(header->handle, 0, SEEK_SET);
+			header->read_data = FreeImage_Open(header->node, &header->io, header->handle, TRUE);
+		}
+
 		// load the bitmap data
-		
-		if (data != NULL) {
-			FIBITMAP *dib = (header->node->m_plugin->load_proc != NULL) ? header->node->m_plugin->load_proc(&header->io, header->handle, page, header->load_flags, data) : NULL;
 
-			// close the file
-			
-			FreeImage_Close(header->node, &header->io, header->handle, data);
-
-			// if there was still another bitmap open, get rid of it
+		if (header->read_data != NULL) {
+			FIBITMAP *dib = (header->node->m_plugin->load_proc != NULL) ? header->node->m_plugin->load_proc(&header->io, header->handle, page, header->load_flags, header->read_data) : NULL;
 
 			if (dib) {
 				header->locked_pages[dib] = page;
 
 				return dib;
-			}	
+			}
 
 			return NULL;
 		}
