@@ -558,6 +558,20 @@ if(BUILD_WEBP)
     # as <webp/decode.h>, which needs Source/LibWebP/src on the path too.
     include_directories(Source/LibWebP/src)
     add_definitions(-DINCLUDE_LIB_WEBP)
+
+    # Real MSVC doesn't gate SIMD intrinsics on /arch:, but clang-cl (which
+    # also defines _MSC_VER) does enforce per-function target features - so
+    # LibWebP's hand-dispatched SSE4.1/AVX2 sources need the matching -m
+    # flags explicitly under clang-cl, passed through via its /clang: prefix.
+    if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        foreach(_webp_simd_src ${FreeImage_WEBP_SRCS})
+            if(_webp_simd_src MATCHES "_sse41\\.c$")
+                set_source_files_properties(${_webp_simd_src} PROPERTIES COMPILE_OPTIONS "/clang:-msse4.1")
+            elseif(_webp_simd_src MATCHES "_avx2\\.c$")
+                set_source_files_properties(${_webp_simd_src} PROPERTIES COMPILE_OPTIONS "/clang:-mavx2")
+            endif()
+        endforeach()
+    endif()
     endif()
 endif()
 
@@ -995,6 +1009,16 @@ if(BUILD_OPENEXR)
         include_directories(Source/Imath)
         include_directories(Source/LibDeflate)
         add_definitions(-DINCLUDE_LIB_OPENEXR)
+
+        # Same clang-cl vs real-MSVC target-feature gating issue as LibWebP
+        # above: OpenEXR's own runtime-dispatched SSE2/SSSE3/SSE4.1/AVX2
+        # paths (ImfZip.cpp, internal_zip.c, internal_dwa.c, unpack.c, ...)
+        # compile unconditionally, real MSVC doesn't need /arch: for them,
+        # clang-cl does.
+        if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            set_source_files_properties(${FreeImage_OPENEXR_SRCS} ${FreeImage_OPENEXRCORE_SRCS}
+                PROPERTIES COMPILE_OPTIONS "/clang:-mssse3;/clang:-msse4.1;/clang:-mavx;/clang:-mavx2")
+        endif()
     endif()
 endif()
 
@@ -1050,8 +1074,8 @@ if (APPLE)
     endif()
 endif()
 
-# Enable Multi-core compilation in MSVC
-if (MSVC)
+# Enable Multi-core compilation in MSVC (not supported by clang-cl)
+if (MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(${PROJECT_NAME} PRIVATE /MP)
 endif()
 if (WIN32)
