@@ -2,6 +2,13 @@ name: "CMake build"
 
 on:
   push:
+    # unscoped push: would also fire for every push to an open PR's branch,
+    # duplicating the pull_request run below for the same commit. Scoping
+    # to master keeps a post-merge signal without doubling PR CI - the
+    # pull_request run below is the more useful of the two for PR branches
+    # anyway, since it tests the merge commit against current master.
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
