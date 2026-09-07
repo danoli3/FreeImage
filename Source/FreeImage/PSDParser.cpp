@@ -1519,6 +1519,11 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 
 	const unsigned dstBpp =  (depth == 1) ? 1 : FreeImage_GetBPP(bitmap)/8;
 	const unsigned dstLineSize = FreeImage_GetPitch(bitmap);
+	if ((nHeight != 0) && (dstLineSize > (~0u / nHeight))) {
+		FreeImage_Unload(bitmap);
+		throw "Invalid PSD image";
+	}
+	const unsigned dst_buffer_size = dstLineSize * nHeight;
 	BYTE* const dst_first_line = FreeImage_GetScanLine(bitmap, nHeight - 1);//<*** flipped
 
 	BYTE* line_start = new BYTE[lineSize]; //< fileline cache
@@ -1533,6 +1538,13 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 				}
 
 				const unsigned channelOffset = GetChannelOffset(bitmap, c) * bytes;
+
+				// Channel writes must fit in the allocated DIB (CVE-2020-24295).
+				if ((channelOffset >= dst_buffer_size) || (lineSize > dst_buffer_size - channelOffset)) {
+					FreeImage_Unload(bitmap);
+					SAFE_DELETE_ARRAY(line_start);
+					throw "Invalid PSD image";
+				}
 
 				BYTE* dst_line_start = dst_first_line + channelOffset;
 				for(unsigned h = 0; h < nHeight; ++h, dst_line_start -= dstLineSize) {//<*** flipped
@@ -1613,6 +1625,15 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 				const BYTE* const line_end = line_start + lineSize;
 
 				const unsigned channelOffset = GetChannelOffset(bitmap, ch) * bytes;
+
+				// Channel writes must fit in the allocated DIB (CVE-2020-24295).
+				if ((channelOffset >= dst_buffer_size) || (lineSize > dst_buffer_size - channelOffset)) {
+					FreeImage_Unload(bitmap);
+					SAFE_DELETE_ARRAY(line_start);
+					SAFE_DELETE_ARRAY(rleLineSizeList);
+					SAFE_DELETE_ARRAY(rle_line_start);
+					throw "Invalid PSD image";
+				}
 
 				BYTE* dst_line_start = dst_first_line + channelOffset;
 				for(unsigned h = 0; h < nHeight; ++h, dst_line_start -= dstLineSize) {//<*** flipped
