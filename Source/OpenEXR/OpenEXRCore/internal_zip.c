@@ -15,12 +15,19 @@
 
 #include "openexr_compression.h"
 
-#if defined __SSE2__ || (_MSC_VER >= 1300 && (_M_IX86 || _M_X64))
+// ARM64EC also defines _M_X64 for x64 source compatibility, but MSVC
+// forbids including the x86 intrinsic headers (emmintrin.h etc.) directly
+// on that target - only <intrin.h> is allowed there. So SSE2/SSE4.1 must
+// stay off for ARM64EC and fall back to the generic path, same as real
+// ARM64.
+#if defined __SSE2__ ||                                                        \
+    (_MSC_VER >= 1300 && (_M_IX86 || _M_X64) && !defined(_M_ARM64EC))
 #    define IMF_HAVE_SSE2 1
 #    include <emmintrin.h>
 #    include <mmintrin.h>
 #endif
-#if defined __SSE4_1__ || (_MSC_VER >= 1300 && (_M_IX86 || _M_X64))
+#if defined __SSE4_1__ ||                                                      \
+    (_MSC_VER >= 1300 && (_M_IX86 || _M_X64) && !defined(_M_ARM64EC))
 #    define IMF_HAVE_SSE4_1 1
 #    include <smmintrin.h>
 #endif

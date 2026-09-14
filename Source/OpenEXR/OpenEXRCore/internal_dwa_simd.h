@@ -18,7 +18,13 @@
 // aligned. Unaligned pointers may risk seg-faulting.
 //
 
-#if defined __SSE2__ || (_MSC_VER && (_M_IX86 || _M_X64))
+// ARM64EC also defines _M_X64 for x64 source compatibility, but MSVC
+// forbids including the x86 intrinsic headers (emmintrin.h etc.) directly
+// on that target - only <intrin.h> is allowed there. So SSE2 must stay
+// off for ARM64EC and fall back to the generic/NEON paths, same as real
+// ARM64.
+#if defined __SSE2__ ||                                                        \
+    (_MSC_VER && (_M_IX86 || _M_X64) && !defined(_M_ARM64EC))
 #    define IMF_HAVE_SSE2 1
 #    include <emmintrin.h>
 #    include <mmintrin.h>
