@@ -19,7 +19,7 @@
 #ifndef INCLUDED_OPENEXR_VERSION_H
 #define OPENEXR_VERSION_MAJOR 3
 #define OPENEXR_VERSION_MINOR 3
-#define OPENEXR_VERSION_PATCH 13
+#define OPENEXR_VERSION_PATCH 14
 #endif
 
 //
@@ -56,8 +56,8 @@
 // Version string for runtime access
 //
 
-#define OPENEXR_VERSION_STRING "3.3.13"
-#define OPENEXR_PACKAGE_STRING "OpenEXR 3.3.13"
+#define OPENEXR_VERSION_STRING "3.3.14"
+#define OPENEXR_PACKAGE_STRING "OpenEXR 3.3.14"
 
 #define OPENEXR_VERSION_RELEASE_TYPE ""
 // Deprecated, for back compatibility:
