@@ -16,21 +16,25 @@
 
 IMATH_INTERNAL_NAMESPACE_HEADER_ENTER
 
-
 /// Define Imath::enable_if_t to be std for C++14, equivalent for C++11.
 #if (IMATH_CPLUSPLUS_VERSION >= 14)
-    using std::enable_if_t;    // Use C++14 std::enable_if_t
+using std::enable_if_t; // Use C++14 std::enable_if_t
 #else
-    // Define enable_if_t for C++11
-    template <bool B, class T = void>
-    using enable_if_t = typename std::enable_if<B, T>::type;
+// Define enable_if_t for C++11
+template <bool B, class T = void>
+using enable_if_t = typename std::enable_if<B, T>::type;
 #endif
-
 
 /// An enable_if helper to be used in template parameters which results in
 /// much shorter symbols.
-#define IMATH_ENABLE_IF(...) IMATH_INTERNAL_NAMESPACE::enable_if_t<(__VA_ARGS__), int> = 0
+#define IMATH_ENABLE_IF(...)                                                   \
+    IMATH_INTERNAL_NAMESPACE::enable_if_t<(__VA_ARGS__), int> = 0
 
+/// A type trait that identifies types for which Vec length/normalize operations
+/// are meaningful. Defaults to std::is_floating_point, with a specialization
+/// for half.
+template <class T>
+struct is_float_like : public std::is_floating_point<T> {};
 
 #if IMATH_FOREIGN_VECTOR_INTEROP
 
@@ -75,12 +79,11 @@ IMATH_INTERNAL_NAMESPACE_HEADER_ENTER
 ///     struct Imath::has_subscript<mytype, B, N> : public std::false_type { };
 ///
 
-
 /// `has_xy<T,Base>::value` will be true if type `T` has member variables
 /// `.x` and `.y`, all of type `Base`, and the size of a `T` is exactly big
 /// enough to hold 2 Base values.
-template <typename T, typename Base>
-struct has_xy {
+template <typename T, typename Base> struct has_xy
+{
 private:
     typedef char Yes[1];
     typedef char No[2];
@@ -93,19 +96,22 @@ private:
     static Yes& test (int);
 
     // Fallback, default to returning a No.
-    template<typename C> static No& test(...);
-public:
-    enum { value = (sizeof(test<T>(0)) == sizeof(Yes)
-                    && sizeof(T) == 2*sizeof(Base))
-      };
-};
+    template <typename C> static No& test (...);
 
+public:
+    enum
+    {
+        value =
+            (sizeof (test<T> (0)) == sizeof (Yes) &&
+             sizeof (T) == 2 * sizeof (Base))
+    };
+};
 
 /// `has_xyz<T,Base>::value` will be true if type `T` has member variables
 /// `.x`, `.y`, and `.z`, all of type `Base`, and the size of a `T` is
 /// exactly big enough to hold 3 Base values.
-template <typename T, typename Base>
-struct has_xyz {
+template <typename T, typename Base> struct has_xyz
+{
 private:
     typedef char Yes[1];
     typedef char No[2];
@@ -119,19 +125,22 @@ private:
     static Yes& test (int);
 
     // Fallback, default to returning a No.
-    template<typename C> static No& test(...);
-public:
-    enum { value = (sizeof(test<T>(0)) == sizeof(Yes)
-                    && sizeof(T) == 3*sizeof(Base))
-      };
-};
+    template <typename C> static No& test (...);
 
+public:
+    enum
+    {
+        value =
+            (sizeof (test<T> (0)) == sizeof (Yes) &&
+             sizeof (T) == 3 * sizeof (Base))
+    };
+};
 
 /// `has_xyzw<T,Base>::value` will be true if type `T` has member variables
 /// `.x`, `.y`, `.z`, and `.w`, all of type `Base`, and the size of a `T` is
 /// exactly big enough to hold 4 Base values.
-template <typename T, typename Base>
-struct has_xyzw {
+template <typename T, typename Base> struct has_xyzw
+{
 private:
     typedef char Yes[1];
     typedef char No[2];
@@ -146,20 +155,22 @@ private:
     static Yes& test (int);
 
     // Fallback, default to returning a No.
-    template<typename C> static No& test(...);
+    template <typename C> static No& test (...);
+
 public:
-    enum { value = (sizeof(test<T>(0)) == sizeof(Yes)
-                    && sizeof(T) == 4*sizeof(Base))
-      };
+    enum
+    {
+        value =
+            (sizeof (test<T> (0)) == sizeof (Yes) &&
+             sizeof (T) == 4 * sizeof (Base))
+    };
 };
-
-
 
 /// `has_subscript<T,Base,Nelem>::value` will be true if type `T` has
 /// subscripting syntax, a `T[int]` returns a `Base`, and the size of a `T`
 /// is exactly big enough to hold `Nelem` `Base` values.
-template <typename T, typename Base, int Nelem>
-struct has_subscript {
+template <typename T, typename Base, int Nelem> struct has_subscript
+{
 private:
     typedef char Yes[1];
     typedef char No[2];
@@ -173,25 +184,28 @@ private:
     static Yes& test (int);
 
     // Fallback, default to returning a No.
-    template<typename C> static No& test(...);
+    template <typename C> static No& test (...);
+
 public:
-    enum { value = (sizeof(test<T>(0)) == sizeof(Yes)
-                    && sizeof(T) == Nelem*sizeof(Base))
-      };
+    enum
+    {
+        value =
+            (sizeof (test<T> (0)) == sizeof (Yes) &&
+             sizeof (T) == Nelem * sizeof (Base))
+    };
 };
 
-
 /// C arrays of just the right length also are qualified for has_subscript.
-template<typename Base, int Nelem>
-struct has_subscript<Base[Nelem], Base, Nelem> : public std::true_type { };
-
-
+template <typename Base, int Nelem>
+struct has_subscript<Base[Nelem], Base, Nelem> : public std::true_type
+{};
 
 /// `has_double_subscript<T,Base,Rows,Cols>::value` will be true if type `T`
 /// has 2-level subscripting syntax, a `T[int][int]` returns a `Base`, and
 /// the size of a `T` is exactly big enough to hold `R*C` `Base` values.
 template <typename T, typename Base, int Rows, int Cols>
-struct has_double_subscript {
+struct has_double_subscript
+{
 private:
     typedef char Yes[1];
     typedef char No[2];
@@ -205,17 +219,22 @@ private:
     static Yes& test (int);
 
     // Fallback, default to returning a No.
-    template<typename C> static No& test(...);
+    template <typename C> static No& test (...);
+
 public:
-    enum { value = (sizeof(test<T>(0)) == sizeof(Yes)
-                    && sizeof(T) == (Rows*Cols)*sizeof(Base))
-      };
+    enum
+    {
+        value =
+            (sizeof (test<T> (0)) == sizeof (Yes) &&
+             sizeof (T) == (Rows * Cols) * sizeof (Base))
+    };
 };
 
-
 /// C arrays of just the right length also are qualified for has_double_subscript.
-template<typename Base, int Rows, int Cols>
-struct has_double_subscript<Base[Rows][Cols], Base, Rows, Cols> : public std::true_type { };
+template <typename Base, int Rows, int Cols>
+struct has_double_subscript<Base[Rows][Cols], Base, Rows, Cols>
+    : public std::true_type
+{};
 
 /// @}
 
