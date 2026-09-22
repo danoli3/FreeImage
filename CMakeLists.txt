@@ -75,7 +75,14 @@ else()
 endif()
 option(FREEIMAGE_STATIC "Build FreeImage as a static library" ${FREEIMAGE_STATIC_DEFAULT})
 
-option(BUILD_JXR "Build JPEG-XR support" WIN32)
+# option() does not expand a bare WIN32 argument, so `option(... WIN32)`
+# stayed OFF on Windows and CI never compiled jxrlib.
+if(WIN32)
+    set(BUILD_JXR_DEFAULT ON)
+else()
+    set(BUILD_JXR_DEFAULT OFF)
+endif()
+option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
