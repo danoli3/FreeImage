@@ -411,20 +411,50 @@ if(BUILD_JXR)
         list(APPEND FreeImage_LIBS PkgConfig::JXR)
         add_definitions(-DFREEIMAGE_SYSTEM_JXR -DINCLUDE_LIB_JXR)
     else()
+    # Keep this list aligned with the LibJXR entries in Makefile.srcs.
+    # The previous list stopped at "Source/LibJXR/image/" and omitted the
+    # glue objects, so PluginJXR.cpp linked with 27 unresolved symbols.
     set(FreeImage_JXR_SRCS
-        ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c
-        ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c
-        ./Source/LibJXR/image/decode/strInvTransform.c ./Source/LibJXR/image/
-        ./Source/LibJXR/common/include/wmspecstring.h
-        ./Source/LibJXR/common/include/wmspecstrings_adt.h
-        ./Source/LibJXR/common/include/wmspecstrings_strict.h
-        ./Source/LibJXR/common/include/wmspecstrings_undef.h
-        ./Source/LibJXR/image/decode/decode.h ./Source/LibJXR/image/encode/encode.h
-        ./Source/LibJXR/image/sys/ansi.h ./Source/LibJXR/image/sys/common.h
-        ./Source/LibJXR/image/sys/perfTimer.h ./Source/LibJXR/image/sys/strcodec.h
-        ./Source/LibJXR/image/sys/strTransform.h ./Source/LibJXR/image/sys/windowsmediaphoto.h
-        ./Source/LibJXR/image/sys/xplatform_image.h ./Source/LibJXR/image/x86/x86.h
-        ./Source/LibJXR/jxrgluelib/JXRGlue.h ./Source/LibJXR/jxrgluelib/JXRMeta.h
+        Source/LibJXR/image/decode/decode.c
+        Source/LibJXR/image/decode/JXRTranscode.c
+        Source/LibJXR/image/decode/postprocess.c
+        Source/LibJXR/image/decode/segdec.c
+        Source/LibJXR/image/decode/strdec.c
+        Source/LibJXR/image/decode/strdec_x86.c
+        Source/LibJXR/image/decode/strInvTransform.c
+        Source/LibJXR/image/decode/strPredQuantDec.c
+        Source/LibJXR/image/encode/encode.c
+        Source/LibJXR/image/encode/segenc.c
+        Source/LibJXR/image/encode/strenc.c
+        Source/LibJXR/image/encode/strenc_x86.c
+        Source/LibJXR/image/encode/strFwdTransform.c
+        Source/LibJXR/image/encode/strPredQuantEnc.c
+        Source/LibJXR/image/sys/adapthuff.c
+        Source/LibJXR/image/sys/image.c
+        Source/LibJXR/image/sys/strcodec.c
+        Source/LibJXR/image/sys/strPredQuant.c
+        Source/LibJXR/image/sys/strTransform.c
+        Source/LibJXR/jxrgluelib/JXRGlue.c
+        Source/LibJXR/jxrgluelib/JXRGlueJxr.c
+        Source/LibJXR/jxrgluelib/JXRGluePFC.c
+        Source/LibJXR/jxrgluelib/JXRMeta.c
+        Source/LibJXR/common/include/guiddef.h
+        Source/LibJXR/common/include/wmspecstring.h
+        Source/LibJXR/common/include/wmspecstrings_adt.h
+        Source/LibJXR/common/include/wmspecstrings_strict.h
+        Source/LibJXR/common/include/wmspecstrings_undef.h
+        Source/LibJXR/image/decode/decode.h
+        Source/LibJXR/image/encode/encode.h
+        Source/LibJXR/image/sys/ansi.h
+        Source/LibJXR/image/sys/common.h
+        Source/LibJXR/image/sys/perfTimer.h
+        Source/LibJXR/image/sys/strcodec.h
+        Source/LibJXR/image/sys/strTransform.h
+        Source/LibJXR/image/sys/windowsmediaphoto.h
+        Source/LibJXR/image/sys/xplatform_image.h
+        Source/LibJXR/image/x86/x86.h
+        Source/LibJXR/jxrgluelib/JXRGlue.h
+        Source/LibJXR/jxrgluelib/JXRMeta.h
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_JXR_SRCS})
     include_directories(Source/LibJXR)
