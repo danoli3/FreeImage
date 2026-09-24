@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Determine the version from the latest git tag (e.g. "3.19.12"), falling
+# Determine the version from the latest git tag (e.g. "3.19.16"), falling
 # back to a static default when building from a source archive without
 # .git history (or when git isn't installed). This has to run before
 # project() below, since its VERSION argument needs a literal
 # MAJOR.MINOR.PATCH at parse time - it can't be computed afterwards.
-set(FREEIMAGE_VERSION_FALLBACK 3.19.12)
+set(FREEIMAGE_VERSION_FALLBACK 3.19.16)
 set(FREEIMAGE_VERSION_COMMITS 0)
 set(FREEIMAGE_VERSION_HASH "unknown")
 find_package(Git QUIET)
@@ -19,7 +19,7 @@ if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
         RESULT_VARIABLE FREEIMAGE_GIT_DESCRIBE_RESULT
     )
     if(FREEIMAGE_GIT_DESCRIBE_RESULT EQUAL 0)
-        # e.g. "3.19.12-45-ge32af9e" -> tag 3.19.12, 45 commits past it, hash ge32af9e
+        # e.g. "3.19.16-45-ge32af9e" -> tag 3.19.16, 45 commits past it, hash ge32af9e
         string(REGEX MATCH "^([0-9]+\\.[0-9]+\\.[0-9]+)-([0-9]+)-(g[0-9a-f]+)$" _fi_ver_match "${FREEIMAGE_GIT_DESCRIBE}")
         if(_fi_ver_match)
             set(FREEIMAGE_VERSION ${CMAKE_MATCH_1})
@@ -38,8 +38,8 @@ set(FREEIMAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(FREEIMAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(FREEIMAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 
-# Human-readable version string: bare "3.19.12" exactly on a tag, or
-# "3.19.12+45.ge32af9e" (build metadata suffix, SemVer-style) in between.
+# Human-readable version string: bare "3.19.16" exactly on a tag, or
+# "3.19.16+45.ge32af9e" (build metadata suffix, SemVer-style) in between.
 if(FREEIMAGE_VERSION_COMMITS EQUAL 0)
     set(FREEIMAGE_VERSION_STRING "${FREEIMAGE_VERSION}")
 else()
@@ -75,7 +75,14 @@ else()
 endif()
 option(FREEIMAGE_STATIC "Build FreeImage as a static library" ${FREEIMAGE_STATIC_DEFAULT})
 
-option(BUILD_JXR "Build JPEG-XR support" WIN32)
+# option() does not expand a bare WIN32 argument, so `option(... WIN32)`
+# stayed OFF on Windows and CI never compiled jxrlib.
+if(WIN32)
+    set(BUILD_JXR_DEFAULT ON)
+else()
+    set(BUILD_JXR_DEFAULT OFF)
+endif()
+option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
@@ -404,20 +411,50 @@ if(BUILD_JXR)
         list(APPEND FreeImage_LIBS PkgConfig::JXR)
         add_definitions(-DFREEIMAGE_SYSTEM_JXR -DINCLUDE_LIB_JXR)
     else()
+    # Keep this list aligned with the LibJXR entries in Makefile.srcs.
+    # The previous list stopped at "Source/LibJXR/image/" and omitted the
+    # glue objects, so PluginJXR.cpp linked with 27 unresolved symbols.
     set(FreeImage_JXR_SRCS
-        ./Source/LibJXR/image/decode/decode.c ./Source/LibJXR/image/decode/JXRTranscode.c
-        ./Source/LibJXR/image/decode/postprocess.c ./Source/LibJXR/image/decode/segdec.c
-        ./Source/LibJXR/image/decode/strInvTransform.c ./Source/LibJXR/image/
-        ./Source/LibJXR/common/include/wmspecstring.h
-        ./Source/LibJXR/common/include/wmspecstrings_adt.h
-        ./Source/LibJXR/common/include/wmspecstrings_strict.h
-        ./Source/LibJXR/common/include/wmspecstrings_undef.h
-        ./Source/LibJXR/image/decode/decode.h ./Source/LibJXR/image/encode/encode.h
-        ./Source/LibJXR/image/sys/ansi.h ./Source/LibJXR/image/sys/common.h
-        ./Source/LibJXR/image/sys/perfTimer.h ./Source/LibJXR/image/sys/strcodec.h
-        ./Source/LibJXR/image/sys/strTransform.h ./Source/LibJXR/image/sys/windowsmediaphoto.h
-        ./Source/LibJXR/image/sys/xplatform_image.h ./Source/LibJXR/image/x86/x86.h
-        ./Source/LibJXR/jxrgluelib/JXRGlue.h ./Source/LibJXR/jxrgluelib/JXRMeta.h
+        Source/LibJXR/image/decode/decode.c
+        Source/LibJXR/image/decode/JXRTranscode.c
+        Source/LibJXR/image/decode/postprocess.c
+        Source/LibJXR/image/decode/segdec.c
+        Source/LibJXR/image/decode/strdec.c
+        Source/LibJXR/image/decode/strdec_x86.c
+        Source/LibJXR/image/decode/strInvTransform.c
+        Source/LibJXR/image/decode/strPredQuantDec.c
+        Source/LibJXR/image/encode/encode.c
+        Source/LibJXR/image/encode/segenc.c
+        Source/LibJXR/image/encode/strenc.c
+        Source/LibJXR/image/encode/strenc_x86.c
+        Source/LibJXR/image/encode/strFwdTransform.c
+        Source/LibJXR/image/encode/strPredQuantEnc.c
+        Source/LibJXR/image/sys/adapthuff.c
+        Source/LibJXR/image/sys/image.c
+        Source/LibJXR/image/sys/strcodec.c
+        Source/LibJXR/image/sys/strPredQuant.c
+        Source/LibJXR/image/sys/strTransform.c
+        Source/LibJXR/jxrgluelib/JXRGlue.c
+        Source/LibJXR/jxrgluelib/JXRGlueJxr.c
+        Source/LibJXR/jxrgluelib/JXRGluePFC.c
+        Source/LibJXR/jxrgluelib/JXRMeta.c
+        Source/LibJXR/common/include/guiddef.h
+        Source/LibJXR/common/include/wmspecstring.h
+        Source/LibJXR/common/include/wmspecstrings_adt.h
+        Source/LibJXR/common/include/wmspecstrings_strict.h
+        Source/LibJXR/common/include/wmspecstrings_undef.h
+        Source/LibJXR/image/decode/decode.h
+        Source/LibJXR/image/encode/encode.h
+        Source/LibJXR/image/sys/ansi.h
+        Source/LibJXR/image/sys/common.h
+        Source/LibJXR/image/sys/perfTimer.h
+        Source/LibJXR/image/sys/strcodec.h
+        Source/LibJXR/image/sys/strTransform.h
+        Source/LibJXR/image/sys/windowsmediaphoto.h
+        Source/LibJXR/image/sys/xplatform_image.h
+        Source/LibJXR/image/x86/x86.h
+        Source/LibJXR/jxrgluelib/JXRGlue.h
+        Source/LibJXR/jxrgluelib/JXRMeta.h
     )
     list(APPEND FreeImage_SOURCES ${FreeImage_JXR_SRCS})
     include_directories(Source/LibJXR)
