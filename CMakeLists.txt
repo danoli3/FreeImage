@@ -90,7 +90,8 @@ option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
 option(BUILD_LIBJPEG "Build libjpeg from source or link" ON)
 option(BUILD_LIBOPENJPEG "Build OpenJPEG from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
-option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
+# Camera RAW is part of the default build. -DBUILD_LIBRAWLITE=OFF leaves it out.
+option(BUILD_LIBRAWLITE "Build librawlite from source or link" ON)
 # Default ON, but only when C++17+ is actually in effect (OpenEXR needs it).
 if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD GREATER_EQUAL 17)
     set(BUILD_OPENEXR_DEFAULT ON)
