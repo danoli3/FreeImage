@@ -1,6 +1,6 @@
 # Changelog
 
-Release notes for this fork, newest first. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
+Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
 
 ## 3.19.17 — 24 Sep 2026
 
@@ -103,4 +103,60 @@ Unicode `wchar` path fixes. No separate GitHub release text. No CVEs.
 
 ## 3.19.5, 3.19.4, 3.19.3, 3.19.2 — 9–10 Jul 2024
 
-The first CMake releases of this fork. All four published the same vendor list: zlib 1.2.13, libpng 1.6.41, LibTIFF 4.5.0, libwebp 1.2.1, LibRaw 0.21.1, libjpeg 9d, jxrlib 1.2. C++23 support. No 32-bit DLL. No CVEs in the release text.
+The first CMake releases of this fork after the 3.19.0 SVN merge. All four published the same vendor list: zlib 1.2.13, libpng 1.6.41, LibTIFF 4.5.0, libwebp 1.2.1, LibRaw 0.21.1, libjpeg 9d, jxrlib 1.2. C++23 support. No 32-bit DLL. No CVEs in the release text.
+
+## 3.19.0 — 24 Dec 2023
+
+Merged in the changes from SVN FreeImage 3.19.0.
+
+Upstream library set: zlib 1.2.13, libpng 1.6.39, LibTIFF 4.5.0 (patch 2023-05-18), libwebp 1.2.1 (patch 2021-10-29), LibRaw 0.21.1 (patch 2023-05-13), libjpeg 9d, jxrlib 1.2. No 32-bit DLL or static library. Visual Studio 2013 project files removed.
+
+Also from that SVN drop: Exif 2.3.2 tags and an `ExtraSamples` metadata key, better float TIFF compression, TIFF no longer treats Canon CR2 as TIFF, `TIFF_DEFLATE` saves as `TIFF_ADOBE_DEFLATE`, and malicious-image hardening in TIFF, BMP, PFM, JXR, TGA, DDS, PCX, PNM, and JPEG 2000. This fork's tag also notes ARM64EC via CMake and an Emscripten fix. No CVE ids in the release text.
+
+## 3.18.10 — 29 Jun 2023
+
+PluginTIFF fix.
+
+## 3.18.9 — 11 Jun 2023
+
+CMake can leave out LibJXR and LibWebP.
+
+## 3.18.8 — 11 Jun 2023
+
+CMake fix.
+
+## 3.18.7 — 3 May 2023
+
+LibJXR moved behind a CMake option. Building extended JPEG on Windows was pulling it in unconditionally.
+
+## 3.18.6 — 28 Apr 2023
+
+JXR builds on non-Windows.
+
+## 3.18.5 — 25 Apr 2023
+
+LibJXR bad include fixed.
+
+## 3.18.4 — 17 Apr 2023
+
+CMake source and header list filled in.
+
+## 3.18.3 — 17 Apr 2023
+
+libpng NEON disabled.
+
+## 3.18.2 — 16 Apr 2023
+
+CMakeLists update.
+
+## 3.18.1 — 16 Apr 2023
+
+`cmake_minimum_required` added. First CMake cut of the 3.18 tree.
+
+## 3.18.0 — 31 Jul 2018
+
+Upstream FreeImage 3.18.0. This fork's `3.18.0` tag is the 14 Jul 2021 Android Makefile commit on that tree.
+
+Vendors: zlib 1.2.11, LibRaw 0.19, libwebp 1.0.0, libpng 1.6.35, LibTIFF 4.0.9, OpenEXR 2.2.1, libjpeg 9c. Visual Studio 2017 projects added. Visual Studio 2005 and 2008, `FreeImage_RotateClassic`, and the internal deprecation manager removed.
+
+Also: PSD saving, 32-bit CMYK JPEG saving, `FreeImage_Validate`, DDS 16-bit uncompressed RGB loaded as 24-bit, palette images with transparency in `FreeImage_ConvertToRawBits`, and malicious-image fixes for PCX and XPM. No CVE ids in the release text.
