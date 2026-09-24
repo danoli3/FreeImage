@@ -6,7 +6,9 @@ caught before it turns into a CVE backlog or a silent ARM64EC-class bug.
 **Update this before every release** (same step as bumping
 `FREEIMAGE_RELEASE_SERIAL` in `Source/FreeImage.h`, see
 [danoli3/FreeImage#112](https://github.com/danoli3/FreeImage/pull/112)) and
-whenever a vendored library is re-synced.
+whenever a vendored library is re-synced. A weekly GitHub Action
+(`.github/workflows/upstream-versions.yml`) opens an issue when one of
+these libraries has a newer stable upstream release.
 
 | Library | Path | Vendored | Latest upstream | Status | Version source |
 |---|---|---|---|---|---|
