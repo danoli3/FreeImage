@@ -21,19 +21,103 @@ and aren't obvious from the code alone.
   `cl.exe`, needs a Developer Command Prompt / `vcvarsall.bat` environment
   already active). All three are only testable on a real Windows CI runner -
   the VS generators don't exist in CMake on macOS/Linux at all.
-- **Versioning is git-tag-driven.** `FREEIMAGE_VERSION`/`FREEIMAGE_VERSION_COMMITS`
-  come from `git describe --tags` at configure time (before `project()`,
-  since CMake's `project(VERSION ...)` needs a literal). Windows `.rc` files
-  are generated from `.rc.in` templates via this. The public API macro
-  `FREEIMAGE_RELEASE_SERIAL` in `Source/FreeImage.h` is deliberately
-  **manually maintained** (not tag-derived) since it's part of the public C
-  header contract and needs to work even when vendored without this repo's
-  build tooling - bump it by hand when cutting a release.
+- **Versioning is git-tag-driven, and the hand-maintained copies must
+  move in the same release PR.** `git describe` feeds CMake. Several
+  other copies are not derived from the tag. The full list, and which
+  commit in the 3.19.17 PR is the bump, is under
+  [Cutting a release](#cutting-a-release).
 - **Sub-dependency unbundling**: `FREEIMAGE_USE_SYSTEM_LIBS` (master switch)
   and per-library `USE_SYSTEM_*` options let a consumer link system
   zlib/libpng/libtiff/libjpeg/openjpeg/webp/libraw/OpenEXR/jxrlib instead of
   the bundled copies. Useful both for smaller builds and for dodging CVEs in
   old bundled library versions (see issue #35 below).
+
+## Cutting a release
+
+Do this as one commit on a branch from current `master`, after the
+fixes for that release are already merged. Open the PR, merge it, then
+tag **that merge commit**. Do not tag the branch tip before the PR
+lands, and do not tag an earlier commit that only bumped the header.
+
+PR [#129](https://github.com/danoli3/FreeImage/pull/129)
+(`release/3.19.17`) is the pattern. The version bump is the commit
+titled `FreeImage 3.19.17`. A later commit on the same PR only
+rewrote the iOS build steps in `README.iphone` and is not part of the
+version change.
+
+The 3.19.16 tag was cut when only `FREEIMAGE_RELEASE_SERIAL` had
+moved (PR #122). The CMake fallback and the checked-in `.rc` files
+were still 3.19.12 until a later commit, so a source archive with no
+`.git` directory and the legacy Visual Studio projects advertised the
+old release. Do not repeat that split.
+
+### What reports the version
+
+`FreeImage_GetVersion()` prints `FREEIMAGE_MAJOR_VERSION`,
+`FREEIMAGE_MINOR_VERSION`, and `FREEIMAGE_RELEASE_SERIAL` from
+`Source/FreeImage.h`. That header is the public C contract and is
+**not** filled in from the git tag, because the header has to be right
+when the tree is vendored without this repo's CMake.
+
+A CMake configure runs `git describe --tags --long --match
+"[0-9]*.[0-9]*.[0-9]*"` before `project()`. On the tag, the project
+version is exactly `3.19.17`. Between tags it is
+`3.19.17+<commits>.<hash>`. `FreeImage.rc.in` and
+`Wrapper/FreeImagePlus/FreeImagePlus.rc.in` are generated from that
+string. Do not hand-edit the `.rc.in` templates to bump a release.
+
+Until the new tag exists, a checkout that still has `.git` keeps
+describing the **previous** tag plus a commit count, even after
+`FreeImage_GetVersion()` already returns the new serial. The fallback
+below is what a tarball with no `.git` directory uses.
+
+### Files to change in the version commit
+
+| What the consumer sees | File | Edit |
+| --- | --- | --- |
+| `FreeImage_GetVersion()` | `Source/FreeImage.h` | `FREEIMAGE_RELEASE_SERIAL`. Major and minor only when those actually change. |
+| CMake version with no git history | `CMakeLists.txt` | `FREEIMAGE_VERSION_FALLBACK`, and the `3.19.x` examples in the comments directly above and below it. |
+| Legacy Visual Studio projects, which do not run the `.rc.in` step | `FreeImage.rc` and `Wrapper/FreeImagePlus/FreeImagePlus.rc` | `FILEVERSION`, `PRODUCTVERSION`, `FileVersion`, and `ProductVersion` (`3,19,17,0` and `"3, 19, 17, 0"`). Both files are CRLF. |
+| The version sentence in the project README | `README.md` | The "This tree is FreeImage …" line and the sentence that names the no-git fallback. |
+| Vendored-library checklist | `THIRD_PARTY_VERSIONS.md` | Recheck the vendored column against the headers under `Source/` in the same step. The file says to do this with the serial bump. |
+
+In PR #129 those paths are exactly the version commit, plus the
+platform README lead-ins (`README.linux`, `README.osx`,
+`README.minGW`, `README.solaris`, `README.iphone`) that were refreshed
+in that same commit. `README.iphone`'s iOS CMake commands were a
+follow-up commit.
+
+### Leave these alone
+
+- `FreeImage.rc.in` and `FreeImagePlus.rc.in`. CMake fills them.
+- The old VB6 `.bas` and Delphi `.pas` wrappers. They still declare
+  release serial 0 and were not moved for 3.19.12 or 3.19.16.
+- `git describe` examples that are not the fallback constant. Only the
+  examples that quote the current release number, next to
+  `FREEIMAGE_VERSION_FALLBACK`.
+
+### After the PR merges
+
+```bash
+git checkout master && git pull
+git tag 3.19.17
+git push origin 3.19.17
+```
+
+The tag name is `3.19.17`, with no `v` prefix. The describe match is
+`[0-9]*.[0-9]*.[0-9]*`. An old tag `3.19.21` points at the same 2024
+commit as `3.19.3`. Describe still prefers the closer ancestor, which
+is the newer `3.19.x` tag, so do not delete `3.19.21` as part of a
+routine bump.
+
+Confirm on the tagged commit:
+
+- `FreeImage_GetVersion()` is `3.19.17`
+- `git describe --tags --match '[0-9]*.[0-9]*.[0-9]*'` prints `3.19.17`.
+  With `--long` the same commit is `3.19.17-0-g<hash>`, and CMake treats
+  the `-0-` as exactly on the tag.
+- `FREEIMAGE_VERSION_FALLBACK` and both checked-in `.rc` files say
+  3.19.17
 
 ## CI (`.github/workflows/cmake.yml`)
 

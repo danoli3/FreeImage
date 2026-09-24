@@ -3,18 +3,17 @@ What is FreeImage ?
 FreeImage is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.
 FreeImage is easy to use, fast, multithreading safe, and cross-platform (works with Windows, Linux and Mac OS X).
 
-### This GitHub Fork/Patch of FreeImage
- - Numerous Sub-Dependancy patches (Security/Bugs/Latest) 
- - With patches applied from nVidia Devs and OpenSource additions
- - CMake Build ability allowing compiling easily for all targets and platforms 
+### This GitHub fork
 
-Thanks to it's ANSI C interface, FreeImage is usable in many languages including C, C++, VB, C#, Delphi, Java and also in common scripting languages such as Perl, Python, PHP, TCL, Lua or Ruby.
-The library comes in two versions: a binary DLL distribution that can be linked against any WIN32/WIN64 C/C++ compiler and a source distribution.
-Built with CMake for Windows, Linux, Mac OS X and other systems - see [Building this fork](#building-this-fork) below, including generating Visual Studio project files.
+Security and bug fixes on top of upstream FreeImage, plus a CMake build that compiles FreeImage and every bundled library from one `CMakeLists.txt`. This repository is the source tree. GitHub releases are tags, not prebuilt DLLs. Build a static library or a DLL with the commands in [Building this fork](#building-this-fork).
+
+This tree is FreeImage **3.19.17**. `FreeImage_GetVersion()` prints `FREEIMAGE_MAJOR_VERSION`, `FREEIMAGE_MINOR_VERSION`, and `FREEIMAGE_RELEASE_SERIAL` from `Source/FreeImage.h`. CMake takes the version from the latest numeric git tag (`git describe`) and falls back to 3.19.17 when the archive has no `.git` history.
+
+The ANSI C API is usable from C, C++, VB, C#, Delphi, Java, and from scripting languages such as Perl, Python, PHP, TCL, Lua, and Ruby.
 
 ### Why use FreeImage instead of linking each format library yourself?
 
-Loading a PNG, a GIF and a JPEG from scratch in C++ means three different APIs (`libpng`, `giflib`-or-hand-rolled-LZW, `libjpeg`), three different error-handling conventions, and three sets of build flags to get right across platforms. FreeImage wraps [all of the libraries below](#supported-formats--bundled-libraries) behind one API - one `FreeImage_Load()`/`FreeImage_Save()` pair, one pixel format model (`FIBITMAP`), one metadata API (EXIF/IPTC/XMP) - so format-specific code doesn't leak into the rest of your application. Swapping a PNG for a WebP, or reading a RAW file the same way you read a BMP, is a one-line change rather than a new dependency.
+Loading a PNG, a GIF and a JPEG from scratch in C++ means three different APIs (`libpng`, `giflib`-or-hand-rolled-LZW, `libjpeg`), three different error-handling conventions, and three sets of build flags to get right across platforms. FreeImage wraps [all of the libraries below](#supported-formats--bundled-libraries) behind one API - one `FreeImage_Load()`/`FreeImage_Save()` pair, one pixel format model (`FIBITMAP`), one metadata API (EXIF/IPTC/XMP) - so format-specific code doesn't leak into the rest of your application. Swapping a PNG for a WebP is a one-line change rather than a new dependency. Camera RAW uses the same `FreeImage_Load()` call once the build is configured with `-DBUILD_LIBRAWLITE=ON`.
 
 This fork additionally builds the whole stack (FreeImage plus every bundled library) from one `CMakeLists.txt`, so `find_package(FreeImage)` is the only thing a consuming CMake project needs - see [Using compiled binaries](#using-compiled-binaries) below.
 
@@ -22,18 +21,20 @@ This fork additionally builds the whole stack (FreeImage plus every bundled libr
 
 Formats implemented directly in FreeImage's own plugin code (no external library): BMP, ICO, TARGA/TGA, PCX, DDS, GIF, PSD, PICT, PFM, RAS/Sun Raster, SGI, XBM, XPM, Amiga IFF/LBM, Kodak PCD, PNM/PBM/PGM/PPM, CUT, and WBMP.
 
-Everything else is backed by a bundled, patched copy of the format's reference library - each can also be linked against a system copy instead via the matching `USE_SYSTEM_*`/`BUILD_*` CMake option (see `CMakeLists.txt`):
+Everything else is backed by a bundled copy of the format's reference library. Turn a format off with its `BUILD_*` option, or link a system copy with `USE_SYSTEM_*` (or `FREEIMAGE_USE_SYSTEM_LIBS`, which turns every `USE_SYSTEM_*` default on). See `CMakeLists.txt`.
 
-| Formats | Library | Bundled version |
-|---|---|---|
-| PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.58 (zlib 1.3.2) |
-| JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 |
-| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.1 |
-| JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouwain/openjpeg) | 2.5.4 |
-| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ Imath) | 3.3.13 (Imath 3.1.12) |
-| WebP | [libwebp](https://developers.google.com/speed/webp) | current (see `Source/LibWebP`) |
-| Camera RAW | [LibRaw](https://www.libraw.org/) | 0.22.1 |
-| JPEG-XR (Windows by default, see [Building this fork](#building-this-fork)) | [jxrlib](https://jxrlib.codeplex.com/) | - |
+PixarLog and OJPEG inside the bundled libtiff include the integer-overflow hardening from libtiff 4.7.2. The rest of that library, including `TIFFLIB_VERSION_STR`, is still 4.7.1. OpenEXR is included when `CMAKE_CXX_STANDARD` is unset or 17 or newer, and left out for an older standard.
+
+| Formats | Library | Bundled version | Default |
+|---|---|---|---|
+| PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.58 (zlib 1.3.2) | on |
+| JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 (25 Jan 2026) | on |
+| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.1 | on |
+| JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouvain/openjpeg) | 2.5.4 | on |
+| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ [Imath](https://github.com/AcademySoftwareFoundation/Imath), [libdeflate](https://github.com/ebiggers/libdeflate)) | 3.3.14 (Imath 3.2.3, libdeflate 1.18) | on for C++17+ |
+| WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on |
+| Camera RAW | [LibRaw](https://www.libraw.org/) | 0.22.2 | off (`-DBUILD_LIBRAWLITE=ON`) |
+| JPEG-XR | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | Windows only |
 
 ## Original Source Code Upstream
 https://sourceforge.net/projects/freeimage
@@ -45,7 +46,7 @@ Original library can be found : https://freeimage.sourceforge.io
 
 ## Building this fork
 
-By default, JPEG-XR support is only included on Windows, but not on other platforms.
+JPEG-XR is included only on Windows (`BUILD_JXR` defaults to `WIN32`). Camera RAW stays off until `-DBUILD_LIBRAWLITE=ON`.
 
 ### Simply build it
 
@@ -94,7 +95,9 @@ make -j$(nproc)
 ```bash
 cmake --preset vs2022   # or: cmake --preset vs2026
 ```
-Generates a full solution under `build-vs2022/` (or `build-vs2026/`) - open `FreeImage.sln` from there in Visual Studio. See `CMakePresets.json` for the exact generator/options used.
+Generates a solution under `build-vs2022/` (or `build-vs2026/`). Open `FreeImage.sln` from there. Both presets are Windows-only and turn `BUILD_TESTS` on. `vs2026` needs CMake 4.2 or newer.
+
+`cmake --preset ninja-msvc` builds with `cl.exe` and Ninja under `build-ninja-msvc/`. Run it from a Developer Command Prompt, or after `vcvarsall.bat`, so `cl.exe` is on `PATH`. See `CMakePresets.json`.
 
 ### Build and install Debug and Release configuration
 

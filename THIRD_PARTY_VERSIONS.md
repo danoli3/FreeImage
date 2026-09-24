@@ -11,7 +11,7 @@ whenever a vendored library is re-synced.
 | Library | Path | Vendored | Latest upstream | Status | Version source |
 |---|---|---|---|---|---|
 | OpenEXR | `Source/OpenEXR` | 3.3.14 | 3.4.15 (2026-08-21) | behind 3.4.x — 3.3.14 IDManifest fixes are in; ARM64EC SIMD guards are a local patch ([#2344](https://github.com/AcademySoftwareFoundation/openexr/pull/2344) is not in upstream 3.3.x) | `OpenEXRConfig.h` |
-| Imath | `Source/Imath` | 3.1.12 | 3.2.3 (2026-08-20) | outdated | `ImathConfig.h` |
+| Imath | `Source/Imath` | 3.2.3 | 3.2.3 (2026-08-20) | up to date | `ImathConfig.h` |
 | LibDeflate | `Source/LibDeflate` | 1.18 | 1.26 (2026-08-22) | outdated | `libdeflate.h` |
 | LibJPEG (IJG) | `Source/LibJPEG` | 10.0 (25-Jan-2026) | 10.0 (25-Jan-2026) | up to date | `jversion.h` |
 | LibOpenJPEG | `Source/LibOpenJPEG` | 2.5.4 | 2.5.4 | up to date | `opj_config_private.h` |
@@ -22,7 +22,8 @@ whenever a vendored library is re-synced.
 | LibJXR | `Source/LibJXR` | unversioned jxrlib snapshot | n/a — unmaintained (last active fork: [4creators/jxrlib](https://github.com/4creators/jxrlib)) | no upstream to track | `README` |
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
-Vendored column rechecked against `Source/` on 2026-09-22. The upstream
+Vendored column rechecked against `Source/` on 2026-09-24. Imath is 3.2.3
+(`Source/Imath/ImathConfig.h`). The upstream
 column is still the 2026-09-14 pass (IJG libjpeg checked against ijg.org,
 which has no repo), except libpng 1.6.58 and libtiff 4.7.2 were confirmed
 still current.
