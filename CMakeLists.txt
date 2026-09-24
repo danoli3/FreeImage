@@ -137,7 +137,6 @@ endif()
 
 if(FREEIMAGE_STATIC)
     message(STATUS "Building FreeImage as a static library.")
-    add_definitions(-DFREEIMAGE_LIB)
 else()
     message(STATUS "Building FreeImage as a shared library.")
 endif()
@@ -1094,6 +1093,21 @@ if (DEFINED FreeImage_LIBS)
     target_link_libraries(${PROJECT_NAME} ${FreeImage_LIBS})
 endif()
 
+# Public header for add_subdirectory() and the installed package. Copying
+# just FreeImage.h keeps Source/'s internal headers off the consumer's
+# include path. BUILD_INTERFACE is the build tree; INSTALL_INTERFACE
+# matches install(FILES Source/FreeImage.h DESTINATION include).
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/FreeImage.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/FreeImage.h"
+    COPYONLY
+)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
 # Preprocessor definitions
 target_compile_definitions(${PROJECT_NAME} PUBLIC
     DISABLE_PERF_MEASUREMENT
@@ -1101,6 +1115,18 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     NO_LCMS
     NO_WINDOWS
 )
+# Static consumers must see this or FreeImage.h uses dllimport for the
+# symbols they are linking directly. Directory add_definitions() does not
+# propagate out of add_subdirectory().
+if(FREEIMAGE_STATIC)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FREEIMAGE_LIB)
+elseif(WIN32)
+    # Shared Windows builds (MSVC and MinGW, including llvm-mingw) compile
+    # this target with dllexport. Consumers do not get the define, so
+    # FreeImage.h gives them dllimport. Without it the library's own
+    # objects are built dllimport and the link fails (issue #127).
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FREEIMAGE_EXPORTS)
+endif()
 
 
 # Apple-specific settings
@@ -1127,21 +1153,32 @@ if (BUILD_TESTS)
     add_subdirectory(TestAPI)
 endif ()
 
-# Install the library
+# Install the library. Runtime is the shared library (DLL / .so / .dylib).
+# Development is the static archive or import library, the public header,
+# and the CMake package files. `cmake --install . --component Runtime`
+# and `--component Development` select one group.
 install(TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}Targets
     RUNTIME DESTINATION bin
+        COMPONENT Runtime
     LIBRARY DESTINATION lib
+        COMPONENT Runtime
+        NAMELINK_COMPONENT Development
     ARCHIVE DESTINATION lib
+        COMPONENT Development
     INCLUDES DESTINATION include
 )
-install(FILES Source/FreeImage.h DESTINATION include)
+install(FILES Source/FreeImage.h
+    DESTINATION include
+    COMPONENT Development
+)
 
 # Install the CMake Targets
 install(EXPORT ${PROJECT_NAME}Targets
     FILE ${PROJECT_NAME}Targets.cmake
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION lib/cmake/${PROJECT_NAME}
+    COMPONENT Development
 )
 
 # Install the CMake config
@@ -1160,4 +1197,5 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
     DESTINATION lib/cmake/${PROJECT_NAME}
+    COMPONENT Development
 )
