@@ -1,3 +1,7 @@
+Current build
+-------------
+There is no maintained iOS CMake preset. `Makefile.iphone` and `Makefile.ios` are the legacy paths below, from the iOS SDK 6.1 era. For a current desktop or Windows build, see README.md.
+
 Makefile for iPhone
 
 found on the web, see 
