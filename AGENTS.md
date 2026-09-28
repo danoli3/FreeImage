@@ -150,10 +150,11 @@ Confirm on the tagged commit:
   `<intrin.h>`. `Source/LibTIFF4/tif_predict.c` and
   `Source/LibWebP/src/dsp/cpu.c` exclude `_M_ARM64EC` from their `_M_X64`
   intrinsic-header guards for this reason (surfaced by openFrameworks'
-  apothecary ARM64EC build, not by this repo's own CI - there's no ARM64EC
-  runner here). If another vendored file hits `error C1189` under an ARM64EC
-  build, it's the same fix: exclude `_M_ARM64EC` from the guard, fall back to
-  the portable path.
+  apothecary ARM64EC build). The `windows-arm-cross` job now cross-compiles
+  ARM64 and ARM64EC with MSVC on the x64 runner and does not run ctest: those
+  binaries cannot execute on `windows-latest`. If another vendored file hits
+  `error C1189` under an ARM64EC build, it's the same fix: exclude
+  `_M_ARM64EC` from the guard, fall back to the portable path.
 - **`windows-mingw` in the main matrix has `BUILD_OPENEXR=OFF` forced** for
   its C++17+ entries. `BUILD_OPENEXR` defaults ON for C++17+ (since #85), but
   on this job's specific preinstalled mingw toolchain the test binary hangs

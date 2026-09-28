@@ -175,6 +175,30 @@ jobs:
         run: |
           ctest --test-dir build --build-config Debug --verbose
 
+  windows-arm-cross:
+    # Cross-compile from the x64 windows-latest runner with the installed
+    # MSVC ARM64 and ARM64EC toolsets. The produced test binaries cannot
+    # execute on this host, so the job stops after the build. Native ARM64
+    # execution needs a windows-11-arm runner; MSYS2 CLANGARM64 cannot run
+    # here either (its cmake and ninja are ARM64 binaries).
+    name: windows-msvc cross (${{ matrix.arch }})
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ARM64, ARM64EC]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure (${{ matrix.arch }})
+        run: |
+          cmake -S . -B build -A ${{ matrix.arch }} -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=17 -DUNICODE=ON -D_UNICODE=ON -DCMAKE_C_STANDARD=17
+      - name: Build
+        run: cmake --build build --config Debug
+
   windows-vs-presets:
     # Verifies the vs2022/vs2026 CMakePresets.json entries actually generate
     # a working Visual Studio solution - can't be tested from a non-Windows
