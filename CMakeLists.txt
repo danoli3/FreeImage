@@ -707,7 +707,10 @@ if(BUILD_LIBRAWLITE)
     include_directories(Source/LibRawLite/internal)
     include_directories(Source/LibRawLite/libraw)
     include_directories(Source/LibRawLite/src)
-    add_definitions(-DINCLUDE_LIB_RAW)
+    # Bundled into FreeImage, not built as its own DLL. On MSVC and
+    # clang-cl, libraw.h otherwise marks the definitions dllimport
+    # (C2491). Makefile.mingw passes the same flag.
+    add_definitions(-DINCLUDE_LIB_RAW -DLIBRAW_NODLL)
     endif()
 endif()
 
