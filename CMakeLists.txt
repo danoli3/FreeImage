@@ -90,7 +90,8 @@ option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
 option(BUILD_LIBJPEG "Build libjpeg from source or link" ON)
 option(BUILD_LIBOPENJPEG "Build OpenJPEG from source or link" ON)
 option(BUILD_WEBP "Build webp from source or link" ON)
-option(BUILD_LIBRAWLITE "Build librawlite from source or link" OFF)
+# Camera RAW is part of the default build. -DBUILD_LIBRAWLITE=OFF leaves it out.
+option(BUILD_LIBRAWLITE "Build librawlite from source or link" ON)
 # Default ON, but only when C++17+ is actually in effect (OpenEXR needs it).
 if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD GREATER_EQUAL 17)
     set(BUILD_OPENEXR_DEFAULT ON)
@@ -706,7 +707,10 @@ if(BUILD_LIBRAWLITE)
     include_directories(Source/LibRawLite/internal)
     include_directories(Source/LibRawLite/libraw)
     include_directories(Source/LibRawLite/src)
-    add_definitions(-DINCLUDE_LIB_RAW)
+    # Bundled into FreeImage, not built as its own DLL. On MSVC and
+    # clang-cl, libraw.h otherwise marks the definitions dllimport
+    # (C2491). Makefile.mingw passes the same flag.
+    add_definitions(-DINCLUDE_LIB_RAW -DLIBRAW_NODLL)
     endif()
 endif()
 
