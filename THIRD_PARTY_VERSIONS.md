@@ -24,7 +24,8 @@ these libraries has a newer stable upstream release.
 | LibJXR | `Source/LibJXR` | unversioned jxrlib snapshot | n/a — unmaintained (last active fork: [4creators/jxrlib](https://github.com/4creators/jxrlib)) | no upstream to track | `README` |
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
-Vendored column rechecked against `Source/` on 2026-09-24. Imath is 3.2.3
+Vendored column rechecked against `Source/` on 2026-09-28 for 3.19.18.
+No vendored version changed. Imath is 3.2.3
 (`Source/Imath/ImathConfig.h`). The upstream
 column is still the 2026-09-14 pass (IJG libjpeg checked against ijg.org,
 which has no repo), except libpng 1.6.58 and libtiff 4.7.2 were confirmed

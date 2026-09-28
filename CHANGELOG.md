@@ -2,6 +2,15 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
 
+## 3.19.18 — 28 Sep 2026
+
+LibRaw is on by default. No new CVEs.
+
+- **LibRaw 0.22.2** is included unless the build passes `-DBUILD_LIBRAWLITE=OFF`. MSVC and clang-cl compile it with `LIBRAW_NODLL`, so the bundled sources are not `dllimport` (C2491).
+- `openexr_version.h` no longer redefines `OPENEXR_VERSION_PATCH` after `OpenEXRConfig.h` (MSVC C4005). The fallback in that header is 3.3.14.
+- A weekly GitHub Action compares vendored `Source/` versions with upstream releases and opens one issue when any library is newer.
+- `CHANGELOG.md` covers this fork from upstream FreeImage 3.18.0 through 3.19.17, including the SVN 3.19.0 merge.
+
 ## 3.19.17 — 24 Sep 2026
 
 CMake and JPEG-XR build fix. No new CVEs.
