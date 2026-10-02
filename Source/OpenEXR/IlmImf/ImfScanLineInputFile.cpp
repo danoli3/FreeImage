@@ -65,7 +65,7 @@ struct ScanLineProcess
     exr_result_t          last_decode_err = EXR_ERR_UNKNOWN;
     bool                  first = true;
     exr_chunk_info_t      cinfo;
-    exr_decode_pipeline_t decoder;
+    exr_decode_pipeline_t decoder = EXR_DECODE_PIPELINE_INITIALIZER;
 
     // requirement to use process group
     ScanLineProcess* next;
@@ -244,6 +244,7 @@ ScanLineInputFile::setFrameBuffer (const FrameBuffer& frameBuffer)
     std::lock_guard<std::mutex> lock (_data->_mx);
 #endif
     _data->fill_list.clear ();
+    _data->singleScan.reset();
 
     for (FrameBuffer::ConstIterator j = frameBuffer.begin ();
          j != frameBuffer.end ();
@@ -360,7 +361,8 @@ ScanLineInputFile::rawPixelDataToBuffer (
     if (EXR_ERR_SUCCESS == exr_read_scanline_chunk_info (
                                _ctxt, _data->partNumber, scanLine, &cinfo))
     {
-        if (cinfo.packed_size > static_cast<uint64_t> (pixelDataSize))
+        if (pixelDataSize < 0 ||
+            cinfo.packed_size > static_cast<uint64_t> (pixelDataSize))
         {
             THROW (
                 IEX_NAMESPACE::ArgExc,

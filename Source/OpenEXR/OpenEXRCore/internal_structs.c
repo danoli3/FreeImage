@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
 #        include <synchapi.h>
 #        include <windows.h>
@@ -28,7 +28,7 @@ static void
 default_error_handler (
     exr_const_context_t ctxt, exr_result_t code, const char* msg)
 {
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
     static CRITICAL_SECTION sMutex;
     volatile static long    initialized = 0;
@@ -40,7 +40,7 @@ default_error_handler (
 #    endif
 #endif
 
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
     EnterCriticalSection (&sMutex);
 #    else
@@ -68,7 +68,7 @@ default_error_handler (
         fprintf (stderr, "<ERROR>: %s\n", msg);
     fflush (stderr);
 
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
     LeaveCriticalSection (&sMutex);
 #    else
@@ -227,6 +227,8 @@ internal_exr_add_part (
 
     part->zip_compression_level = f->default_zip_level;
     part->dwa_compression_level = f->default_dwa_quality;
+    part->lossy_htj2k_quality = f->default_lossy_htj2k_quality;
+    part->zstd_compression_level = f->default_zstd_level;
 
     /* put it into the part table */
     for (int p = 0; p < f->num_parts; ++p)
@@ -369,10 +371,21 @@ internal_exr_alloc_context (
 
         exr_get_default_zip_compression_level (&ret->default_zip_level);
         exr_get_default_dwa_compression_quality (&ret->default_dwa_quality);
+        exr_get_default_lossy_htj2k_quality (&ret->default_lossy_htj2k_quality);
+        exr_get_default_zstd_compression_level (&ret->default_zstd_level);
         if (initializers->zip_level >= 0)
             ret->default_zip_level = initializers->zip_level;
         if (initializers->dwa_quality >= 0.f)
             ret->default_dwa_quality = initializers->dwa_quality;
+        if (initializers->lossy_htj2k_quality > 0.f)
+            ret->default_lossy_htj2k_quality = initializers->lossy_htj2k_quality;
+        if (initializers->zstd_level >= 0)
+        {
+            int zl = initializers->zstd_level;
+            if (zl < 1) zl = 1;
+            if (zl > 22) zl = 22;
+            ret->default_zstd_level = zl;
+        }
 
         if (initializers->flags & EXR_CONTEXT_FLAG_STRICT_HEADER)
             ret->strict_header = 1;
@@ -391,7 +404,7 @@ internal_exr_alloc_context (
         ret->read_fn    = initializers->read_fn;
         ret->write_fn   = initializers->write_fn;
 
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
         InitializeCriticalSection (&(ret->mutex));
 #    else
@@ -448,7 +461,7 @@ internal_exr_destroy_context (exr_context_t ctxt)
     exr_attr_string_destroy (ctxt, &(ctxt->tmp_filename));
     exr_attr_list_destroy (ctxt, &(ctxt->custom_handlers));
     internal_exr_destroy_parts (ctxt);
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
     DeleteCriticalSection (&(ctxt->mutex));
 #    else

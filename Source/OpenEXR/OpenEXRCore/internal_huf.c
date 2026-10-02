@@ -1722,7 +1722,7 @@ fasthuf_decode (
         // 8 bits of data in the buffer
         //
 
-        if (symbol == rleSym)
+        if (symbol == (int) rleSym)
         {
             uint32_t rleCount;
 
@@ -1874,7 +1874,10 @@ internal_huf_compress (
     }
 
     if (outsz < 20) return EXR_ERR_INVALID_ARGUMENT;
-    if (sparebytes != internal_exr_huf_compress_spare_bytes ())
+    // The spare buffer is partitioned using fixed offsets, so it only needs
+    // to be *at least* the required size. Callers (e.g. the DWA compressor)
+    // may legitimately pass a larger, reused scratch buffer.
+    if (sparebytes < internal_exr_huf_compress_spare_bytes ())
         return EXR_ERR_INVALID_ARGUMENT;
 
     freq  = (uint64_t*) spare;
@@ -1937,7 +1940,10 @@ internal_huf_decompress (
         return EXR_ERR_SUCCESS;
     }
 
-    if (sparebytes != internal_exr_huf_decompress_spare_bytes ())
+    // The spare buffer is partitioned using fixed offsets, so it only needs
+    // to be *at least* the required size. Callers (e.g. the DWA decompressor)
+    // may legitimately pass a larger, reused scratch buffer.
+    if (sparebytes < internal_exr_huf_decompress_spare_bytes ())
         return EXR_ERR_INVALID_ARGUMENT;
 
     im = readUInt (compressed);

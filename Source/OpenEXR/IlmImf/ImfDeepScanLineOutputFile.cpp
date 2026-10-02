@@ -9,26 +9,28 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "ImathBox.h"
-#include "ImathFun.h"
 #include "ImfDeepFrameBuffer.h"
 #include "ImfOutputPartData.h"
 #include "ImfOutputStreamMutex.h"
-#include <ImfArray.h>
-#include <ImfChannelList.h>
-#include <ImfCompressor.h>
-#include <ImfDeepScanLineInputFile.h>
-#include <ImfDeepScanLineInputPart.h>
-#include <ImfDeepScanLineOutputFile.h>
-#include <ImfMisc.h>
-#include <ImfPartType.h>
-#include <ImfPreviewImageAttribute.h>
-#include <ImfStdIO.h>
-#include <ImfXdr.h>
+#include "ImfArray.h"
+#include "ImfChannelList.h"
+#include "ImfCompressor.h"
+#include "ImfCompressorDeepInternal.h"
+#include "ImfDeepScanLineInputFile.h"
+#include "ImfDeepScanLineInputPart.h"
+#include "ImfDeepScanLineOutputFile.h"
+#include "ImfMisc.h"
+#include "ImfPartType.h"
+#include "ImfPreviewImageAttribute.h"
+#include "ImfStdIO.h"
+#include "ImfXdr.h"
 
 #include "Iex.h"
 #include "IlmThreadPool.h"
 #include "IlmThreadSemaphore.h"
+
+#include <ImathBox.h>
+#include <ImathFun.h>
 
 #include <algorithm>
 #include <assert.h>
@@ -741,11 +743,14 @@ LineBufferTask::execute ()
         {
             const char* compPtr;
 
-            uint64_t compSize = compressor->compress (
+            uint64_t compSize = compressWithSampleCountTable (
+                *compressor,
                 _lineBuffer->dataPtr,
                 static_cast<int> (_lineBuffer->dataSize),
                 _lineBuffer->minY,
-                compPtr);
+                compPtr, 
+            _lineBuffer->sampleCountTableBuffer, // uncompressed sample count table
+                tableDataSize );
 
             if (compSize < _lineBuffer->dataSize)
             {
@@ -1286,6 +1291,15 @@ DeepScanLineOutputFile::writePixels (int numScanLines)
                     writeBuffer->scanLineMax - writeBuffer->scanLineMin + 1;
 
                 _data->missingScanLines -= numLines;
+
+                //
+                // A background compression task may have failed without
+                // clearing partiallyFull; surface that before treating the
+                // buffer as legitimately incomplete.
+                //
+
+                if (writeBuffer->hasException)
+                    throw IEX_NAMESPACE::IoExc (writeBuffer->exception);
 
                 //
                 // If the line buffer is only partially full, then it is

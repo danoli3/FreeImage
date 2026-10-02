@@ -142,7 +142,7 @@ copyFaxFile(FreeImageIO *io, fi_handle handle, TIFF* tifin, uint32_t xsize, int 
 
 		(*tifin->tif_setupdecode)(tifin);
 		(*tifin->tif_predecode)(tifin, (uint16_t) 0);
-		tifin->tif_row = 0;
+		tifin->tif_dir.td_row = 0;
 		badfaxlines = 0;
 		badfaxrun = 0;
 
@@ -162,7 +162,7 @@ copyFaxFile(FreeImageIO *io, fi_handle handle, TIFF* tifin, uint32_t xsize, int 
 				badrun = 0;
 				_TIFFmemcpy(refbuf, rowbuf, linesize);
 			}
-			tifin->tif_row++;
+			tifin->tif_dir.td_row++;
 
 			FreeImage_WriteMemory(rowbuf, linesize, 1, memory);
 			row++;

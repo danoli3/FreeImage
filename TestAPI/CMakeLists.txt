@@ -33,3 +33,12 @@ if (BUILD_TESTS)
 
     add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
 endif ()
+
+# These tests call vendored codec APIs directly to create inputs that exercise
+# FreeImage's loaders. Those internal symbols are not part of its Windows DLL API.
+if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR
+   AND BUILD_LIBTIFF AND NOT USE_SYSTEM_LIBTIFF)
+    add_executable(VendorCodecTest testVendorCodecs.cpp)
+    target_link_libraries(VendorCodecTest PRIVATE FreeImage)
+    add_test(NAME VendorCodecTest COMMAND VendorCodecTest)
+endif()

@@ -960,7 +960,7 @@ static int PixarLogDecode(TIFF *tif, uint8_t *op, tmsize_t occ, uint16_t s)
         {
             TIFFErrorExtR(tif, module,
                           "Decoding error at scanline %" PRIu32 ", %s",
-                          tif->tif_row,
+                          tif->tif_dir.td_row,
                           sp->stream.msg ? sp->stream.msg : "(null)");
             memset(op, 0, (size_t)occ);
             return (0);
@@ -980,7 +980,7 @@ static int PixarLogDecode(TIFF *tif, uint8_t *op, tmsize_t occ, uint16_t s)
         TIFFErrorExtR(tif, module,
                       "Not enough data at scanline %" PRIu32
                       " (short %u bytes)",
-                      tif->tif_row, sp->stream.avail_out);
+                      tif->tif_dir.td_row, sp->stream.avail_out);
         memset(op, 0, (size_t)occ);
         return (0);
     }
@@ -1638,9 +1638,9 @@ static int PixarLogVSetField(TIFF *tif, uint32_t tag, va_list ap)
             /*
              * Must recalculate sizes should bits/sample change.
              */
-            tif->tif_tilesize =
+            tif->tif_dir.td_tilesize =
                 isTiled(tif) ? TIFFTileSize(tif) : (tmsize_t)(-1);
-            tif->tif_scanlinesize = TIFFScanlineSize(tif);
+            tif->tif_dir.td_scanlinesize = TIFFScanlineSize(tif);
             result = 1; /* NB: pseudo tag */
             break;
         default:
@@ -1672,6 +1672,16 @@ static const TIFFField pixarlogFields[] = {
      FALSE, FALSE, "", NULL},
     {TIFFTAG_PIXARLOGQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT, FIELD_PSEUDO,
      FALSE, FALSE, "", NULL}};
+
+static uint64_t PixarLogGetMaxCompressionRatio(TIFF *tif)
+{
+    (void)tif;
+    /* cf https://zlib.net/zlib_tech.html */
+    const uint64_t MAX_DEFLATE_RATIO = 1032;
+
+    /* security margin as I don't understand what this codec does */
+    return MAX_DEFLATE_RATIO * (uint64_t)4;
+}
 
 int TIFFInitPixarLog(TIFF *tif, int scheme)
 {
@@ -1720,6 +1730,7 @@ int TIFFInitPixarLog(TIFF *tif, int scheme)
     tif->tif_encodetile = PixarLogEncode;
     tif->tif_close = PixarLogClose;
     tif->tif_cleanup = PixarLogCleanup;
+    tif->tif_getmaxcompressionratio = PixarLogGetMaxCompressionRatio;
 
     /* Override SetField so we can handle our private pseudo-tag */
     sp->vgetparent = tif->tif_tagmethods.vgetfield;

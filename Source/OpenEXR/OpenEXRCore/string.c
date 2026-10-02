@@ -123,6 +123,8 @@ exr_attr_string_create_with_length (
 #ifdef _MSC_VER
 #    pragma warning(push)
 #    pragma warning(disable : 4996)
+#elif defined(__clang__)
+// clang: do nothing
 #elif defined(__GNUC__)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wstringop-truncation"
@@ -137,6 +139,8 @@ exr_attr_string_create_with_length (
                 memset (outs, 0, (size_t) len);
 #ifdef _MSC_VER
 #    pragma warning(pop)
+#elif defined(__clang__)
+// clang: do nothing
 #elif defined(__GNUC__)
 #    pragma GCC diagnostic pop
 #endif
@@ -201,6 +205,8 @@ exr_attr_string_set_with_length (
 #ifdef _MSC_VER
 #    pragma warning(push)
 #    pragma warning(disable : 4996)
+#elif defined(__clang__)
+// clang: do nothing
 #elif defined(__GNUC__)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wstringop-truncation"
@@ -215,6 +221,8 @@ exr_attr_string_set_with_length (
                 memset (sstr, 0, (size_t) (len + 1));
 #ifdef _MSC_VER
 #    pragma warning(pop)
+#elif defined(__clang__)
+// clang: do nothing
 #elif defined(__GNUC__)
 #    pragma GCC diagnostic pop
 #endif

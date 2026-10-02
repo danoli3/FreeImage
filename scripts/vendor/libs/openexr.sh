@@ -3,9 +3,7 @@ SOURCE_SUBDIRS=""
 ROOT_FILES=""
 CMAKE_VAR=""
 URL_TEMPLATE=""
-# DO NOT use bump-lib.sh for OpenEXR - bundled is 2.2.0 (2017), and
-# OpenEXR 3.x restructured the whole tree (Imath split into its own
-# separate repo/library, IlmImf/IlmThread reorganized into OpenEXRCore,
-# CMake-only build). This needs a manual, from-scratch integration, not
-# a subdir merge. Flagged as high priority: the 3.4.14 release notes
-# cite 15 CVE fixes over 2.2.0.
+# OpenEXR uses FreeImage's historical IlmImf directory name and flat Imath
+# headers, plus separately embedded libdeflate, Zstandard, and OpenJPH codecs.
+# Do not run the generic overlay helper: follow scripts/vendor/NOTES.md and
+# reconcile both CMakeLists.txt and Makefile.srcs with upstream's library lists.

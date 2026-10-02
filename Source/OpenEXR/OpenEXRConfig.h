@@ -18,8 +18,8 @@
 
 #ifndef INCLUDED_OPENEXR_VERSION_H
 #define OPENEXR_VERSION_MAJOR 3
-#define OPENEXR_VERSION_MINOR 3
-#define OPENEXR_VERSION_PATCH 14
+#define OPENEXR_VERSION_MINOR 5
+#define OPENEXR_VERSION_PATCH 1
 #endif
 
 //
@@ -43,7 +43,7 @@
 // Current internal library namespace name
 //
 #define OPENEXR_IMF_INTERNAL_NAMESPACE_CUSTOM 0
-#define OPENEXR_IMF_INTERNAL_NAMESPACE Imf_3_3
+#define OPENEXR_IMF_INTERNAL_NAMESPACE Imf_3_5
 
 //
 // Current public user namespace name
@@ -56,14 +56,14 @@
 // Version string for runtime access
 //
 
-#define OPENEXR_VERSION_STRING "3.3.14"
-#define OPENEXR_PACKAGE_STRING "OpenEXR 3.3.14"
+#define OPENEXR_VERSION_STRING "3.5.1"
+#define OPENEXR_PACKAGE_STRING "OpenEXR 3.5.1"
 
 #define OPENEXR_VERSION_RELEASE_TYPE ""
 // Deprecated, for back compatibility:
 #define OPENEXR_VERSION_EXTRA ""
 
-#define OPENEXR_LIB_VERSION_STRING "3.3.13"
+#define OPENEXR_LIB_VERSION_STRING "34.3.5.1"
 
 // clang-format on
 

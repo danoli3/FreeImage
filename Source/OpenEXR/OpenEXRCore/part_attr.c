@@ -437,6 +437,9 @@ copy_attr (
     {
         case EXR_ATTR_BOX2I: *(attr->box2i) = *(srca->box2i); break;
         case EXR_ATTR_BOX2F: *(attr->box2f) = *(srca->box2f); break;
+        case EXR_ATTR_BYTES:
+            rv = exr_attr_bytes_copy (ctxt, attr->bytes, srca->bytes);
+            break;
         case EXR_ATTR_CHLIST:
             rv = exr_attr_chlist_duplicate (ctxt, attr->chlist, srca->chlist);
             break;
@@ -1258,6 +1261,129 @@ exr_attr_set_box2f (
 /**************************************/
 
 exr_result_t
+exr_attr_get_bytes (
+    exr_const_context_t ctxt,
+    int                 part_index,
+    const char*         name,
+    exr_attr_bytes_t*   out)
+{
+    ATTR_GET_IMPL_DEREF (EXR_ATTR_BYTES, bytes);
+}
+
+exr_result_t
+exr_attr_set_bytes (
+    exr_context_t               ctxt,
+    int                         part_index,
+    const char*                 name,
+    const exr_attr_bytes_t*     val)
+{
+    exr_attribute_t* attr = NULL;
+    exr_result_t     rv   = EXR_ERR_SUCCESS;
+
+    EXR_LOCK_AND_DEFINE_PART (part_index);
+
+    if (ctxt->mode == EXR_CONTEXT_READ)
+        return EXR_UNLOCK_AND_RETURN (
+            ctxt->standard_error (ctxt, EXR_ERR_NOT_OPEN_WRITE));
+    if (ctxt->mode == EXR_CONTEXT_WRITING_DATA)
+        return EXR_UNLOCK_AND_RETURN (
+            ctxt->standard_error (ctxt, EXR_ERR_ALREADY_WROTE_ATTRS));
+
+    if (!val)
+        return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+            ctxt,
+            EXR_ERR_INVALID_ARGUMENT,
+            "No input value for setting '%s', type 'bytes'",
+            name));
+
+    rv = exr_attr_list_find_by_name (
+        ctxt, (exr_attribute_list_t*) &(part->attributes), name, &attr);
+
+    if (rv == EXR_ERR_NO_ATTR_BY_NAME)
+    {
+        if (ctxt->mode != EXR_CONTEXT_WRITE && ctxt->mode != EXR_CONTEXT_TEMPORARY) return EXR_UNLOCK_AND_RETURN (rv);
+
+        rv = exr_attr_list_add (
+            ctxt,
+            &(part->attributes),
+            name,
+            EXR_ATTR_BYTES,
+            0,
+            NULL,
+            &(attr));
+        if (rv == EXR_ERR_SUCCESS)
+            rv = exr_attr_bytes_create (
+                ctxt,
+                attr->bytes,
+                val->hint_length,
+                val->size,
+                val->type_hint,
+                val->data);
+    }
+    else if (rv == EXR_ERR_SUCCESS)
+    {
+        if (attr->type != EXR_ATTR_BYTES)
+            return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+                ctxt,
+                EXR_ERR_ATTR_TYPE_MISMATCH,
+                "'%s' requested type 'bytes', but attribute is type '%s'",
+                name,
+                attr->type_name));
+
+        if (attr->bytes->size == val->size &&
+            attr->bytes->hint_length == val->hint_length)
+        {
+            if (val->hint_length > 0 && !val->type_hint)
+                return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+                    ctxt,
+                    EXR_ERR_INVALID_ARGUMENT,
+                    "Invalid NULL type hint for setting '%s'",
+                    name));
+            if (val->size > 0 && !val->data)
+                return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+                    ctxt,
+                    EXR_ERR_INVALID_ARGUMENT,
+                    "Invalid NULL bytes data for setting '%s'",
+                    name));
+            if (val->hint_length > 0)
+                memcpy (
+                    EXR_CONST_CAST (void*, attr->bytes->type_hint),
+                    val->type_hint,
+                    val->hint_length);
+            if (val->size > 0)
+                memcpy (
+                    EXR_CONST_CAST (void*, attr->bytes->data),
+                    val->data,
+                    val->size);
+        }
+        else if (ctxt->mode != EXR_CONTEXT_WRITE && ctxt->mode != EXR_CONTEXT_TEMPORARY)
+        {
+            return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+                ctxt,
+                EXR_ERR_MODIFY_SIZE_CHANGE,
+                "Existing bytes '%s' is %zu, requested is %zu, unable to change",
+                name,
+                attr->bytes->size,
+                val->size));
+        }
+        else
+        {
+            exr_attr_bytes_destroy (ctxt, attr->bytes);
+            rv = exr_attr_bytes_create (
+                ctxt,
+                attr->bytes,
+                val->hint_length,
+                val->size,
+                val->type_hint,
+                val->data);
+        }
+    }
+    return EXR_UNLOCK_AND_RETURN (rv);
+}
+
+/**************************************/
+
+exr_result_t
 exr_attr_get_channels (
     exr_const_context_t       ctxt,
     int                       part_index,
@@ -1307,37 +1433,9 @@ exr_attr_set_channels (
     if (rv == EXR_ERR_SUCCESS)
     {
         exr_attr_chlist_t clist;
-        int               numchans;
 
-        if (!channels)
-            return EXR_UNLOCK_AND_RETURN (ctxt->report_error (
-                ctxt,
-                EXR_ERR_INVALID_ARGUMENT,
-                "No channels provided for channel list"));
-
-        numchans = channels->num_channels;
-        rv       = exr_attr_chlist_init (ctxt, &clist, numchans);
+        rv = exr_attr_chlist_duplicate (ctxt, &clist, channels);
         if (rv != EXR_ERR_SUCCESS) return EXR_UNLOCK_AND_RETURN (rv);
-
-        for (int c = 0; c < numchans; ++c)
-        {
-            const exr_attr_chlist_entry_t* cur = channels->entries + c;
-
-            rv = exr_attr_chlist_add_with_length (
-                ctxt,
-                &clist,
-                cur->name.str,
-                cur->name.length,
-                cur->pixel_type,
-                cur->p_linear,
-                cur->x_sampling,
-                cur->y_sampling);
-            if (rv != EXR_ERR_SUCCESS)
-            {
-                exr_attr_chlist_destroy (ctxt, &clist);
-                return EXR_UNLOCK_AND_RETURN (rv);
-            }
-        }
 
         exr_attr_chlist_destroy (ctxt, attr->chlist);
         *(attr->chlist) = clist;
@@ -1821,6 +1919,12 @@ exr_attr_set_preview (
         {
             size_t copybytes =
                 (size_t) val->width * (size_t) val->height * (size_t) 4;
+            if (copybytes > 0 && !val->rgba)
+                return EXR_UNLOCK_AND_RETURN (ctxt->print_error (
+                    ctxt,
+                    EXR_ERR_INVALID_ARGUMENT,
+                    "Invalid NULL preview rgba data for setting '%s'",
+                    name));
             memcpy (
                 EXR_CONST_CAST (void*, attr->preview->rgba),
                 val->rgba,

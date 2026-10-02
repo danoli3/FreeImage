@@ -22,8 +22,8 @@ MODULES = $(SRCS:.c=.o)
 MODULES := $(MODULES:.cpp=.o)
 
 # C flags
-CFLAGS ?= -std=c99 -O3 -fPIC -fexceptions -fvisibility=hidden
-# -std=c99 implies __STRICT_ANSI__, which on glibc hides POSIX/GNU
+CFLAGS ?= -std=c11 -O3 -fPIC -fexceptions -fvisibility=hidden
+# -std=c11 implies __STRICT_ANSI__, which on glibc hides POSIX/GNU
 # declarations (e.g. O_CLOEXEC, used unconditionally by OpenEXRCore's
 # internal_posix_file_impl.h) unless a feature-test macro says otherwise.
 CFLAGS += -D_GNU_SOURCE

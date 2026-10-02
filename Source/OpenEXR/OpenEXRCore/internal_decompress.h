@@ -24,6 +24,18 @@ exr_result_t internal_exr_undo_rle (
     void*                  uncompressed_data,
     uint64_t               uncompressed_size);
 
+/*
+ * rather than just straight using uncompress buffer
+ * uses a cached zip context in the decode struct...
+ */
+exr_result_t internal_exr_decode_uncompress_buffer (
+    exr_decode_pipeline_t* decode,
+    const void*            in,
+    size_t                 in_bytes,
+    void*                  out,
+    size_t                 out_bytes_avail,
+    size_t*                actual_out);
+
 exr_result_t internal_exr_undo_zip (
     exr_decode_pipeline_t* decode,
     const void*            compressed_data,
@@ -67,6 +79,26 @@ exr_result_t internal_exr_undo_dwaa (
     uint64_t               uncompressed_size);
 
 exr_result_t internal_exr_undo_dwab (
+    exr_decode_pipeline_t* decode,
+    const void*            compressed_data,
+    uint64_t               comp_buf_size,
+    void*                  uncompressed_data,
+    uint64_t               uncompressed_size);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+exr_result_t internal_exr_undo_ht (
+    exr_decode_pipeline_t* decode,
+    const void*            compressed_data,
+    uint64_t               comp_buf_size,
+    void*                  uncompressed_data,
+    uint64_t               uncompressed_size);
+#ifdef __cplusplus
+}
+#endif
+
+exr_result_t internal_exr_undo_zstd (
     exr_decode_pipeline_t* decode,
     const void*            compressed_data,
     uint64_t               comp_buf_size,
