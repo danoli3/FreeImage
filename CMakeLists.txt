@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Determine the version from the latest git tag (e.g. "3.19.18"), falling
+# Determine the version from the latest git tag (e.g. "3.19.19"), falling
 # back to a static default when building from a source archive without
 # .git history (or when git isn't installed). This has to run before
 # project() below, since its VERSION argument needs a literal
 # MAJOR.MINOR.PATCH at parse time - it can't be computed afterwards.
-set(FREEIMAGE_VERSION_FALLBACK 3.19.18)
+set(FREEIMAGE_VERSION_FALLBACK 3.19.19)
 set(FREEIMAGE_VERSION_COMMITS 0)
 set(FREEIMAGE_VERSION_HASH "unknown")
 find_package(Git QUIET)
