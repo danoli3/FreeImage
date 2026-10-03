@@ -16,13 +16,20 @@ and preserve the include-order guards in `OpenEXRCore/openexr_version.h`.
 The upstream ARM64EC SIMD guards are now present in 3.5.1.
 
 OpenEXR's auxiliary Zstandard 1.5.7 and OpenJPH 0.32.0 snapshots come from
-that same tag's `external/` tree, including their licenses. The portable
-OpenJPH sources are embedded directly into FreeImage. `ojph_arch.h` defines
-`OJPH_DISABLE_SIMD`, so CMake and legacy make compile the same portable code
-without additional target-specific flags. This can be slower for HTJ2K/LJ2K
-than an upstream OpenJPH build with SIMD enabled. The C allocation helper uses
-its upstream portable aligned-allocation fallback. Zstandard uses its C
-implementation with `ZSTD_DISABLE_ASM`; preserve the ARM64EC exclusions in
+that same tag's `external/` tree, including their licenses. CMake and GNU/macOS
+make enable OpenJPH's runtime-dispatched x86 kernels by default. Each SSE,
+SSE2, SSSE3, AVX, AVX2, and AVX512 source group gets its own compiler flags;
+scalar and CPU-detection sources keep the baseline ISA. Unsupported compiler
+flags omit that group and disable its dispatch references. CMake handles MSVC,
+clang-cl, cross targets, and macOS universal builds. The header opt-in and
+actual compiler target checks keep ARM64/ARM64EC and other targets portable;
+this snapshot has no ARM SIMD kernels. VSX and WASM kernels are not integrated.
+
+Use `-DFREEIMAGE_OPENJPH_SIMD=OFF` with CMake or `FREEIMAGE_OPENJPH_SIMD=0`
+with make for a portable build. Use a separate build directory (or clean make
+objects) when changing the option. The C allocation helper uses its upstream
+portable aligned-allocation fallback. Zstandard uses its C implementation
+with `ZSTD_DISABLE_ASM`; preserve the ARM64EC exclusions in
 `common/{compiler.h,cpu.h,portability_macros.h}` so `_M_X64` does not select
 x86 intrinsics or CPUID on ARM64EC.
 

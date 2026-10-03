@@ -40,5 +40,7 @@ if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR
    AND BUILD_LIBTIFF AND NOT USE_SYSTEM_LIBTIFF)
     add_executable(VendorCodecTest testVendorCodecs.cpp)
     target_link_libraries(VendorCodecTest PRIVATE FreeImage)
+    target_compile_definitions(VendorCodecTest PRIVATE
+        FREEIMAGE_TEST_OPENJPH_SIMD=$<BOOL:${FREEIMAGE_OPENJPH_SIMD_ENABLED}>)
     add_test(NAME VendorCodecTest COMMAND VendorCodecTest)
 endif()

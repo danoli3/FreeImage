@@ -84,6 +84,7 @@ else()
 endif()
 option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
+option(FREEIMAGE_OPENJPH_SIMD "Enable runtime-dispatched x86 SIMD in bundled OpenJPH" ON)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
 option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
@@ -940,8 +941,8 @@ if(BUILD_OPENEXR)
     set_property(SOURCE ${FreeImage_LIBDEFLATE_SRCS} APPEND PROPERTY COMPILE_OPTIONS
         "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/std:c11>"
         "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-std=c11>")
-    # Auxiliary codecs vendored by OpenEXR 3.5.1. Use portable implementations
-    # so the same sources work for native, cross, and legacy make builds.
+    # Auxiliary codecs vendored by OpenEXR 3.5.1. OpenJPH SIMD kernels are
+    # selected separately, with portable implementations for other targets.
     set(FreeImage_ZSTD_SRCS
         ./Source/OpenEXR/Zstd/lib/common/debug.c
         ./Source/OpenEXR/Zstd/lib/common/entropy_common.c
@@ -1026,6 +1027,7 @@ if(BUILD_OPENEXR)
         ./Source/OpenEXR/OpenJPH/transform/ojph_transform.h
         ./Source/OpenEXR/OpenJPH/transform/ojph_transform_local.h
     )
+    include(cmake/OpenJPHSimd.cmake)
     set_property(SOURCE ${FreeImage_OPENJPH_SRCS} APPEND PROPERTY COMPILE_DEFINITIONS _FILE_OFFSET_BITS=64)
     set_source_files_properties(${FreeImage_ZSTD_SRCS} PROPERTIES COMPILE_DEFINITIONS ZSTD_DISABLE_ASM)
     set(FreeImage_OPENEXR_SRCS

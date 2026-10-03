@@ -40,8 +40,13 @@
 #ifndef OJPH_ARCH_H
 #define OJPH_ARCH_H
 
-// FreeImage embeds the portable OpenJPH implementation on every target.
+// Build files opt in only when the matching x86 kernels are compiled.
+// ARM64EC also defines _M_X64, but must keep the portable implementation.
+#if !defined(FREEIMAGE_OPENJPH_SIMD) || !FREEIMAGE_OPENJPH_SIMD || \
+    defined(_M_ARM64EC) || \
+    !(defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
 #define OJPH_DISABLE_SIMD
+#endif
 
 #include <cstring>
 #include <cstdio>

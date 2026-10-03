@@ -18,8 +18,6 @@ DOS2UNIX = dos2unix
 
 LIBRARIES = -lstdc++
 
-MODULES = $(SRCS:.c=.o)
-MODULES := $(MODULES:.cpp=.o)
 
 # C flags
 CFLAGS ?= -std=c11 -O3 -fPIC -fexceptions -fvisibility=hidden
@@ -53,6 +51,14 @@ CXXFLAGS += -D__ANSI__
 # only headers), so PluginJXR.cpp compiles its stub instead.
 CXXFLAGS += -DINCLUDE_LIB_OPENEXR -DINCLUDE_LIB_RAW -DINCLUDE_LIB_WEBP
 CXXFLAGS += $(INCLUDE)
+
+# Probe and compile OpenJPH SIMD for the actual compiler target.
+OPENJPH_SIMD_CXX = $(CXX)
+OPENJPH_SIMD_CXXFLAGS = $(CXXFLAGS)
+include scripts/vendor/openjph-simd.mk
+
+MODULES = $(SRCS:.c=.o)
+MODULES := $(MODULES:.cpp=.o)
 
 ifeq ($(shell sh -c 'uname -m 2>/dev/null || echo not'),x86_64)
 	CFLAGS += -fPIC

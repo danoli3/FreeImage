@@ -10,6 +10,7 @@
 #include "ImfHeader.h"
 #include "ImfPartType.h"
 #include "ImfRgbaFile.h"
+#include "ojph_arch.h"
 #include "tiffio.h"
 #include <cmath>
 #include <cstdio>
@@ -20,6 +21,21 @@
 static void check(bool ok, const char *message) {
     if (!ok)
         throw std::runtime_error(message);
+}
+static void checkSimdConfiguration() {
+    const int level = ojph::get_cpu_ext_level();
+#if FREEIMAGE_TEST_OPENJPH_SIMD && !defined(_M_ARM64EC) &&                                         \
+    (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+    // x86_64 has SSE2 as its baseline. This also catches accidentally keeping
+    // OJPH_DISABLE_SIMD in the library while the build reports SIMD enabled.
+#if defined(__x86_64__) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    check(level >= ojph::X86_CPU_EXT_LEVEL_SSE2, "OpenJPH SIMD dispatch was not enabled");
+#endif
+    printf("OpenJPH SIMD enabled; runtime CPU level %d\n", level);
+#else
+    check(level == 0, "OpenJPH portable build unexpectedly enabled SIMD");
+    puts("OpenJPH portable implementation enabled");
+#endif
 }
 static void exrRoundtrip(Imf::Compression codec) {
     const int w = 37, h = 65;
@@ -201,6 +217,7 @@ static void g3Roundtrip() {
 int main() {
     try {
         FreeImage_Initialise();
+        checkSimdConfiguration();
         exrRoundtrip(Imf::ZIP_COMPRESSION);
         exrRoundtrip(Imf::PIZ_COMPRESSION);
         exrRoundtrip(Imf::ZSTD_COMPRESSION);
