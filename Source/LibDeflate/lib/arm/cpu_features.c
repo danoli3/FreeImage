@@ -30,6 +30,12 @@
  * features.  But an OS-specific way can be used when available.
  */
 
+/* Strict C11 hides O_CLOEXEC unless Linux extensions are requested before
+ * any system header. Used by both the auxv and /proc/cpuinfo readers below. */
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#  define _GNU_SOURCE 1
+#endif
+
 #ifdef __APPLE__
 #  undef _ANSI_SOURCE
 #  undef _DARWIN_C_SOURCE
