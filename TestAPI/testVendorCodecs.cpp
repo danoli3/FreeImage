@@ -119,7 +119,7 @@ static void tiffRoundtrip(int flag) {
     for (int y = 0; y < h; ++y) {
         auto *row = FreeImage_GetScanLine(image, y);
         for (int x = 0; x < w * 3; ++x)
-            row[x] = BYTE(x + y);
+            row[x] = static_cast<BYTE>(x + y);
     }
     FIMEMORY *mem = FreeImage_OpenMemory();
     check(FreeImage_SaveToMemory(FIF_TIFF, image, mem, flag), "TIFF save failed");
