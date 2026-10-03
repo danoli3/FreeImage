@@ -33,6 +33,9 @@ with `ZSTD_DISABLE_ASM`; preserve the ARM64EC exclusions in
 `common/{compiler.h,cpu.h,portability_macros.h}` so `_M_X64` does not select
 x86 intrinsics or CPUID on ARM64EC.
 
+The Linux ARM CPU detector requests `_GNU_SOURCE` before system headers so
+`O_CLOEXEC` is available under strict C11, including the GNU make path.
+
 libdeflate 1.26 requires C11 (MSVC 2019 16.8 or later). CMake applies C11
 specifically to its sources; GNU make defaults to C11. Upstream now excludes ARM64EC
 from x86 detection and uses its portable fallback there.

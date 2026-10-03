@@ -319,6 +319,26 @@ jobs:
       - name: Verify runtime dispatch and codec round trips
         run: ctest --test-dir build-simd -R VendorCodecTest --output-on-failure --verbose
 
+  linux-arm64-cross:
+    name: Linux ARM64 cross build (strict C11)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install ARM64 cross compiler
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build-arm64 -DCMAKE_SYSTEM_NAME=Linux
+          -DCMAKE_SYSTEM_PROCESSOR=aarch64
+          -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc
+          -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
+          -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=OFF
+          -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
+          -DFREEIMAGE_STATIC=ON -DBUILD_TESTS=OFF
+      - name: Build ARM64 library
+        run: cmake --build build-arm64 -j2
+
   make-build:
     # Plain `make` (Makefile.gnu, via the top-level Makefile dispatcher) is
     # a separate build path from CMake with its own hand-maintained file
