@@ -2,6 +2,18 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
 
+## 3.19.19 — Unreleased
+
+Bundled codec updates, OpenJPH SIMD, and loader/build fixes.
+
+- **OpenEXR 3.3.14 → 3.5.1**, including upstream-vendored **Zstandard 1.5.7** and **OpenJPH 0.32.0**. Add round-trip coverage for flat EXR ZSTD and HTJ2K/LJ2K, plus deep EXR ZSTD.
+- **Libdeflate → 1.26** with a complete source sync and C11 compilation for its bundled sources.
+- **LibTIFF 4.7.1 → 4.7.2** with a complete library sync. Update raw G3 fax decoding for the TIFF directory cursor change and use portable size format strings.
+- Enable runtime-dispatched OpenJPH x86 SIMD in CMake and GNU/macOS make. Compile kernels with separate ISA flags; ARM and ARM64EC use the portable implementation. CMake can disable it with `-DFREEIMAGE_OPENJPH_SIMD=OFF`; make accepts `FREEIMAGE_OPENJPH_SIMD=0`.
+- Fix BMP loading with extended info headers.
+- Keep bundled WebP and libdeflate on their ARM paths for ARM64EC; add ARM64 and ARM64EC Windows cross-build CI.
+- Synchronize and deduplicate legacy make sources. Add Linux ASan codec tests with SIMD enabled and disabled.
+
 ## 3.19.18 — 28 Sep 2026
 
 LibRaw is on by default. No new CVEs.

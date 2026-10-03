@@ -25,8 +25,9 @@ these libraries has a newer stable upstream release.
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
 OpenEXR, LibDeflate, and LibTIFF4 re-synced against their upstream release
-tags on 2026-10-02 for issue #137. Other vendored versions remain as checked
-on 2026-09-28 for FreeImage 3.19.18.
+tags on 2026-10-02 for issue #137. All vendored version entries, including
+OpenEXR's auxiliary codecs below,
+were rechecked against their source headers on 2026-10-03 for FreeImage 3.19.19.
 
 OpenEXR 3.5.1 also brings these upstream-vendored auxiliary codecs:
 
