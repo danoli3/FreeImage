@@ -320,7 +320,7 @@ jobs:
         run: ctest --test-dir build-simd -R VendorCodecTest --output-on-failure --verbose
 
   linux-arm64-cross:
-    name: Linux ARM64 cross build (strict C11)
+    name: Linux ARM64 cross build (libdeflate C11)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -333,7 +333,7 @@ jobs:
           -DCMAKE_SYSTEM_PROCESSOR=aarch64
           -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc
           -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
-          -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=OFF
+          -DCMAKE_C_STANDARD=17 -DCMAKE_C_EXTENSIONS=ON
           -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
           -DFREEIMAGE_STATIC=ON -DBUILD_TESTS=OFF
       - name: Build ARM64 library
