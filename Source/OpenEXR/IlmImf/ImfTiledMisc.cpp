@@ -10,11 +10,11 @@
 //-----------------------------------------------------------------------------
 
 #include "Iex.h"
-#include <ImfChannelList.h>
-#include <ImfHeader.h>
-#include <ImfMisc.h>
-#include <ImfTileDescription.h>
-#include <ImfTiledMisc.h>
+#include "ImfChannelList.h"
+#include "ImfHeader.h"
+#include "ImfMisc.h"
+#include "ImfTileDescription.h"
+#include "ImfTiledMisc.h"
 #include <algorithm>
 #include <limits>
 
@@ -378,7 +378,9 @@ getTiledChunkOffsetTableSize (const Header& header)
                     "Bad level mode getting chunk offset table size");
         }
         delete[] numXTiles;
+        numXTiles = nullptr;
         delete[] numYTiles;
+        numYTiles = nullptr;
 
         return static_cast<int> (lineOffsetSize);
     }

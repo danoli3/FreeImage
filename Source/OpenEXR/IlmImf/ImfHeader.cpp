@@ -10,42 +10,43 @@
 //-----------------------------------------------------------------------------
 
 #include "Iex.h"
-#include <IlmThreadConfig.h>
-#include <ImfBoxAttribute.h>
-#include <ImfChannelListAttribute.h>
-#include <ImfChromaticitiesAttribute.h>
-#include <ImfCompressionAttribute.h>
-#include <ImfCompressor.h>
-#include <ImfDeepImageStateAttribute.h>
-#include <ImfDoubleAttribute.h>
-#include <ImfDwaCompressor.h>
-#include <ImfEnvmapAttribute.h>
-#include <ImfFloatAttribute.h>
-#include <ImfFloatVectorAttribute.h>
-#include <ImfHeader.h>
-#include <ImfIDManifestAttribute.h>
-#include <ImfIntAttribute.h>
-#include <ImfKeyCodeAttribute.h>
-#include <ImfLineOrderAttribute.h>
-#include <ImfMatrixAttribute.h>
-#include <ImfMisc.h>
-#include <ImfOpaqueAttribute.h>
-#include <ImfPartType.h>
-#include <ImfPreviewImageAttribute.h>
-#include <ImfRationalAttribute.h>
-#include <ImfStdIO.h>
-#include <ImfStringAttribute.h>
-#include <ImfStringVectorAttribute.h>
-#include <ImfTileDescriptionAttribute.h>
-#include <ImfTimeCodeAttribute.h>
-#include <ImfVecAttribute.h>
-#include <ImfVersion.h>
+#include "IlmThreadConfig.h"
+#include "ImfBoxAttribute.h"
+#include "ImfBytesAttribute.h"
+#include "ImfChannelListAttribute.h"
+#include "ImfChromaticitiesAttribute.h"
+#include "ImfCompressionAttribute.h"
+#include "ImfCompressor.h"
+#include "ImfDeepImageStateAttribute.h"
+#include "ImfDoubleAttribute.h"
+#include "ImfDwaCompressor.h"
+#include "ImfEnvmapAttribute.h"
+#include "ImfFloatAttribute.h"
+#include "ImfFloatVectorAttribute.h"
+#include "ImfHeader.h"
+#include "ImfIDManifestAttribute.h"
+#include "ImfIntAttribute.h"
+#include "ImfKeyCodeAttribute.h"
+#include "ImfLineOrderAttribute.h"
+#include "ImfMatrixAttribute.h"
+#include "ImfMisc.h"
+#include "ImfOpaqueAttribute.h"
+#include "ImfPartType.h"
+#include "ImfPreviewImageAttribute.h"
+#include "ImfRationalAttribute.h"
+#include "ImfStdIO.h"
+#include "ImfStringAttribute.h"
+#include "ImfStringVectorAttribute.h"
+#include "ImfTileDescriptionAttribute.h"
+#include "ImfTimeCodeAttribute.h"
+#include "ImfVecAttribute.h"
+#include "ImfVersion.h"
 #include <atomic>
 #include <cmath>
 #include <sstream>
 #include <stdlib.h>
 #include <time.h>
-#include <openexr_base.h>
+#include "openexr_base.h"
 
 #include "ImfNamespace.h"
 #include "ImfTiledMisc.h"
@@ -70,9 +71,13 @@ struct CompressionRecord
     {
         exr_get_default_zip_compression_level (&zip_level);
         exr_get_default_dwa_compression_quality (&dwa_level);
+        exr_get_default_lossy_htj2k_quality (&lossy_htj2k_quality);
+        exr_get_default_zstd_compression_level (&zstd_level);
     }
     int   zip_level;
     float dwa_level;
+    float lossy_htj2k_quality;
+    int   zstd_level;
 };
 // NB: This is extra complicated than one would normally write to
 // handle scenario that seems to happen on MacOS/Windows (probably
@@ -259,6 +264,12 @@ void
 setDefaultDwaCompressionLevel (float level)
 {
     exr_set_default_dwa_compression_quality (level);
+}
+
+void
+setDefaultLossyHTJ2KQuality (float quality)
+{
+    exr_set_default_lossy_htj2k_quality (quality);
 }
 
 Header::Header (
@@ -692,6 +703,18 @@ Header::zipCompressionLevel () const
     return retrieveCompressionRecord (this).zip_level;
 }
 
+int&
+Header::zstdCompressionLevel ()
+{
+    return retrieveCompressionRecord (this).zstd_level;
+}
+
+int
+Header::zstdCompressionLevel () const
+{
+    return retrieveCompressionRecord (this).zstd_level;
+}
+
 float&
 Header::dwaCompressionLevel ()
 {
@@ -702,6 +725,18 @@ float
 Header::dwaCompressionLevel () const
 {
     return retrieveCompressionRecord (this).dwa_level;
+}
+
+float&
+Header::lossyHTJ2KQuality ()
+{
+    return retrieveCompressionRecord (this).lossy_htj2k_quality;
+}
+
+float
+Header::lossyHTJ2KQuality () const
+{
+    return retrieveCompressionRecord (this).lossy_htj2k_quality;
 }
 
 void
@@ -1478,6 +1513,7 @@ staticInitialize ()
 
         Box2fAttribute::registerAttributeType ();
         Box2iAttribute::registerAttributeType ();
+        BytesAttribute::registerAttributeType ();
         ChannelListAttribute::registerAttributeType ();
         CompressionAttribute::registerAttributeType ();
         ChromaticitiesAttribute::registerAttributeType ();

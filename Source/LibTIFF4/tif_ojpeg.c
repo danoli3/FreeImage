@@ -720,9 +720,9 @@ static int OJPEGPreDecode(TIFF *tif, uint16_t s)
             return (0);
     }
     if (isTiled(tif))
-        m = tif->tif_curtile;
+        m = tif->tif_dir.td_curtile;
     else
-        m = tif->tif_curstrip;
+        m = tif->tif_dir.td_curstrip;
     if ((sp->writeheader_done != 0) &&
         ((sp->write_cursample != s) || (sp->write_curstrile > m)))
     {

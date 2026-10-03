@@ -296,6 +296,29 @@ jobs:
           make -j"$(sysctl -n hw.ncpu)" Debug
           make RunDebug
 
+  openjph-simd:
+    name: OpenJPH SIMD ${{ matrix.simd }} (Linux ASan)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        simd: ["ON", "OFF"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build-simd -DBUILD_TESTS=ON
+          -DBUILD_OPENEXR=ON -DFREEIMAGE_STATIC=ON -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_BUILD_TYPE=Release -DFREEIMAGE_OPENJPH_SIMD=${{ matrix.simd }}
+          "-DCMAKE_C_FLAGS=-fsanitize=address -g"
+          "-DCMAKE_CXX_FLAGS=-fsanitize=address -g"
+          -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address
+      - name: Build codec integration test
+        run: cmake --build build-simd --target VendorCodecTest -j2
+      - name: Verify runtime dispatch and codec round trips
+        run: ctest --test-dir build-simd -R VendorCodecTest --output-on-failure --verbose
+
   make-build:
     # Plain `make` (Makefile.gnu, via the top-level Makefile dispatcher) is
     # a separate build path from CMake with its own hand-maintained file

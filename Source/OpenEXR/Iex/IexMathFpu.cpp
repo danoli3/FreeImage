@@ -11,7 +11,7 @@
 
 #include "IexMathFpu.h"
 
-#include <IexConfig.h>
+#include "IexConfig.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -22,7 +22,7 @@
 #    define debug(x)
 #endif
 
-#include <IexConfigInternal.h>
+#include "IexConfigInternal.h"
 #if defined(HAVE_UCONTEXT_H) &&                                                \
     (defined(IEX_HAVE_SIGCONTEXT_CONTROL_REGISTER_SUPPORT) ||                  \
      defined(IEX_HAVE_CONTROL_REGISTER_SUPPORT))
@@ -416,11 +416,10 @@ setFpExceptionHandler (FpExceptionHandler handler)
 {
     if (fpeHandler == 0)
     {
-        struct sigaction action;
+        struct sigaction action = {{0}};
         sigemptyset (&action.sa_mask);
         action.sa_flags     = SA_SIGINFO | SA_NOMASK;
         action.sa_sigaction = (void (*) (int, siginfo_t*, void*)) catchSigFpe;
-        action.sa_restorer  = 0;
 
         sigaction (SIGFPE, &action, 0);
     }

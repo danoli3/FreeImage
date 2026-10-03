@@ -69,7 +69,7 @@ struct TileProcess
     bool                  first = true;
     bool                  counts_only = false;
     exr_chunk_info_t      cinfo;
-    exr_decode_pipeline_t decoder;
+    exr_decode_pipeline_t decoder = EXR_DECODE_PIPELINE_INITIALIZER;
 
     TileProcess*          next;
 };
@@ -277,6 +277,18 @@ DeepTiledInputFile::setFrameBuffer (const DeepFrameBuffer& frameBuffer)
                     << "\" are "
                        "not compatible with the frame buffer's "
                        "subsampling factors.");
+    }
+
+    const Slice& sampleCountSlice = frameBuffer.getSampleCountSlice ();
+    if (!sampleCountSlice.base)
+    {
+        throw IEX_NAMESPACE::ArgExc (
+            "Invalid base pointer, please set a proper sample count slice.");
+    }
+    if (sampleCountSlice.type != UINT)
+    {
+        throw IEX_NAMESPACE::ArgExc (
+            "The type of sample count slice should be UINT.");
     }
 
     _data->frameBuffer = frameBuffer;
@@ -1198,6 +1210,14 @@ void TileProcess::copy_sample_count (
     const Slice& s = outfb->getSampleCountSlice ();
     if (s.xSampling != 1 || s.ySampling != 1)
         throw IEX_NAMESPACE::ArgExc ("Tiled data should not have subsampling.");
+
+    if (s.base == nullptr)
+        throw IEX_NAMESPACE::ArgExc (
+            "Deep frame buffer is missing sample counts; call insertSampleCountSlice before reading.");
+
+    if (s.type != UINT)
+        throw IEX_NAMESPACE::ArgExc (
+            "The type of sample count slice should be UINT.");
 
     int xOffset = s.xTileCoords ? 0 : t_absX;
     int yOffset = s.yTileCoords ? 0 : t_absY;

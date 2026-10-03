@@ -18,12 +18,10 @@ DOS2UNIX = dos2unix
 
 LIBRARIES = -lstdc++
 
-MODULES = $(SRCS:.c=.o)
-MODULES := $(MODULES:.cpp=.o)
 
 # C flags
-CFLAGS ?= -std=c99 -O3 -fPIC -fexceptions -fvisibility=hidden
-# -std=c99 implies __STRICT_ANSI__, which on glibc hides POSIX/GNU
+CFLAGS ?= -std=c11 -O3 -fPIC -fexceptions -fvisibility=hidden
+# -std=c11 implies __STRICT_ANSI__, which on glibc hides POSIX/GNU
 # declarations (e.g. O_CLOEXEC, used unconditionally by OpenEXRCore's
 # internal_posix_file_impl.h) unless a feature-test macro says otherwise.
 CFLAGS += -D_GNU_SOURCE
@@ -53,6 +51,14 @@ CXXFLAGS += -D__ANSI__
 # only headers), so PluginJXR.cpp compiles its stub instead.
 CXXFLAGS += -DINCLUDE_LIB_OPENEXR -DINCLUDE_LIB_RAW -DINCLUDE_LIB_WEBP
 CXXFLAGS += $(INCLUDE)
+
+# Probe and compile OpenJPH SIMD for the actual compiler target.
+OPENJPH_SIMD_CXX = $(CXX)
+OPENJPH_SIMD_CXXFLAGS = $(CXXFLAGS)
+include scripts/vendor/openjph-simd.mk
+
+MODULES = $(SRCS:.c=.o)
+MODULES := $(MODULES:.cpp=.o)
 
 ifeq ($(shell sh -c 'uname -m 2>/dev/null || echo not'),x86_64)
 	CFLAGS += -fPIC

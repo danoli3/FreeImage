@@ -23,15 +23,15 @@ Formats implemented directly in FreeImage's own plugin code (no external library
 
 Everything else is backed by a bundled copy of the format's reference library. Turn a format off with its `BUILD_*` option, or link a system copy with `USE_SYSTEM_*` (or `FREEIMAGE_USE_SYSTEM_LIBS`, which turns every `USE_SYSTEM_*` default on). See `CMakeLists.txt`.
 
-PixarLog and OJPEG inside the bundled libtiff include the integer-overflow hardening from libtiff 4.7.2. The rest of that library, including `TIFFLIB_VERSION_STR`, is still 4.7.1. OpenEXR is included when `CMAKE_CXX_STANDARD` is unset or 17 or newer, and left out for an older standard.
+The bundled libtiff is fully synced to 4.7.2, including its integer-overflow hardening and decompression-ratio checks. OpenEXR is included when `CMAKE_CXX_STANDARD` is unset or 17 or newer, and left out for an older standard.
 
 | Formats | Library | Bundled version | Default |
 |---|---|---|---|
 | PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.58 (zlib 1.3.2) | on |
 | JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 (25 Jan 2026) | on |
-| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.1 | on |
+| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.2 | on |
 | JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouvain/openjpeg) | 2.5.4 | on |
-| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ [Imath](https://github.com/AcademySoftwareFoundation/Imath), [libdeflate](https://github.com/ebiggers/libdeflate)) | 3.3.14 (Imath 3.2.3, libdeflate 1.18) | on for C++17+ |
+| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ [Imath](https://github.com/AcademySoftwareFoundation/Imath), [libdeflate](https://github.com/ebiggers/libdeflate)) | 3.5.1 (Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0) | on for C++17+ |
 | WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on |
 | Camera RAW | [LibRaw](https://www.libraw.org/) | 0.22.2 | on |
 | JPEG-XR | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | Windows only |

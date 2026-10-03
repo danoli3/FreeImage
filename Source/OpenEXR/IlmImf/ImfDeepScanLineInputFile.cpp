@@ -84,7 +84,7 @@ struct ScanLineProcess
     bool                  first = true;
     bool                  counts_only = false;
     exr_chunk_info_t      cinfo;
-    exr_decode_pipeline_t decoder;
+    exr_decode_pipeline_t decoder = EXR_DECODE_PIPELINE_INITIALIZER;
 
     ScanLineProcess*      next;
 };
@@ -617,6 +617,21 @@ DeepScanLineInputFile::Data::readMemData (
     std::vector<DeepSlice> fills;
     ScanLineProcess proc;
 
+    if (countsOnly)
+    {
+        const Slice& scslice = fb.getSampleCountSlice ();
+        if (!scslice.base)
+        {
+            throw IEX_NAMESPACE::ArgExc (
+                "Invalid base pointer, please set a proper sample count slice.");
+        }
+        if (scslice.type != OPENEXR_IMF_INTERNAL_NAMESPACE::UINT)
+        {
+            throw IEX_NAMESPACE::ArgExc (
+                "The type of sample count slice should be UINT.");
+        }
+    }
+
     if (!countsOnly)
         prepFillList(fb, fills);
 
@@ -986,6 +1001,17 @@ void ScanLineProcess::copy_sample_count (
 {
     const Slice& scslice = outfb->getSampleCountSlice ();
 
+    if (!scslice.base)
+    {
+        throw IEX_NAMESPACE::ArgExc (
+            "Invalid base pointer, please set a proper sample count slice.");
+    }
+    if (scslice.type != OPENEXR_IMF_INTERNAL_NAMESPACE::UINT)
+    {
+        throw IEX_NAMESPACE::ArgExc (
+            "The type of sample count slice should be UINT.");
+    }
+
     int     end = cinfo.height - decoder.user_line_end_ignore;
     int64_t xS = int64_t (scslice.xStride);
     int64_t yS = int64_t (scslice.yStride);
@@ -997,7 +1023,10 @@ void ScanLineProcess::copy_sample_count (
 
         ptr = reinterpret_cast<uint8_t*> (scslice.base);
         ptr += int64_t (cinfo.start_x) * xS;
-        ptr += (int64_t (fbY) + int64_t (y)) * yS;
+        /* y is chunk-relative (same indexing as sample_count_table rows);
+         * fbY is the first requested absolute line and may be mid-chunk. 
+         This allows for multi-scanline deep codecs to work. */
+        ptr += (int64_t (cinfo.start_y) + int64_t (y)) * yS;
 
         if (xS == sizeof(int32_t))
         {

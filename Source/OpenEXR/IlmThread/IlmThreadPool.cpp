@@ -27,11 +27,20 @@
 #    include <unistd.h>
 #endif
 
-ILMTHREAD_INTERNAL_NAMESPACE_SOURCE_ENTER
-
 #if ILMTHREAD_THREADING_ENABLED
 #    define ENABLE_THREADING
+#    if ILMTHREAD_USE_TBB
+#        include <oneapi/tbb/task_arena.h>
+using namespace oneapi;
+#    endif
 #endif
+
+#if defined(__cpp_lib_atomic_shared_ptr) &&                                \
+    (__cpp_lib_atomic_shared_ptr >= 201711L)
+#    define ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+#endif
+
+ILMTHREAD_INTERNAL_NAMESPACE_SOURCE_ENTER
 
 namespace
 {
@@ -56,6 +65,7 @@ handleProcessTask (Task* task)
     }
 }
 
+#ifdef ENABLE_THREADING
 struct DefaultThreadPoolData
 {
     Semaphore          _taskSemaphore; // threads wait on this for ready tasks
@@ -81,6 +91,7 @@ struct DefaultThreadPoolData
         _stopping    = false;
     }
 };
+#endif
 
 } // namespace
 
@@ -95,10 +106,10 @@ struct TaskGroup::Data
     Data (Data&&)                 = delete;
     Data& operator= (Data&&)      = delete;
 
+    void waitForEmpty ();
+
     void addTask ();
     void removeTask ();
-
-    void waitForEmpty ();
 
     std::atomic<int> numPending;
     std::atomic<int> inFlight;
@@ -110,25 +121,110 @@ struct ThreadPool::Data
     using ProviderPtr = std::shared_ptr<ThreadPoolProvider>;
 
     Data ();
+    Data (ThreadPoolProvider *p);
     ~Data ();
     Data (const Data&)            = delete;
     Data& operator= (const Data&) = delete;
-    Data (Data&&)                 = delete;
-    Data& operator= (Data&&)      = delete;
 
-    ProviderPtr getProvider () const { return std::atomic_load (&_provider); }
+#    ifdef ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+    Data (Data&& other) noexcept
+    {
+        ProviderPtr p =
+            other._provider.exchange (ProviderPtr{}, std::memory_order_acq_rel);
+        _provider.store (p, std::memory_order_release);
+    }
+#    else
+    Data (Data&&) = default;
+#    endif
+
+    Data& operator= (Data&&) = delete;
+
+    ProviderPtr getProvider () const
+    {
+#    ifdef ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+        return _provider.load (std::memory_order_acquire);
+#    else
+        return std::atomic_load (&_provider);
+#    endif
+    }
 
     void setProvider (ProviderPtr provider)
     {
+#    ifdef ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+        ProviderPtr curp =
+            _provider.exchange (provider, std::memory_order_acq_rel);
+#    else
         ProviderPtr curp = std::atomic_exchange (&_provider, provider);
+#    endif
         if (curp && curp != provider) curp->finish ();
     }
 
-    std::shared_ptr<ThreadPoolProvider> _provider;
+#    ifdef ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+    std::atomic<ProviderPtr> _provider;
+#    else
+    ProviderPtr _provider;
+#    endif
 };
 
 namespace
 {
+
+#if ILMTHREAD_USE_TBB
+class TBBThreadPoolProvider : public ThreadPoolProvider
+{
+public:
+    TBBThreadPoolProvider (int count) { setNumThreads (count); }
+    TBBThreadPoolProvider (const TBBThreadPoolProvider&) = delete;
+    TBBThreadPoolProvider&
+    operator= (const TBBThreadPoolProvider&)                       = delete;
+    TBBThreadPoolProvider (TBBThreadPoolProvider&&)            = delete;
+    TBBThreadPoolProvider& operator= (TBBThreadPoolProvider&&) = delete;
+    ~TBBThreadPoolProvider () noexcept override
+    {
+        finish ();
+    }
+
+    int numThreads () const override
+    {
+        return _arena ? _arena->max_concurrency () : 1;
+    }
+    void setNumThreads (int count) override
+    {
+        if (_arena)
+            _arena->terminate ();
+        _arena.reset ();
+
+        if (count > 1)
+        {
+            _arena = std::make_unique<tbb::task_arena> (count);
+            _arena->initialize ();
+        }
+    }
+
+    void addTask (Task* task) override
+    {
+        if (_arena)
+        {
+            _arena->enqueue ([=] ()
+            {
+                handleProcessTask (task);
+            });
+        }
+        else
+            handleProcessTask (task);
+    }
+
+    void finish () override
+    {
+        if (_arena)
+            _arena->terminate ();
+        _arena.reset();
+    }
+private:
+
+    std::unique_ptr<tbb::task_arena> _arena;
+};
+#endif
 
 //
 // class DefaultThreadPoolProvider
@@ -331,7 +427,8 @@ DefaultThreadPoolProvider::threadLoop (
 // struct TaskGroup::Data
 //
 
-TaskGroup::Data::Data () : numPending (0), inFlight (0), isEmpty (1)
+TaskGroup::Data::Data ()
+    : numPending (0), inFlight (0), isEmpty (1)
 {}
 
 TaskGroup::Data::~Data ()
@@ -400,6 +497,15 @@ TaskGroup::Data::removeTask ()
 ThreadPool::Data::Data ()
 {
     // empty
+}
+
+ThreadPool::Data::Data (ThreadPoolProvider *p)
+{
+#    ifdef ILMTHREAD_HAVE_ATOMIC_SHARED_PTR
+    _provider.store (ProviderPtr (p), std::memory_order_release);
+#    else
+    _provider = ProviderPtr (p);
+#    endif
 }
 
 ThreadPool::Data::~Data ()
@@ -483,6 +589,17 @@ ThreadPool::ThreadPool (unsigned nthreads)
 #ifdef ENABLE_THREADING
     setNumThreads (static_cast<int> (nthreads));
 #endif
+}
+
+// private constructor to avoid multiple calls
+ThreadPool::ThreadPool (Data&& d)
+    :
+#ifdef ENABLE_THREADING
+    _data (new Data (std::move (d)))
+#else
+    _data (nullptr)
+#endif
+{
 }
 
 ThreadPool::~ThreadPool ()
@@ -580,9 +697,19 @@ ThreadPool::globalThreadPool ()
     //
     // The global thread pool
     //
-
+#if ILMTHREAD_USE_TBB
+    // Use TBB for the global thread pool by default
+    //
+    // We do not (currently) use this as the default thread pool
+    // provider as it can easily cause recursive mutex deadlocks as
+    // TBB shares a single thread pool with multiple arenas
+    static ThreadPool gThreadPool (
+        ThreadPool::Data (
+            new TBBThreadPoolProvider (
+                tbb::this_task_arena::max_concurrency ())));
+#else
     static ThreadPool gThreadPool (0);
-
+#endif
     return gThreadPool;
 }
 
@@ -596,24 +723,28 @@ unsigned
 ThreadPool::estimateThreadCountForFileIO ()
 {
 #ifdef ENABLE_THREADING
+#    if ILMTHREAD_USE_TBB
+    return tbb::this_task_arena::max_concurrency ();
+#    else
     unsigned rv = std::thread::hardware_concurrency ();
     // hardware concurrency is not required to work
     if (rv == 0 ||
         rv > static_cast<unsigned> (std::numeric_limits<int>::max ()))
     {
         rv = 1;
-#    if (defined(_WIN32) || defined(_WIN64))
+#        if (defined(_WIN32) || defined(_WIN64))
         SYSTEM_INFO si;
         GetNativeSystemInfo (&si);
 
         rv = si.dwNumberOfProcessors;
-#    else
+#        else
         // linux, bsd, and mac are fine with this
         // other *nix should be too, right?
         rv = sysconf (_SC_NPROCESSORS_ONLN);
-#    endif
+#        endif
     }
     return rv;
+#    endif
 #else
     return 0;
 #endif

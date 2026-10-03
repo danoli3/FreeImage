@@ -31,6 +31,12 @@ LIBRARIES_X86_64 = $(MACOSX_DEPLOY) -Wl,-syslibroot $(MACOSX_SYSROOT)
 LIBTOOL = libtool
 LIPO = lipo
 
+# This legacy makefile targets x86_64 explicitly. Apply each ISA option only
+# to its kernel objects; CMake also supports ARM64 and universal builds.
+OPENJPH_SIMD_CXX = $(CPP_X86_64)
+OPENJPH_SIMD_CXXFLAGS = $(CPPFLAGS_X86_64)
+include scripts/vendor/openjph-simd.mk
+
 TARGET = freeimage
 STATICLIB = lib$(TARGET).a
 SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).dylib

@@ -15,6 +15,11 @@ extern "C" {
 #endif
 
 /*
+** File names passed to ImfOpen* functions are UTF-8 encoded (see ImfIO.h in the
+** C++ API).
+*/
+
+/*
 ** Interpreting unsigned shorts as 16-bit floating point numbers
 */
 
@@ -80,7 +85,11 @@ typedef struct ImfRgba ImfRgba;
 #define IMF_B44A_COMPRESSION 7
 #define IMF_DWAA_COMPRESSION 8
 #define IMF_DWAB_COMPRESSION 9
-#define IMF_NUM_COMPRESSION_METHODS 10
+#define IMF_HTJ2K256_COMPRESSION 10
+#define IMF_HTJ2K32_COMPRESSION 11
+#define IMF_LJ2K_COMPRESSION 12
+#define IMF_ZSTD_COMPRESSION 13
+#define IMF_NUM_COMPRESSION_METHODS 14
 
 /*
 ** Channels; values must be the same as in Imf::RgbaChannels.

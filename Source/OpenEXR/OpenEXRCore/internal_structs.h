@@ -9,7 +9,7 @@
 #include "openexr_config.h"
 #include "internal_attr.h"
 
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
 #        include <windows.h>
 #        include <synchapi.h>
@@ -125,6 +125,8 @@ struct _priv_exr_part_t
 
     int32_t zip_compression_level;
     float   dwa_compression_level;
+    float   lossy_htj2k_quality;
+    int32_t zstd_compression_level;
 
     int32_t  num_tile_levels_x;
     int32_t  num_tile_levels_y;
@@ -207,6 +209,8 @@ struct _priv_exr_context_t
 
     int   default_zip_level;
     float default_dwa_quality;
+    float default_lossy_htj2k_quality;
+    int   default_zstd_level;
 
     void*                         real_user_data;
     void*                         user_data;
@@ -234,7 +238,7 @@ struct _priv_exr_context_t
 
     /* mostly needed for writing, but used during read to ensure
      * custom attribute handlers are safe */
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
 #    ifdef _WIN32
     CRITICAL_SECTION mutex;
 #    else
@@ -252,7 +256,7 @@ struct _priv_exr_context_t
 static inline void
 internal_exr_lock (exr_const_context_t c)
 {
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
     exr_context_t nonc = EXR_CONST_CAST (exr_context_t, c);
 #    ifdef _WIN32
     EnterCriticalSection (&nonc->mutex);
@@ -265,7 +269,7 @@ internal_exr_lock (exr_const_context_t c)
 static inline void
 internal_exr_unlock (exr_const_context_t c)
 {
-#ifdef ILMTHREAD_THREADING_ENABLED
+#if ILMTHREAD_THREADING_ENABLED
     exr_context_t nonc = EXR_CONST_CAST (exr_context_t, c);
 #    ifdef _WIN32
     LeaveCriticalSection (&nonc->mutex);
