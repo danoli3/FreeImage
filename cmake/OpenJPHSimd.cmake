@@ -94,7 +94,9 @@ if(FREEIMAGE_OPENJPH_SIMD_ENABLED)
     if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         # _xgetbv is used only after the runtime OSXSAVE check. clang-cl's
         # intrinsic needs the xsave feature on this CPU-probe source.
-        set_property(SOURCE Source/OpenEXR/OpenJPH/others/ojph_arch.cpp
+        # Match the source-list spelling: CMake keeps properties for
+        # ./Source/... and Source/... separately with our policy baseline.
+        set_property(SOURCE ./Source/OpenEXR/OpenJPH/others/ojph_arch.cpp
             APPEND PROPERTY COMPILE_OPTIONS /clang:-mxsave)
     endif()
 endif()
