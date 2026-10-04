@@ -224,6 +224,12 @@ ensure_tls_resources (size_t required_size)
 
 #if defined(_WIN32) || defined(_WIN64)
         tls->shuffle_buf = (uint8_t*) _aligned_malloc (aligned_size, 64);
+#elif defined(__ANDROID__) && __ANDROID_API__ < 28
+        // Android added aligned_alloc in API 28; posix_memalign is available
+        // on older targets and its allocation is also released with free.
+        void* aligned_buf = NULL;
+        if (posix_memalign (&aligned_buf, 64, aligned_size) != 0) return false;
+        tls->shuffle_buf = (uint8_t*) aligned_buf;
 #else
         tls->shuffle_buf = (uint8_t*) aligned_alloc (64, aligned_size);
 #endif

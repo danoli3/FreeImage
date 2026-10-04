@@ -319,6 +319,29 @@ jobs:
       - name: Verify runtime dispatch and codec round trips
         run: ctest --test-dir build-simd -R VendorCodecTest --output-on-failure --verbose
 
+  android-api25:
+    name: Android API 25 (${{ matrix.abi }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Android NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;28.0.13004108"
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build-android
+          -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/28.0.13004108/build/cmake/android.toolchain.cmake"
+          -DANDROID_ABI=${{ matrix.abi }} -DANDROID_PLATFORM=android-25
+          -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+          -DFREEIMAGE_STATIC=ON -DBUILD_OPENEXR=ON -DBUILD_TESTS=ON
+      - name: Build Android library and test executables
+        run: cmake --build build-android -j2
+
   linux-arm64-cross:
     name: Linux ARM64 cross build (libdeflate C11)
     runs-on: ubuntu-latest

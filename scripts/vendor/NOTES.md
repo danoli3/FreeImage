@@ -58,3 +58,7 @@ but exclude table-generator executables (`b44ExpLogTable.cpp`, `dwaLookups.cpp`)
 After an update, run TestAPI and EXR/TIFF/G3 round trips, including EXR's new
 compression methods and variable-sample deep ZSTD data, with AddressSanitizer.
 Windows, ARM64EC, and Linux GNU make validation belongs in the existing CI matrix.
+
+OpenEXRCore ZSTD uses posix_memalign on Android below API 28, where
+aligned_alloc is unavailable. Preserve its 64-byte alignment, overflow
+checks, and matching free cleanup when refreshing the vendor snapshot.
