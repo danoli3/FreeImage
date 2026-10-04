@@ -26,8 +26,8 @@ these libraries has a newer stable upstream release.
 
 OpenEXR, LibDeflate, and LibTIFF4 re-synced against their upstream release
 tags on 2026-10-02 for issue #137. All vendored version entries, including
-OpenEXR's auxiliary codecs below,
-were rechecked against their source headers on 2026-10-03 for FreeImage 3.19.19.
+OpenEXR's auxiliary codecs below, were rechecked against their source headers
+on 2026-10-04 for FreeImage 3.19.20. No vendored version changed from 3.19.19.
 
 OpenEXR 3.5.1 also brings these upstream-vendored auxiliary codecs:
 
