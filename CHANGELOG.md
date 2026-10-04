@@ -2,7 +2,17 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
 
-## 3.19.19 — Unreleased
+## 3.19.20 — Unreleased
+
+Linux ARM and Android compatibility fixes for the bundled codecs.
+
+- Libdeflate's Linux ARM CPU detector requests GNU feature declarations before system headers, keeping `O_CLOEXEC` available under strict C11.
+- OpenEXR ZSTD uses `posix_memalign()` below Android API 28, preserving 64-byte buffer alignment and supporting API 25 targets.
+- Add a Linux ARM64 cross-build job with bundled codecs and libdeflate's strict C11 settings.
+- Add Android API 25 CI for ARMv7 and ARM64. Both jobs compile and link FreeImage and its test executables; runtime execution requires a device or emulator.
+- Vendored library versions are unchanged from 3.19.19.
+
+## 3.19.19 — 3 Oct 2026
 
 Bundled codec updates, OpenJPH SIMD, and loader/build fixes.
 
