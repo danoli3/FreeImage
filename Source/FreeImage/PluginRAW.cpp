@@ -519,7 +519,7 @@ Extension() {
 		"cap,"   // Phase One Digital Camera Raw Image Format.
 		"cine,"  // Phantom Software Raw Image File.
 		"cr2,"   // Canon Digital Camera RAW Image Format version 2.0. These images are based on the TIFF image standard.
-		"cr3"
+		"cr3,"
 		"crw,"   // Canon Digital Camera RAW Image Format version 1.0. 
 		"cs1,"   // Sinar Capture Shop Raw Image File.
 		"dc2,"   // Kodak DC25 Digital Camera File.
