@@ -712,6 +712,8 @@ if(BUILD_LIBRAWLITE)
     # clang-cl, libraw.h otherwise marks the definitions dllimport
     # (C2491). Makefile.mingw passes the same flag.
     add_definitions(-DINCLUDE_LIB_RAW -DLIBRAW_NODLL)
+
+    add_definitions(-DUSE_X3FTOOLS)
     endif()
 endif()
 
