@@ -76,3 +76,9 @@ OpenEXR 3.5.2 introduces OpenJPH NLT lookup tables for lossy LJ2K and a
 compatibility fallback for files written by 3.5.0/3.5.1 without the tables.
 Regenerate those older lossy LJ2K files for best results, per upstream notes.
 The Zstandard and OpenJPH snapshots are unchanged; retain all local patches above.
+
+OpenEXRCore's Windows file backend uses CreateFileW unconditionally, following
+the proposed [OpenEXR #2712](https://github.com/AcademySoftwareFoundation/openexr/pull/2712)
+fix for #2701. Preserve this local patch until upstream includes it; selecting
+CreateFile2 for newer build targets introduces an unnecessary Windows 8 API
+dependency in binaries intended to retain Windows 7 compatibility.

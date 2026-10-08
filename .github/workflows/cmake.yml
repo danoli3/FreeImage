@@ -190,16 +190,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Set up Windows inspection tools
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
       - name: Configure 32-bit bundled codecs
         run: >-
           cmake -S . -B build-win32 -G "Visual Studio 17 2022"
           -A Win32 -T ${{ matrix.toolset }}
           -DCMAKE_CXX_STANDARD=17 -DFREEIMAGE_STATIC=ON
+          -DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0A00"
+          -DCMAKE_CXX_FLAGS="-D_WIN32_WINNT=0x0A00"
           -DBUILD_OPENEXR=ON -DFREEIMAGE_OPENJPH_SIMD=ON -DBUILD_TESTS=ON
       - name: Build 32-bit library and tests
         run: cmake --build build-win32 --config ${{ matrix.config }} --parallel 2
       - name: Run 32-bit test suites
         run: ctest --test-dir build-win32 --build-config ${{ matrix.config }} --output-on-failure --verbose
+      - name: Check OpenEXR Windows API imports
+        run: |
+          $exe = "build-win32/TestAPI/${{ matrix.config }}/VendorCodecTest.exe"
+          $imports = & dumpbin /imports $exe
+          if ($LASTEXITCODE -ne 0) { throw "Cannot inspect codec test imports" }
+          if ($imports -match '\bCreateFile2\b') { throw "OpenEXR imports Windows 8-only CreateFile2" }
+          if (-not ($imports -match '\bCreateFileW\b')) { throw "Expected CreateFileW import is missing" }
 
   windows-arm-cross:
     # Cross-compile from the x64 windows-latest runner with the installed
