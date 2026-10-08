@@ -175,6 +175,32 @@ jobs:
         run: |
           ctest --test-dir build --build-config Debug --verbose
 
+  windows-win32:
+    # Pin VS 2022: its x86 Debug compiler hit OpenJPH's AVX2 encoder ICE.
+    name: Windows Win32 (${{ matrix.toolset }}, ${{ matrix.config }})
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+    strategy:
+      fail-fast: false
+      matrix:
+        toolset: [v143, ClangCL]
+        config: [Debug, Release]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure 32-bit bundled codecs
+        run: >-
+          cmake -S . -B build-win32 -G "Visual Studio 17 2022"
+          -A Win32 -T ${{ matrix.toolset }}
+          -DCMAKE_CXX_STANDARD=17 -DFREEIMAGE_STATIC=ON
+          -DBUILD_OPENEXR=ON -DFREEIMAGE_OPENJPH_SIMD=ON -DBUILD_TESTS=ON
+      - name: Build 32-bit library and tests
+        run: cmake --build build-win32 --config ${{ matrix.config }} --parallel 2
+      - name: Run 32-bit test suites
+        run: ctest --test-dir build-win32 --build-config ${{ matrix.config }} --output-on-failure --verbose
+
   windows-arm-cross:
     # Cross-compile from the x64 windows-latest runner with the installed
     # MSVC ARM64 and ARM64EC toolsets. The produced test binaries cannot
