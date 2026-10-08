@@ -1,14 +1,17 @@
 # Changelog
 
-Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN. Tag `3.19.21` is not a newer release. It points at the same 2024 commit as `3.19.3`.
+Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
-## Unreleased
+## 3.19.21 — Unreleased
 
 - **libpng 1.6.58 → 1.6.59.** Includes the upstream fix for CVE-2026-46675 (use-after-free following incomplete compressed metadata), restores correctly positioned hIST chunks, and avoids double frees after allocation failure.
 - **OpenEXR 3.5.1 → 3.5.2.** Adds OpenJPH nonlinear lookup tables for lossy LJ2K and a compatibility fallback for older files. Upstream recommends regenerating lossy LJ2K files written by 3.5.0/3.5.1 for best results. Zstandard and OpenJPH versions remain unchanged.
 - OpenEXR's Windows file backend uses CreateFileW instead of CreateFile2, removing that Windows 8 API dependency for older Windows runtimes.
+- Apply the upstream OpenJPH AVX2 encoder workaround for MSVC 2022 Win32 Debug compiler crashes.
+- Add Win32 MSVC and clang-cl CI in Debug and Release, including codec round trips and Windows API import checks.
+- Add CR3 and X3F RAW-format support and fix CR3 extension detection.
 
-## 3.19.20 — Unreleased
+## 3.19.20 — 4 Oct 2026
 
 Linux ARM and Android compatibility fixes for the bundled codecs.
 
