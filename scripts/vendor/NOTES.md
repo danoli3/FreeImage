@@ -62,3 +62,8 @@ Windows, ARM64EC, and Linux GNU make validation belongs in the existing CI matri
 OpenEXRCore ZSTD uses posix_memalign on Android below API 28, where
 aligned_alloc is unavailable. Preserve its 64-byte alignment, overflow
 checks, and matching free cleanup when refreshing the vendor snapshot.
+
+OpenJPH's AVX2 encoder includes the upstream MSVC 2022 Win32 Debug
+compiler-crash workaround from [OpenJPH #395](https://github.com/aous72/OpenJPH/pull/395).
+Copy the referenced previous context value into a local before inserting it
+into the SIMD vector. Preserve this patch until the bundled snapshot includes it.
