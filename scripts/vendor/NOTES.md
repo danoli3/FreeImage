@@ -1,12 +1,12 @@
 # Vendored codec integration
 
-The issue #137 update imports these upstream tags:
+Current vendored releases (issue #137, updated for issue #148):
 
 | Library | Upstream tag | Commit | Library sources |
 |---|---|---|---|
 | libdeflate | `v1.26` | `92e6a0db9fa848d742f9eb286c92afc60f2c3dda` | `common_defs.h`, `libdeflate.h`, `lib/` |
 | libtiff | `v4.7.2` | `d01a94be176f5f6a87f7ee1c0b32e65416aa2b4d` | `libtiff/`, plus `port/libport.h` |
-| OpenEXR | `v3.5.1` | `490f4cb496ac1db9f675dae7bad689f676a8256f` | `src/lib/{Iex,IlmThread,OpenEXR,OpenEXRCore}` |
+| OpenEXR | `v3.5.2` | `69b2604fc76e370615438bdc8d2cd95b9349c12e` | `src/lib/{Iex,IlmThread,OpenEXR,OpenEXRCore}` |
 
 OpenEXR's `OpenEXR` library directory maps to `Source/OpenEXR/IlmImf`.
 Its installed-style `Imath/` include prefixes are removed because this fork
@@ -67,3 +67,12 @@ OpenJPH's AVX2 encoder includes the upstream MSVC 2022 Win32 Debug
 compiler-crash workaround from [OpenJPH #395](https://github.com/aous72/OpenJPH/pull/395).
 Copy the referenced previous context value into a local before inserting it
 into the SIMD vector. Preserve this patch until the bundled snapshot includes it.
+
+libpng 1.6.59 comes from v1.6.59 (cd952f49f95bb27154ae77dbb103032d95f6e580).
+Its prebuilt pnglibconf.h changes only the version comment; retain this fork's
+configuration. Library source lists are unchanged for both codec updates.
+
+OpenEXR 3.5.2 introduces OpenJPH NLT lookup tables for lossy LJ2K and a
+compatibility fallback for files written by 3.5.0/3.5.1 without the tables.
+Regenerate those older lossy LJ2K files for best results, per upstream notes.
+The Zstandard and OpenJPH snapshots are unchanged; retain all local patches above.
