@@ -199,8 +199,8 @@ jobs:
           cmake -S . -B build-win32 -G "Visual Studio 17 2022"
           -A Win32 -T ${{ matrix.toolset }}
           -DCMAKE_CXX_STANDARD=17 -DFREEIMAGE_STATIC=ON
-          -DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0A00"
-          -DCMAKE_CXX_FLAGS="-D_WIN32_WINNT=0x0A00"
+          -DCMAKE_C_FLAGS_INIT="-D_WIN32_WINNT=0x0A00"
+          -DCMAKE_CXX_FLAGS_INIT="-D_WIN32_WINNT=0x0A00"
           -DBUILD_OPENEXR=ON -DFREEIMAGE_OPENJPH_SIMD=ON -DBUILD_TESTS=ON
       - name: Build 32-bit library and tests
         run: cmake --build build-win32 --config ${{ matrix.config }} --parallel 2
