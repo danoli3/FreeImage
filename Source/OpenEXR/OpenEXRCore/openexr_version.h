@@ -15,7 +15,7 @@
 #    define OPENEXR_VERSION_MINOR 5
 #    endif
 #    ifndef OPENEXR_VERSION_PATCH
-#    define OPENEXR_VERSION_PATCH 1
+#    define OPENEXR_VERSION_PATCH 2
 #    endif
 
 #endif
