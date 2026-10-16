@@ -24,6 +24,8 @@
 #include "FreeImage.h"
 #include "Utilities.h"
 
+#include <stdint.h>
+
 
 /**
 @brief Composite a foreground image against a background color or a background image.
@@ -227,6 +229,89 @@ FreeImage_PreMultiplyWithAlpha(FIBITMAP *dib) {
 			}
 		}
 	}
+	return TRUE;
+}
+
+/**
+Draws a source bitmap over a destination bitmap using the source alpha channel.
+The top-left corner of the source is placed at (left, top); pixels outside the
+destination are clipped. Supported formats are matching 8-bit grayscale,
+24-bit RGB, and 32-bit RGBA bitmaps.
+*/
+BOOL DLL_CALLCONV
+FreeImage_DrawBitmap(FIBITMAP *dst, FIBITMAP *src, FREE_IMAGE_ALPHA_OPERATION alpha, int32_t left, int32_t top) {
+	if(!FreeImage_HasPixels(dst) || !FreeImage_HasPixels(src) || alpha != FIAO_SrcAlpha) {
+		return FALSE;
+	}
+
+	if(FreeImage_GetImageType(dst) != FIT_BITMAP || FreeImage_GetImageType(src) != FIT_BITMAP) {
+		return FALSE;
+	}
+
+	const FREE_IMAGE_COLOR_TYPE src_color = FreeImage_GetColorType2(src, FALSE);
+	const FREE_IMAGE_COLOR_TYPE dst_color = FreeImage_GetColorType2(dst, FALSE);
+	if(src_color != dst_color || (src_color != FIC_MINISBLACK && src_color != FIC_RGB && src_color != FIC_RGBALPHA)) {
+		return FALSE;
+	}
+
+	const unsigned src_bpp = FreeImage_GetBPP(src);
+	if(src_bpp != FreeImage_GetBPP(dst) || (src_bpp != 8 && src_bpp != 24 && src_bpp != 32)) {
+		return FALSE;
+	}
+	if(src_bpp == 8 && FreeImage_IsTransparent(src)) {
+		return FALSE;
+	}
+
+	const unsigned src_width = FreeImage_GetWidth(src);
+	const unsigned src_height = FreeImage_GetHeight(src);
+	const unsigned dst_width = FreeImage_GetWidth(dst);
+	const unsigned dst_height = FreeImage_GetHeight(dst);
+	if(src_width > 0x7fffffffU || src_height > 0x7fffffffU || dst_width > 0x7fffffffU || dst_height > 0x7fffffffU) {
+		return FALSE;
+	}
+
+	const int64_t roi_left = left > 0 ? left : 0;
+	const int64_t roi_top = top > 0 ? top : 0;
+	const int64_t source_right = static_cast<int64_t>(left) + src_width;
+	const int64_t source_bottom = static_cast<int64_t>(top) + src_height;
+	const int64_t roi_right = source_right < dst_width ? source_right : dst_width;
+	const int64_t roi_bottom = source_bottom < dst_height ? source_bottom : dst_height;
+	if(roi_left >= roi_right || roi_top >= roi_bottom) {
+		return TRUE;
+	}
+
+	const unsigned bytes_per_pixel = src_bpp / 8;
+	for(int64_t y = roi_top; y < roi_bottom; ++y) {
+		const unsigned dst_y = dst_height - 1 - static_cast<unsigned>(y);
+		const unsigned src_y = src_height - 1 - static_cast<unsigned>(y - top);
+		BYTE *dst_row = FreeImage_GetScanLine(dst, static_cast<int>(dst_y));
+		const BYTE *src_row = FreeImage_GetScanLine(src, static_cast<int>(src_y));
+		BYTE *dst_pixel = dst_row + static_cast<size_t>(roi_left) * bytes_per_pixel;
+		const BYTE *src_pixel = src_row + static_cast<size_t>(roi_left - left) * bytes_per_pixel;
+
+		for(int64_t x = roi_left; x < roi_right; ++x, dst_pixel += bytes_per_pixel, src_pixel += bytes_per_pixel) {
+			const unsigned src_alpha = src_bpp == 32 ? src_pixel[FI_RGBA_ALPHA] : 255;
+			if(src_alpha == 255) {
+				if(src_bpp == 8) {
+					dst_pixel[0] = src_pixel[0];
+				} else {
+					dst_pixel[FI_RGBA_BLUE] = src_pixel[FI_RGBA_BLUE];
+					dst_pixel[FI_RGBA_GREEN] = src_pixel[FI_RGBA_GREEN];
+					dst_pixel[FI_RGBA_RED] = src_pixel[FI_RGBA_RED];
+				}
+			} else if(src_alpha != 0) {
+				const unsigned dst_alpha = 255 - src_alpha;
+				if(src_bpp == 8) {
+					dst_pixel[0] = static_cast<BYTE>((src_alpha * src_pixel[0] + dst_alpha * dst_pixel[0]) / 255);
+				} else {
+					for(unsigned channel = FI_RGBA_BLUE; channel <= FI_RGBA_RED; ++channel) {
+						dst_pixel[channel] = static_cast<BYTE>((src_alpha * src_pixel[channel] + dst_alpha * dst_pixel[channel]) / 255);
+					}
+				}
+			}
+		}
+	}
+
 	return TRUE;
 }
 
