@@ -37,6 +37,7 @@
 // Compiler options ---------------------------------------------------------
 
 #include <wchar.h>	// needed for UNICODE functions
+#include <stdint.h>	// needed for int32_t in the public API
 
 #if defined(FREEIMAGE_LIB)
 	#define DLL_API
