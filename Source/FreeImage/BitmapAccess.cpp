@@ -689,9 +689,15 @@ FreeImage_SetThumbnail(FIBITMAP *dib, FIBITMAP *thumbnail) {
 
 FREE_IMAGE_COLOR_TYPE DLL_CALLCONV
 FreeImage_GetColorType(FIBITMAP *dib) {
+	return FreeImage_GetColorType2(dib, TRUE);
+}
+
+FREE_IMAGE_COLOR_TYPE DLL_CALLCONV
+FreeImage_GetColorType2(FIBITMAP *dib, BOOL scan_alpha) {
 	RGBQUAD *rgb;
 
 	const FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(dib);
+	const FIICCPROFILE *icc_profile = FreeImage_GetICCProfile(dib);
 
 	// special bitmap type
 	if(image_type != FIT_BITMAP) {
@@ -717,7 +723,7 @@ FreeImage_GetColorType(FIBITMAP *dib) {
 
 			case FIT_RGBA16:
 			case FIT_RGBAF:
-				return (((FreeImage_GetICCProfile(dib)->flags) & FIICC_COLOR_IS_CMYK) == FIICC_COLOR_IS_CMYK) ? FIC_CMYK : FIC_RGBALPHA;
+				return (icc_profile && ((icc_profile->flags & FIICC_COLOR_IS_CMYK) == FIICC_COLOR_IS_CMYK)) ? FIC_CMYK : FIC_RGBALPHA;
 			default:
 				break;
 		}
@@ -784,11 +790,11 @@ FreeImage_GetColorType(FIBITMAP *dib) {
 
 		case 32:
 		{
-			if (((FreeImage_GetICCProfile(dib)->flags) & FIICC_COLOR_IS_CMYK) == FIICC_COLOR_IS_CMYK) {
+			if (icc_profile && ((icc_profile->flags & FIICC_COLOR_IS_CMYK) == FIICC_COLOR_IS_CMYK)) {
 				return FIC_CMYK;
 			}
 
-			if( FreeImage_HasPixels(dib) ) {
+			if(scan_alpha && FreeImage_HasPixels(dib)) {
 				// check for fully opaque alpha layer
 				for (unsigned y = 0; y < FreeImage_GetHeight(dib); y++) {
 					rgb = (RGBQUAD *)FreeImage_GetScanLine(dib, y);
