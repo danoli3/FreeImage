@@ -37,6 +37,7 @@
 // Compiler options ---------------------------------------------------------
 
 #include <wchar.h>	// needed for UNICODE functions
+#include <stdint.h>	// needed for int32_t in the public API
 
 #if defined(FREEIMAGE_LIB)
 	#define DLL_API
@@ -818,6 +819,11 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define FI_RESCALE_TRUE_COLOR		0x01	//! for non-transparent greyscale images, convert to 24-bit if src bitdepth <= 8 (default is a 8-bit greyscale image). 
 #define FI_RESCALE_OMIT_METADATA	0x02	//! do not copy metadata to the rescaled image
 
+/** Alpha operation supported by FreeImage_DrawBitmap. */
+FI_ENUM(FREE_IMAGE_ALPHA_OPERATION) {
+	FIAO_SrcAlpha = 0	//! Blend using the source alpha and ignore destination alpha
+};
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -1195,6 +1201,7 @@ DLL_API BOOL DLL_CALLCONV FreeImage_SetComplexChannel(FIBITMAP *dst, FIBITMAP *s
 // copy / paste / composite routines
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Copy(FIBITMAP *dib, int left, int top, int right, int bottom);
 DLL_API BOOL DLL_CALLCONV FreeImage_Paste(FIBITMAP *dst, FIBITMAP *src, int left, int top, int alpha);
+DLL_API BOOL DLL_CALLCONV FreeImage_DrawBitmap(FIBITMAP *dst, FIBITMAP *src, FREE_IMAGE_ALPHA_OPERATION alpha, int32_t left FI_DEFAULT(0), int32_t top FI_DEFAULT(0));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_CreateView(FIBITMAP *dib, unsigned left, unsigned top, unsigned right, unsigned bottom);
 
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Composite(FIBITMAP *fg, BOOL useFileBkg FI_DEFAULT(FALSE), RGBQUAD *appBkColor FI_DEFAULT(NULL), FIBITMAP *bg FI_DEFAULT(NULL));
