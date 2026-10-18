@@ -79,7 +79,7 @@ _WriteProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
 
 static void
 _FlushProc(png_structp png_ptr) {
-	(png_structp)png_ptr;
+	(void)png_ptr;
 	// empty flush implementation
 }
 
@@ -93,8 +93,8 @@ error_handler(png_structp png_ptr, const char *error) {
 
 static void
 warning_handler(png_structp png_ptr, const char *warning) {
-	(png_structp)png_ptr;
-	(char*)warning;
+	(void)png_ptr;
+	(void)warning;
 }
 
 // ==========================================================
