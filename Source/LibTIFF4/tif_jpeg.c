@@ -1360,6 +1360,7 @@ static int JPEGComputeStrileWidthHeightBytesPerLine(TIFF *tif, uint16_t s)
     if (td->td_planarconfig == PLANARCONFIG_CONTIG)
     {
         /* Component 0 should have expected sampling factors */
+/* Comment out this block of code; otherwise, JPEG-compressed TIFF images with mismatched sampling factors cannot be opened.
         if (sp->cinfo.d.comp_info[0].h_samp_factor != sp->h_sampling ||
             sp->cinfo.d.comp_info[0].v_samp_factor != sp->v_sampling)
         {
@@ -1371,6 +1372,7 @@ static int JPEGComputeStrileWidthHeightBytesPerLine(TIFF *tif, uint16_t s)
                           sp->h_sampling, sp->v_sampling);
             return (0);
         }
+*/
         /* Rest should have sampling factors 1,1 */
         for (ci = 1; ci < sp->cinfo.d.num_components; ci++)
         {

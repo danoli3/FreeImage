@@ -302,6 +302,10 @@ LoadStandardIcon(FreeImageIO *io, fi_handle handle, int flags, BOOL header_only)
 	// allocate the bitmap
 	int width  = bmih.biWidth;
 	int height = bmih.biHeight / 2; // height == xor + and mask
+	// Prevent memory allocation errors caused by abnormally large image dimensions.
+	// Reject images whose pixel count exceeds 4096*1024 (~4M pixels).
+	if (width * height > 4096*1024)
+		return NULL;
 	unsigned bit_count = bmih.biBitCount;
 
 	// ICO BITMAPINFOHEADER must use a real Windows bpp. Illegal values
