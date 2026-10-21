@@ -46,6 +46,32 @@ jobs:
           } else {
             & ./consumer/CodecConsumer
           }
+  windows-msvc-runtime:
+    name: Windows MSVC bundled codecs (${{ matrix.runtime }}, ${{ matrix.config }})
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [MD, MT]
+        config: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure bundled codecs with selected CRT
+        run: >-
+          cmake -S . -B build-runtime
+          -DCMAKE_CXX_STANDARD=11 -DBUILD_TESTS=ON
+          -DFREEIMAGE_STATIC=OFF
+          -DFREEIMAGE_MSVC_RUNTIME=${{ matrix.runtime }}
+          -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
+          -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
+          -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
+      - name: Build FreeImage, AOM, Highway, and tests
+        run: cmake --build build-runtime --config ${{ matrix.config }} --parallel 4
+      - name: Run tests
+        run: ctest --test-dir build-runtime -C ${{ matrix.config }} --output-on-failure
   linux-x86:
     runs-on: ubuntu-24.04
     steps:
