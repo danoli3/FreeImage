@@ -44,6 +44,10 @@ if (BUILD_TESTS)
 
     add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
 
+    add_executable(LargeFileTIFFTest testLargeFileTIFF.cpp)
+    target_link_libraries(LargeFileTIFFTest PRIVATE FreeImage)
+    add_test(NAME LargeFileTIFFTest COMMAND LargeFileTIFFTest)
+
     add_executable(IffPbmRleTest testIffPbmRle.cpp)
     target_link_libraries(IffPbmRleTest PRIVATE FreeImage)
     if(WIN32 AND NOT FREEIMAGE_STATIC)

@@ -23,6 +23,11 @@
 
 #include "FreeImage.h"
 #include "Utilities.h"
+#include <stdint.h>
+#include <limits.h>
+#ifndef _WIN32
+#include <sys/types.h>
+#endif
 #include "FreeImageIO.h"
 
 // =====================================================================
@@ -49,6 +54,36 @@ _TellProc(fi_handle handle) {
 	return ftell((FILE *)handle);
 }
 
+static uint64_t DLL_CALLCONV
+_ReadProc64(void *buffer, uint64_t size, uint64_t count, fi_handle handle) {
+	if (size > (uint64_t)(size_t)-1 || count > (uint64_t)(size_t)-1 || (size != 0 && count > UINT64_MAX / size)) return 0;
+	return (uint64_t)fread(buffer, (size_t)size, (size_t)count, (FILE *)handle);
+}
+
+static uint64_t DLL_CALLCONV
+_WriteProc64(void *buffer, uint64_t size, uint64_t count, fi_handle handle) {
+	if (size > (uint64_t)(size_t)-1 || count > (uint64_t)(size_t)-1 || (size != 0 && count > UINT64_MAX / size)) return 0;
+	return (uint64_t)fwrite(buffer, (size_t)size, (size_t)count, (FILE *)handle);
+}
+
+static int DLL_CALLCONV
+_SeekProc64(fi_handle handle, int64_t offset, int origin) {
+#ifdef _WIN32
+	return _fseeki64((FILE *)handle, offset, origin);
+#else
+	return fseeko((FILE *)handle, (off_t)offset, origin);
+#endif
+}
+
+static int64_t DLL_CALLCONV
+_TellProc64(fi_handle handle) {
+#ifdef _WIN32
+	return _ftelli64((FILE *)handle);
+#else
+	return (int64_t)ftello((FILE *)handle);
+#endif
+}
+
 // ----------------------------------------------------------
 
 void
@@ -57,6 +92,14 @@ SetDefaultIO(FreeImageIO *io) {
 	io->seek_proc  = _SeekProc;
 	io->tell_proc  = _TellProc;
 	io->write_proc = _WriteProc;
+}
+
+void
+SetDefaultIO64(FreeImageIO64 *io) {
+	io->read_proc  = _ReadProc64;
+	io->seek_proc  = _SeekProc64;
+	io->tell_proc  = _TellProc64;
+	io->write_proc = _WriteProc64;
 }
 
 // =====================================================================

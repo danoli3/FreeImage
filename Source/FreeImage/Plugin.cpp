@@ -412,6 +412,42 @@ FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handl
 }
 
 FIBITMAP * DLL_CALLCONV
+FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags) {
+	if (io == NULL || handle == NULL || fif < 0 || fif >= FreeImage_GetFIFCount()) {
+		return NULL;
+	}
+	PluginNode *node = s_plugins->FindNodeFromFIF(fif);
+	if (node == NULL || node->m_plugin->load64_proc == NULL) {
+		return NULL;
+	}
+	void *data = node->m_plugin->open64_proc ? node->m_plugin->open64_proc(io, handle, TRUE) : NULL;
+	if (data == NULL) {
+		return NULL;
+	}
+	FIBITMAP *bitmap = node->m_plugin->load64_proc(io, handle, -1, flags, data);
+	if (node->m_plugin->close64_proc) {
+		node->m_plugin->close64_proc(io, handle, data);
+	}
+	return bitmap;
+}
+
+FIBITMAP * DLL_CALLCONV
+FreeImage_Load64(FREE_IMAGE_FORMAT fif, const char *filename, int flags) {
+	if (filename == NULL) {
+		return NULL;
+	}
+	FreeImageIO64 io;
+	SetDefaultIO64(&io);
+	FILE *handle = fopen(filename, "rb");
+	if (handle == NULL) {
+		return NULL;
+	}
+	FIBITMAP *bitmap = FreeImage_LoadFromHandle64(fif, &io, (fi_handle)handle, flags);
+	fclose(handle);
+	return bitmap;
+}
+
+FIBITMAP * DLL_CALLCONV
 FreeImage_Load(FREE_IMAGE_FORMAT fif, const char *filename, int flags) {
 	FreeImageIO io;
 	SetDefaultIO(&io);
