@@ -24,26 +24,38 @@
 
 #include "TestSuite.h"
 
+#if !defined(_WIN32)
+#include <sys/types.h>
+#endif
+
 // --------------------------------------------------------------------------
 
-static unsigned DLL_CALLCONV
-myReadProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-	return (unsigned)fread(buffer, size, count, (FILE *)handle);
+static UINT64 DLL_CALLCONV
+myReadProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
+	return fread(buffer, (size_t)size, (size_t)count, (FILE *)handle);
 }
 
-static unsigned DLL_CALLCONV
-myWriteProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-	return (unsigned)fwrite(buffer, size, count, (FILE *)handle);
+static UINT64 DLL_CALLCONV
+myWriteProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
+	return fwrite(buffer, (size_t)size, (size_t)count, (FILE *)handle);
 }
 
 static int DLL_CALLCONV
-mySeekProc(fi_handle handle, long offset, int origin) {
-	return fseek((FILE *)handle, offset, origin);
+mySeekProc(fi_handle handle, INT64 offset, int origin) {
+#if defined(_WIN32)
+	return _fseeki64((FILE *)handle, offset, origin);
+#else
+	return fseeko((FILE *)handle, (off_t)offset, origin);
+#endif
 }
 
-static long DLL_CALLCONV
+static INT64 DLL_CALLCONV
 myTellProc(fi_handle handle) {
-	return ftell((FILE *)handle);
+#if defined(_WIN32)
+	return _ftelli64((FILE *)handle);
+#else
+	return (INT64)ftello((FILE *)handle);
+#endif
 }
 
 BOOL testStreamMultiPageOpen(const char *input, int flags) {

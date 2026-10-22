@@ -18,7 +18,7 @@ static void Test(FREE_IMAGE_TYPE type,int bpp) {
     for(unsigned y=0;y<9;++y) Check(!std::memcmp(FreeImage_GetScanLine(src,y),FreeImage_GetScanLine(decoded,y),FreeImage_GetLine(src)));
     FreeImage_Unload(decoded); FreeImage_SeekMemory(memory,0,SEEK_SET);
     decoded=FreeImage_LoadFromMemory(FIF_JPEGXL,memory,FIF_LOAD_NOPIXELS); Check(decoded && !FreeImage_HasPixels(decoded)); FreeImage_Unload(decoded);
-    BYTE *bytes=NULL; DWORD size=0; Check(FreeImage_AcquireMemory(memory,&bytes,&size));
+    BYTE *bytes=NULL; UINT64 size=0; Check(FreeImage_AcquireMemory(memory,&bytes,&size));
     FIMEMORY *truncated=FreeImage_OpenMemory(bytes,size/2); Check(FreeImage_LoadFromMemory(FIF_JPEGXL,truncated)==NULL); FreeImage_CloseMemory(truncated);
     FreeImage_CloseMemory(memory); FreeImage_Unload(src);
 }

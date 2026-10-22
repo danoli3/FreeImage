@@ -897,7 +897,7 @@ Read and decode JPEG_APP1 marker (Exif profile)
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL  
-jpeg_read_exif_profile(FIBITMAP *dib, const BYTE *data, unsigned length) {
+jpeg_read_exif_profile(FIBITMAP *dib, const BYTE *data, UINT64 length) {
     // marker identifying string for Exif = "Exif\0\0"
     BYTE exif_signature[6] = { 0x45, 0x78, 0x69, 0x66, 0x00, 0x00 };
 	BYTE lsb_first[4] = { 0x49, 0x49, 0x2A, 0x00 };		// Classic TIFF signature - little-endian order
@@ -976,7 +976,7 @@ Read JPEG_APP1 marker (Exif profile)
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL  
-jpeg_read_exif_profile_raw(FIBITMAP *dib, const BYTE *profile, unsigned length) {
+jpeg_read_exif_profile_raw(FIBITMAP *dib, const BYTE *profile, UINT64 length) {
     // marker identifying string for Exif = "Exif\0\0"
     BYTE exif_signature[6] = { 0x45, 0x78, 0x69, 0x66, 0x00, 0x00 };
 
@@ -1020,12 +1020,12 @@ Read and decode JPEG-XR Exif IFD
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL  
-jpegxr_read_exif_profile(FIBITMAP *dib, const BYTE *profile, unsigned length, unsigned file_offset) {
+jpegxr_read_exif_profile(FIBITMAP *dib, const BYTE *profile, UINT64 length, UINT64 file_offset) {
 	// assume Little Endian order
 	BOOL bBigEndian = FALSE;
 	
 	// process Exif specific IFD
-	return jpeg_read_exif_dir(dib, profile, 0, length, file_offset, bBigEndian, TagLib::EXIF_EXIF);
+	return jpeg_read_exif_dir(dib, profile, 0, (DWORD)length, (DWORD)file_offset, bBigEndian, TagLib::EXIF_EXIF);
 }
 
 /**
@@ -1037,12 +1037,12 @@ Read and decode JPEG-XR Exif-GPS IFD
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL  
-jpegxr_read_exif_gps_profile(FIBITMAP *dib, const BYTE *profile, unsigned length, unsigned file_offset) {
+jpegxr_read_exif_gps_profile(FIBITMAP *dib, const BYTE *profile, UINT64 length, UINT64 file_offset) {
 	// assume Little Endian order
 	BOOL bBigEndian = FALSE;
 	
 	// process Exif GPS IFD
-	return jpeg_read_exif_dir(dib, profile, 0, length, file_offset, bBigEndian, TagLib::EXIF_GPS);
+	return jpeg_read_exif_dir(dib, profile, 0, (DWORD)length, (DWORD)file_offset, bBigEndian, TagLib::EXIF_GPS);
 }
 
 // ==========================================================
@@ -1151,7 +1151,7 @@ tiff_write_ifd(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, FIMEMORY *hmem) {
 	const BYTE empty_byte = 0;
 
 	// start of the file
-	const long start_of_file = FreeImage_TellMemory(hmem);
+	const INT64 start_of_file = FreeImage_TellMemory(hmem);
 
 	// get the metadata count
 	unsigned metadata_count = FreeImage_GetMetadataCount(md_model, dib);
@@ -1263,7 +1263,7 @@ tiff_write_ifd(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, FIMEMORY *hmem) {
 				// write an offset
 				FreeImage_WriteMemory(&ifd_offset, 1, 4, hmem);
 				// write the value
-				long current_position = FreeImage_TellMemory(hmem);
+				INT64 current_position = FreeImage_TellMemory(hmem);
 				FreeImage_SeekMemory(hmem, ifd_offset, SEEK_SET);
 				FreeImage_WriteMemory(FreeImage_GetTagValue(tag), 1, tag_length, hmem);
 				if(tag_length & 1) {
@@ -1299,7 +1299,7 @@ The buffer is allocated by the function and must be freed by the caller, using '
 @see tiff_write_ifd
 */
 BOOL
-tiff_get_ifd_profile(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, BYTE **ppbProfile, unsigned *uProfileLength) {
+tiff_get_ifd_profile(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, BYTE **ppbProfile, UINT64 *uProfileLength) {
 	FIMEMORY *hmem = NULL;
 
 	try {
@@ -1314,7 +1314,7 @@ tiff_get_ifd_profile(FIBITMAP *dib, FREE_IMAGE_MDMODEL md_model, BYTE **ppbProfi
 
 		if(bResult) {
 			BYTE *data = NULL;
-			DWORD size_in_bytes = 0;
+			UINT64 size_in_bytes = 0;
 
 			// get a pointer to the stream buffer
 			FreeImage_AcquireMemory(hmem, &data, &size_in_bytes);
@@ -1355,7 +1355,7 @@ Read and decode PSD image resource (Exif profile)
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL
-psd_read_exif_profile(FIBITMAP *dib, const BYTE *data, unsigned int length) {
+psd_read_exif_profile(FIBITMAP *dib, const BYTE *data, UINT64 length) {
 	BYTE lsb_first[4] = { 0x49, 0x49, 0x2A, 0x00 };		// Classic TIFF signature - little-endian order
 	BYTE msb_first[4] = { 0x4D, 0x4D, 0x00, 0x2A };		// Classic TIFF signature - big-endian order
 
@@ -1405,7 +1405,7 @@ Read PSD image resource (Exif profile)
 @return Returns TRUE if successful, FALSE otherwise
 */
 BOOL
-psd_read_exif_profile_raw(FIBITMAP *dib, const BYTE *profile, unsigned length) {
+psd_read_exif_profile_raw(FIBITMAP *dib, const BYTE *profile, UINT64 length) {
     // marker identifying string for Exif = "Exif\0\0"
 	// used by JPEG not PSD
     BYTE exif_signature[6] = { 0x45, 0x78, 0x69, 0x66, 0x00, 0x00 };

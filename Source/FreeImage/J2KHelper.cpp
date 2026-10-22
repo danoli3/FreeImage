@@ -30,11 +30,11 @@
 
 static OPJ_UINT64 
 _LengthProc(J2KFIO_t *fio) {
-	long start_pos = fio->io->tell_proc(fio->handle);
+	INT64 start_pos = fio->io->tell_proc(fio->handle);
 	fio->io->seek_proc(fio->handle, 0, SEEK_END);
-	unsigned file_length = (unsigned)(fio->io->tell_proc(fio->handle) - start_pos);
+	UINT64 file_length = fio->io->tell_proc(fio->handle) - start_pos;
 	fio->io->seek_proc(fio->handle, start_pos, SEEK_SET);
-	return (OPJ_UINT64)file_length;
+	return file_length;
 }
 
 static OPJ_SIZE_T 

@@ -833,15 +833,15 @@ jpeg_write_iptc_profile(j_compress_ptr cinfo, FIBITMAP *dib) {
 
 	if(FreeImage_GetMetadataCount(FIMD_IPTC, dib)) {
 		BYTE *profile = NULL;
-		unsigned profile_size = 0;
+		UINT64 profile_size = 0;
 
 		// create a binary profile
 		if(write_iptc_profile(dib, &profile, &profile_size)) {
 
 			// write the profile
-			for(long i = 0; i < (long)profile_size; i += 65517L) {
-				unsigned length = (unsigned)MIN((long)profile_size - i, 65517L);
-				unsigned roundup = length & 0x01;	// needed for Photoshop
+			for( UINT64 i = 0; i < profile_size; i += 65517L) {
+				UINT64 length = MIN(profile_size - i, (UINT64) 65517);
+				UINT64 roundup = length & 0x01;	// needed for Photoshop
 				BYTE *iptc_profile = (BYTE*)malloc(length + roundup + tag_length);
 				if(iptc_profile == NULL) break;
 				// Photoshop identification string
@@ -855,7 +855,7 @@ jpeg_write_iptc_profile(j_compress_ptr cinfo, FIBITMAP *dib) {
 				memcpy(&iptc_profile[tag_length], &profile[i], length);
 				if(roundup)
 					iptc_profile[length + tag_length] = 0;
-				jpeg_write_marker(cinfo, IPTC_MARKER, iptc_profile, length + roundup + tag_length);
+				jpeg_write_marker(cinfo, IPTC_MARKER, iptc_profile, (unsigned int)(length + roundup + tag_length));
 				free(iptc_profile);
 			}
 
@@ -976,7 +976,7 @@ jpeg_write_jfxx(j_compress_ptr cinfo, FIBITMAP *dib) {
 	if(FreeImage_SaveToMemory(FIF_JPEG, thumbnail, stream, JPEG_BASELINE)) {
 		// check that the memory block size is within JFXX marker size limit
 		FreeImage_SeekMemory(stream, 0, SEEK_END);
-		const long eof = FreeImage_TellMemory(stream);
+		const UINT64 eof = FreeImage_TellMemory(stream);
 		if(eof > MAX_JFXX_THUMB_SIZE) {
 			FreeImage_OutputMessageProc(s_format_id, "Warning: attached thumbnail is %d bytes larger than maximum supported size - Thumbnail saving aborted", eof - MAX_JFXX_THUMB_SIZE);
 			FreeImage_CloseMemory(stream);
@@ -988,15 +988,15 @@ jpeg_write_jfxx(j_compress_ptr cinfo, FIBITMAP *dib) {
 	}
 
 	BYTE* thData = NULL;
-	DWORD thSize = 0;
+	UINT64 thSize = 0;
 	
-	FreeImage_AcquireMemory(stream, &thData, &thSize);	
+	FreeImage_AcquireMemory(stream, &thData, &thSize);
 	
 	BYTE id_length = 5; //< "JFXX"
 	BYTE type = JFXX_TYPE_JPEG;
 	
-	DWORD totalsize = id_length + sizeof(type) + thSize;
-	jpeg_write_m_header(cinfo, JPEG_APP0, totalsize);
+	UINT64 totalsize = id_length + sizeof(type) + thSize;
+	jpeg_write_m_header(cinfo, JPEG_APP0, (unsigned int) totalsize);
 	
 	jpeg_write_m_byte(cinfo, 'J');
 	jpeg_write_m_byte(cinfo, 'F');

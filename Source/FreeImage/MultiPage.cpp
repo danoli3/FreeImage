@@ -603,7 +603,7 @@ FreeImage_SavePageToBlock(MULTIBITMAPHEADER *header, FIBITMAP *data) {
 		return res;
 	}
 
-	DWORD compressed_size = 0;
+	UINT64 compressed_size = 0;
 	BYTE *compressed_data = NULL;
 
 	// compress the bitmap data
@@ -625,11 +625,11 @@ FreeImage_SavePageToBlock(MULTIBITMAPHEADER *header, FIBITMAP *data) {
 	}
 	
 	// write the compressed data to the cache
-	int ref = header->m_cachefile.writeFile(compressed_data, compressed_size);
+	int ref = header->m_cachefile.writeFile(compressed_data, (int)compressed_size);
 	// get rid of the compressed data
 	FreeImage_CloseMemory(hmem);
 	
-	res = PageBlock(BLOCK_REFERENCE, ref, compressed_size);
+	res = PageBlock(BLOCK_REFERENCE, ref, (int)compressed_size);
 	
 	return res;
 }
@@ -765,7 +765,7 @@ FreeImage_UnlockPage(FIMULTIBITMAP *bitmap, FIBITMAP *page, BOOL changed) {
 
 				// compress the data
 
-				DWORD compressed_size = 0;
+				UINT64 compressed_size = 0;
 				BYTE *compressed_data = NULL;
 
 				// open a memory handle
@@ -781,9 +781,9 @@ FreeImage_UnlockPage(FIMULTIBITMAP *bitmap, FIBITMAP *page, BOOL changed) {
 					header->m_cachefile.deleteFile(i->getReference());
 				}
 				
-				int iPage = header->m_cachefile.writeFile(compressed_data, compressed_size);
+				int iPage = header->m_cachefile.writeFile(compressed_data, (int)compressed_size);
 				
-				*i = PageBlock(BLOCK_REFERENCE, iPage, compressed_size);
+				*i = PageBlock(BLOCK_REFERENCE, iPage, (int)compressed_size);
 				
 				// get rid of the compressed data
 

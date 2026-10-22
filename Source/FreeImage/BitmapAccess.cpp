@@ -1077,7 +1077,7 @@ FreeImage_GetICCProfile(FIBITMAP *dib) {
 }
 
 FIICCPROFILE * DLL_CALLCONV
-FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, long size) {
+FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, INT64 size) {
 	// clear the profile but preserve profile->flags
 	FreeImage_DestroyICCProfile(dib);
 	// create the new profile
@@ -1143,7 +1143,7 @@ FreeImage_GetColorsUsed(FIBITMAP *dib) {
 	return dib ? FreeImage_GetInfoHeader(dib)->biClrUsed : 0;
 }
 
-unsigned DLL_CALLCONV
+UINT64 DLL_CALLCONV
 FreeImage_GetDIBSize(FIBITMAP *dib) {
 	return (dib) ? sizeof(BITMAPINFOHEADER) + (FreeImage_GetColorsUsed(dib) * sizeof(RGBQUAD)) + (FreeImage_GetPitch(dib) * FreeImage_GetHeight(dib)) : 0;
 }
@@ -1559,7 +1559,7 @@ FreeImage_GetMetadataCount(FREE_IMAGE_MDMODEL model, FIBITMAP *dib) {
 
 // ----------------------------------------------------------
 
-unsigned DLL_CALLCONV
+UINT64 DLL_CALLCONV
 FreeImage_GetMemorySize(FIBITMAP *dib) {
 	if (!dib) {
 		return 0;
@@ -1592,7 +1592,7 @@ FreeImage_GetMemorySize(FIBITMAP *dib) {
 	// add metadata size
 	METADATAMAP *md = header->metadata;
 	if (!md) {
-		return (unsigned)size;
+		return size;
 	}
 
 	// add size of METADATAMAP
@@ -1600,7 +1600,7 @@ FreeImage_GetMemorySize(FIBITMAP *dib) {
 
 	const size_t models = md->size();
 	if (models == 0) {
-		return (unsigned)size;
+		return size;
 	}
 
 	unsigned tags = 0;
@@ -1624,6 +1624,6 @@ FreeImage_GetMemorySize(FIBITMAP *dib) {
 	// add size of tree nodes in TAGMAP
 	size += MapIntrospector<TAGMAP>::GetNodesMemorySize(tags);
 
-	return (unsigned)size;
+	return size;
 }
 

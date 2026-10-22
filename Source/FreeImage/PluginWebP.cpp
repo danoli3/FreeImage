@@ -588,7 +588,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 		}
 		// store the blob into the mux
 		BYTE *data = NULL;
-		DWORD data_size = 0;
+		UINT64 data_size = 0;
 		FreeImage_AcquireMemory(hmem, &data, &data_size);
 		webp_image.bytes = data;
 		webp_image.size = data_size;

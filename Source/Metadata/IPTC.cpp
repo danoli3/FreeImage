@@ -38,7 +38,7 @@ static const char* IPTC_DELIMITER = ";";	// keywords/supplemental category delim
 	Read and decode IPTC binary data
 */
 BOOL 
-read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen) {
+read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, UINT64 datalen) {
 	char defaultKey[16];
 	size_t length = datalen;
 	BYTE *profile = (BYTE*)dataptr;
@@ -265,12 +265,12 @@ Encode IPTC metadata into a binary buffer.
 The buffer is allocated by the function and must be freed by the caller. 
 */
 BOOL 
-write_iptc_profile(FIBITMAP *dib, BYTE **profile, unsigned *profile_size) {
+write_iptc_profile(FIBITMAP *dib, BYTE **profile, UINT64 *profile_size) {
 	FITAG *tag = NULL;
 	FIMETADATA *mdhandle = NULL;
 
 	BYTE *buffer = NULL;
-	unsigned buffer_size = 0;
+    unsigned buffer_size = 0;
 
 	// parse all IPTC tags and rebuild a IPTC profile
 	mdhandle = FreeImage_FindFirstMetadata(FIMD_IPTC, dib, &tag);

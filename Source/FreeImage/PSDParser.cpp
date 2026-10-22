@@ -232,7 +232,7 @@ Return Exif metadata as a binary read-only buffer.
 The buffer is owned by the function and MUST NOT be freed by the caller.
 */
 static BOOL
-psd_write_exif_profile_raw(FIBITMAP *dib, BYTE **profile, unsigned *profile_size) {
+psd_write_exif_profile_raw(FIBITMAP *dib, BYTE **profile, UINT64 *profile_size) {
     // marker identifying string for Exif = "Exif\0\0"
 	// used by JPEG not PSD
     BYTE exif_signature[6] = { 0x45, 0x78, 0x69, 0x66, 0x00, 0x00 };
@@ -285,7 +285,7 @@ Return XMP metadata as a binary read-only buffer.
 The buffer is owned by the function and MUST NOT be freed by the caller.
 */
 static BOOL
-psd_get_xmp_profile(FIBITMAP *dib, BYTE **profile, unsigned *profile_size) {
+psd_get_xmp_profile(FIBITMAP *dib, BYTE **profile, UINT64 *profile_size) {
 	FITAG *tag_xmp = NULL;
 	FreeImage_GetMetadata(FIMD_XMP, dib, g_TagLib_XMPFieldName, &tag_xmp);
 
@@ -742,7 +742,7 @@ int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iResourceSize, boo
 	// remove the header size (28 bytes) from the total data size
 	int iTotalData = iResourceSize - 28;
 
-	const long block_end = io->tell_proc(handle) + iTotalData;
+	const INT64 block_end = io->tell_proc(handle) + iTotalData;
 
 	n = (int)io->read_proc(IntValue, sizeof(IntValue), 1, handle);
 	nBytes += n * sizeof(IntValue);
@@ -776,7 +776,7 @@ int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iResourceSize, boo
 	nBytes += n * sizeof(ShortValue);
 	_Planes = (short)psdGetValue(ShortValue, sizeof(_Planes) );
 
-	const long JFIF_startpos = io->tell_proc(handle);
+	const INT64 JFIF_startpos = io->tell_proc(handle);
 
 	if(_dib) {
 		FreeImage_Unload(_dib);
@@ -842,7 +842,7 @@ int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iResourceSize, boo
 		return iResourceSize;
 	}
 
-	nBytes += (block_end - JFIF_startpos);
+	nBytes += (int)(block_end - JFIF_startpos);
 
 	return nBytes;
 }
@@ -850,7 +850,7 @@ int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iResourceSize, boo
 bool psdThumbnail::Write(FreeImageIO *io, fi_handle handle, bool isBGR) {
 	BYTE ShortValue[2], IntValue[4];
 
-	const long res_start_pos = io->tell_proc(handle);
+	const INT64 res_start_pos = io->tell_proc(handle);
 	const int ID = isBGR ? PSDP_RES_THUMBNAIL_PS4 : PSDP_RES_THUMBNAIL;
 	if(!psdImageResource().Write(io, handle, ID, 0))
 		return false;
@@ -875,7 +875,7 @@ bool psdThumbnail::Write(FreeImageIO *io, fi_handle handle, bool isBGR) {
 	if(io->write_proc(IntValue, sizeof(IntValue), 1, handle) != 1) {
 		return false;
 	}
-	const long compressed_pos = io->tell_proc(handle);
+	const INT64 compressed_pos = io->tell_proc(handle);
 	psdSetValue(IntValue, sizeof(IntValue), _CompressedSize);
 	if(io->write_proc(IntValue, sizeof(IntValue), 1, handle) != 1) {
 		return false;
@@ -893,9 +893,9 @@ bool psdThumbnail::Write(FreeImageIO *io, fi_handle handle, bool isBGR) {
 		if(isBGR) {
 			SwapRedBlue32(_dib);
 		}
-		const long start_pos = io->tell_proc(handle);
+		const INT64 start_pos = io->tell_proc(handle);
 		FreeImage_SaveToHandle(FIF_JPEG, _dib, io, handle, JPEG_DEFAULT);
-		const long current_pos = io->tell_proc(handle);
+		const INT64 current_pos = io->tell_proc(handle);
 		_CompressedSize = (int)(current_pos - start_pos);
 		io->seek_proc(handle, compressed_pos, SEEK_SET);
 		psdSetValue(IntValue, sizeof(IntValue), _CompressedSize);
@@ -1004,7 +1004,7 @@ int psdData::Read(FreeImageIO *io, fi_handle handle, int size) {
 }
 
 bool psdData::Write(FreeImageIO *io, fi_handle handle, int ID) {
-	if(!psdImageResource().Write(io, handle, ID, _Size))
+	if(!psdImageResource().Write(io, handle, ID, (int)_Size))
 		return false;
 
 	if(NULL != _Data) {
@@ -1940,7 +1940,7 @@ bool psdParser::WriteImageData(FreeImageIO *io, fi_handle handle, FIBITMAP* dib)
 				throw std::bad_alloc();
 			}
 			memset(rleLineSizeList, 0, sizeof(DWORD)*nChannels*nHeight);
-			const long offsets_pos = io->tell_proc(handle);
+			const INT64 offsets_pos = io->tell_proc(handle);
 			if(_headerInfo._Version == 1) {
 				if(io->write_proc(rleLineSizeList, nChannels*nHeight*2, 1, handle) != 1) {
 					return false;
@@ -2086,7 +2086,7 @@ FIBITMAP* psdParser::Load(FreeImageIO *io, fi_handle handle, int s_format_id, in
 
 		// XMP metadata
 		if(NULL != _xmp._Data) {
-			psd_set_xmp_profile(Bitmap, _xmp._Data, _xmp._Size);
+			psd_set_xmp_profile(Bitmap, _xmp._Data, (unsigned int)_xmp._Size);
 		}
 
 	} catch(const char *text) {
@@ -2197,7 +2197,7 @@ bool psdParser::Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page,
 	}
 
 	BYTE IntValue[4];
-	const long res_start_pos = io->tell_proc(handle);
+	const INT64 res_start_pos = io->tell_proc(handle);
 	psdSetValue(IntValue, sizeof(IntValue), 0);
 	if(io->write_proc(IntValue, sizeof(IntValue), 1, handle) != 1) {
 		return false;
@@ -2238,7 +2238,7 @@ bool psdParser::Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page,
 	if(iccProfile != NULL && iccProfile->size > 0) {
 		_iccProfile.clear();
 		_iccProfile._owned = false;
-		_iccProfile._ProfileSize = iccProfile->size;
+		_iccProfile._ProfileSize = (int)iccProfile->size;
 		_iccProfile._ProfileData = (BYTE*)iccProfile->data;
 		if (!_iccProfile.Write(io, handle)) {
 			return false;
@@ -2266,7 +2266,7 @@ bool psdParser::Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page,
 	}
 
 	// Fix length of resources
-	const long current_pos = io->tell_proc(handle);
+	const INT64 current_pos = io->tell_proc(handle);
 	psdSetValue(IntValue, sizeof(IntValue), (int)(current_pos - res_start_pos - 4));
 	io->seek_proc(handle, res_start_pos, SEEK_SET);
 	if(io->write_proc(IntValue, sizeof(IntValue), 1, handle) != 1) {

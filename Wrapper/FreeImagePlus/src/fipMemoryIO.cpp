@@ -90,7 +90,7 @@ BOOL fipMemoryIO::seek(long offset, int origin) {
 	return FreeImage_SeekMemory(_hmem, offset, origin);
 }
 
-BOOL fipMemoryIO::acquire(BYTE **data, DWORD *size_in_bytes) {
+BOOL fipMemoryIO::acquire(BYTE **data, UINT64 *size_in_bytes) {
 	return FreeImage_AcquireMemory(_hmem, data, size_in_bytes);
 }
 

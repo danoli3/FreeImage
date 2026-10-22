@@ -147,7 +147,7 @@ BOOL testSaveMultiBitmapToMemory(const char *input, const char *output, int outp
 
 		// get the buffer from the memory stream
 		BYTE *mem_buffer = NULL;
-		DWORD size_in_bytes = 0;
+		UINT64 size_in_bytes = 0;
 
 		bSuccess = memIO.acquire(&mem_buffer, &size_in_bytes);
 		assert(bSuccess);
@@ -234,7 +234,7 @@ BOOL testMemoryStreamMultiPageOpenSave(const char *lpszPathName, char *output, i
 		
 		// get the dst buffer from the memory stream
 		BYTE *dst_buffer = NULL;
-		DWORD size_in_bytes = 0;
+		UINT64 size_in_bytes = 0;
 		
 		dst_stream.acquire(&dst_buffer, &size_in_bytes);
 		

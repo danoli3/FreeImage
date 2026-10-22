@@ -40,7 +40,7 @@ static int s_format_id;
 //   mng interface (see MNGHelper.cpp)
 // ----------------------------------------------------------
 
-FIBITMAP* mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, long Offset, int flags = 0);
+FIBITMAP* mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, INT64 Offset, int flags = 0);
 BOOL mng_WriteJNG(int format_id, FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int flags);
 
 // ==========================================================
@@ -120,7 +120,7 @@ Close(FreeImageIO *io, fi_handle handle, void *data) {
 
 static FIBITMAP * DLL_CALLCONV
 Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
-	long offset = JNG_SIGNATURE_SIZE;	// move to skip first 8 bytes of signature
+	INT64 offset = JNG_SIGNATURE_SIZE;	// move to skip first 8 bytes of signature
 
 	// check the signature (8 bytes)
 	if(Validate(io, handle) == FALSE) {
