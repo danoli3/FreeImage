@@ -83,7 +83,7 @@ Validate(FreeImageIO *io, fi_handle handle) {
 	BYTE jp2_signature[] = { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A };
 	BYTE signature[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	long tell = io->tell_proc(handle);
+	UINT64 tell = io->tell_proc(handle);
 	io->read_proc(signature, 1, sizeof(jp2_signature), handle);
 	io->seek_proc(handle, tell, SEEK_SET);
 

@@ -267,7 +267,7 @@ public:
 
 class psdData {
 public:
-	unsigned _Size;
+	UINT64 _Size;
 	BYTE * _Data;
 	bool _owned;
 public:

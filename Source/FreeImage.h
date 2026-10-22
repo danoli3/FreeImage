@@ -402,7 +402,7 @@ typedef struct tagFICOMPLEX {
 
 FI_STRUCT (FIICCPROFILE) { 
 	WORD    flags;	//! info flag
-	DWORD	size;	//! profile's size measured in bytes
+	UINT64	size;	//! profile's size measured in bytes
 	void   *data;	//! points to a block of contiguous memory containing the profile
 };
 
@@ -622,10 +622,10 @@ FI_STRUCT (FITAG) { void *data; };
 #define FREEIMAGE_IO
 
 typedef void* fi_handle;
-typedef unsigned (DLL_CALLCONV *FI_ReadProc) (void *buffer, unsigned size, unsigned count, fi_handle handle);
-typedef unsigned (DLL_CALLCONV *FI_WriteProc) (void *buffer, unsigned size, unsigned count, fi_handle handle);
-typedef int (DLL_CALLCONV *FI_SeekProc) (fi_handle handle, long offset, int origin);
-typedef long (DLL_CALLCONV *FI_TellProc) (fi_handle handle);
+typedef UINT64 (DLL_CALLCONV *FI_ReadProc) (void *buffer, UINT64 size, UINT64 count, fi_handle handle);
+typedef UINT64 (DLL_CALLCONV *FI_WriteProc) (void *buffer, UINT64 size, UINT64 count, fi_handle handle);
+typedef int (DLL_CALLCONV *FI_SeekProc) (fi_handle handle, INT64 offset, int origin);
+typedef INT64 (DLL_CALLCONV *FI_TellProc) (fi_handle handle);
 
 #if (defined(_WIN32) || defined(__WIN32__))
 #pragma pack(push, 1)
@@ -634,7 +634,7 @@ typedef long (DLL_CALLCONV *FI_TellProc) (fi_handle handle);
 #endif // WIN32
 
 FI_STRUCT(FreeImageIO) {
-	FI_ReadProc  read_proc;     //! pointer to the function used to read data
+    FI_ReadProc  read_proc;     //! pointer to the function used to read data
     FI_WriteProc write_proc;    //! pointer to the function used to write data
     FI_SeekProc  seek_proc;     //! pointer to the function used to seek
     FI_TellProc  tell_proc;     //! pointer to the function used to aquire the current position
@@ -873,15 +873,15 @@ DLL_API BOOL DLL_CALLCONV FreeImage_SaveToHandle(FREE_IMAGE_FORMAT fif, FIBITMAP
 
 // Memory I/O stream routines -----------------------------------------------
 
-DLL_API FIMEMORY *DLL_CALLCONV FreeImage_OpenMemory(BYTE *data FI_DEFAULT(0), DWORD size_in_bytes FI_DEFAULT(0));
+DLL_API FIMEMORY *DLL_CALLCONV FreeImage_OpenMemory(BYTE *data FI_DEFAULT(0), UINT64 size_in_bytes FI_DEFAULT(0));
 DLL_API void DLL_CALLCONV FreeImage_CloseMemory(FIMEMORY *stream);
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadFromMemory(FREE_IMAGE_FORMAT fif, FIMEMORY *stream, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveToMemory(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, FIMEMORY *stream, int flags FI_DEFAULT(0));
-DLL_API long DLL_CALLCONV FreeImage_TellMemory(FIMEMORY *stream);
-DLL_API BOOL DLL_CALLCONV FreeImage_SeekMemory(FIMEMORY *stream, long offset, int origin);
-DLL_API BOOL DLL_CALLCONV FreeImage_AcquireMemory(FIMEMORY *stream, BYTE **data, DWORD *size_in_bytes);
-DLL_API unsigned DLL_CALLCONV FreeImage_ReadMemory(void *buffer, unsigned size, unsigned count, FIMEMORY *stream);
-DLL_API unsigned DLL_CALLCONV FreeImage_WriteMemory(const void *buffer, unsigned size, unsigned count, FIMEMORY *stream);
+DLL_API INT64 DLL_CALLCONV FreeImage_TellMemory(FIMEMORY *stream);
+DLL_API BOOL DLL_CALLCONV FreeImage_SeekMemory(FIMEMORY *stream, INT64 offset, int origin);
+DLL_API BOOL DLL_CALLCONV FreeImage_AcquireMemory(FIMEMORY *stream, BYTE **data, UINT64 *size_in_bytes);
+DLL_API UINT64 DLL_CALLCONV FreeImage_ReadMemory(void *buffer, UINT64 size, UINT64 count, FIMEMORY *stream);
+DLL_API UINT64 DLL_CALLCONV FreeImage_WriteMemory(const void *buffer, UINT64 size, UINT64 count, FIMEMORY *stream);
 
 DLL_API FIMULTIBITMAP *DLL_CALLCONV FreeImage_LoadMultiBitmapFromMemory(FREE_IMAGE_FORMAT fif, FIMEMORY *stream, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveMultiBitmapToMemory(FREE_IMAGE_FORMAT fif, FIMULTIBITMAP *bitmap, FIMEMORY *stream, int flags);
@@ -967,8 +967,8 @@ DLL_API unsigned DLL_CALLCONV FreeImage_GetWidth(FIBITMAP *dib);
 DLL_API unsigned DLL_CALLCONV FreeImage_GetHeight(FIBITMAP *dib);
 DLL_API unsigned DLL_CALLCONV FreeImage_GetLine(FIBITMAP *dib);
 DLL_API unsigned DLL_CALLCONV FreeImage_GetPitch(FIBITMAP *dib);
-DLL_API unsigned DLL_CALLCONV FreeImage_GetDIBSize(FIBITMAP *dib);
-DLL_API unsigned DLL_CALLCONV FreeImage_GetMemorySize(FIBITMAP *dib);
+DLL_API UINT64 DLL_CALLCONV FreeImage_GetDIBSize(FIBITMAP *dib);
+DLL_API UINT64 DLL_CALLCONV FreeImage_GetMemorySize(FIBITMAP *dib);
 DLL_API RGBQUAD *DLL_CALLCONV FreeImage_GetPalette(FIBITMAP *dib);
 DLL_API unsigned DLL_CALLCONV FreeImage_GetChannelsNumber(FIBITMAP *dib);
 
@@ -1003,7 +1003,7 @@ DLL_API BOOL DLL_CALLCONV FreeImage_SetThumbnail(FIBITMAP *dib, FIBITMAP *thumbn
 // ICC profile routines -----------------------------------------------------
 
 DLL_API FIICCPROFILE *DLL_CALLCONV FreeImage_GetICCProfile(FIBITMAP *dib);
-DLL_API FIICCPROFILE *DLL_CALLCONV FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, long size);
+DLL_API FIICCPROFILE *DLL_CALLCONV FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, INT64 size);
 DLL_API void DLL_CALLCONV FreeImage_DestroyICCProfile(FIBITMAP *dib);
 
 // Line conversion routines -------------------------------------------------

@@ -365,12 +365,12 @@ isTARGA20(FreeImageIO *io, fi_handle handle) {
 	// tga_signature = "TRUEVISION-XFILE." (TGA 2.0 only)
 	BYTE tga_signature[sizeofSig] = { 84, 82, 85, 69, 86, 73, 83, 73, 79, 78, 45, 88, 70, 73, 76, 69, 46, 0 };
 	// get the start offset
-	const long start_offset = io->tell_proc(handle);
+	const INT64 start_offset = io->tell_proc(handle);
 	// get the end-of-file
 	io->seek_proc(handle, 0, SEEK_END);
-	const long eof = io->tell_proc(handle);
+	const INT64 eof = io->tell_proc(handle);
 	// read the signature
-	const long start_of_signature = start_offset + eof - sizeofSig;
+	const INT64 start_of_signature = start_offset + eof - sizeofSig;
 	if (start_of_signature > 0) {
 		io->seek_proc(handle, start_of_signature, SEEK_SET);
 		io->read_proc(&signature, 1, sizeofSig, handle);
@@ -389,7 +389,7 @@ Validate(FreeImageIO *io, fi_handle handle) {
 		
 	// not a 2.0 image, try testing if it's a valid TGA anyway (not robust)
 	{
-		const long start_offset = io->tell_proc(handle);
+		const INT64 start_offset = io->tell_proc(handle);
 		
 		// get the header
 		TGAHEADER header;
@@ -573,7 +573,7 @@ Generic RLE loader
 */
 template<int bPP>
 static void 
-loadRLE(FIBITMAP*& dib, int width, int height, FreeImageIO* io, fi_handle handle, long eof, BOOL as24bit) {
+loadRLE(FIBITMAP*& dib, int width, int height, FreeImageIO* io, fi_handle handle, INT64 eof, BOOL as24bit) {
 	const int file_pixel_size = bPP/8;
 	const int pixel_size = as24bit ? 3 : file_pixel_size;
 
@@ -590,12 +590,12 @@ loadRLE(FIBITMAP*& dib, int width, int height, FreeImageIO* io, fi_handle handle
 	const BYTE* dib_end = FreeImage_GetScanLine(dib, height);//< one-past-end row
 
 	// Compute the rough size of a line...
-	const long pixels_offset = io->tell_proc(handle);
-	const long remaining_size = (eof - pixels_offset);
+	const INT64 pixels_offset = io->tell_proc(handle);
+	const INT64 remaining_size = (eof - pixels_offset);
 	if (remaining_size < height) {
 		throw FI_MSG_ERROR_CORRUPTED;
 	}
-	long sz = (remaining_size / height);
+	INT64 sz = (remaining_size / height);
 
 	// Ensure the cache is at least one pixel wide to prevent
 	// out-of-bounds reads when getBytes(file_pixel_size) is called.
@@ -686,11 +686,11 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		const BOOL header_only =  (flags & FIF_LOAD_NOPIXELS) == FIF_LOAD_NOPIXELS;
 				
 		// remember the start offset
-		long start_offset = io->tell_proc(handle);
+		INT64 start_offset = io->tell_proc(handle);
 
 		// remember end-of-file (used for RLE cache)
 		io->seek_proc(handle, 0, SEEK_END);
-		long eof = io->tell_proc(handle);
+		INT64 eof = io->tell_proc(handle);
 		io->seek_proc(handle, start_offset, SEEK_SET);
 
 		// read and process the bitmap's footer
@@ -698,7 +698,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		TargaThumbnail thumbnail;
 		if(isTARGA20(io, handle)) {
 			TGAFOOTER footer;
-			const long footer_offset = start_offset + eof - sizeof(footer);
+			const INT64 footer_offset = start_offset + eof - sizeof(footer);
 			
 			io->seek_proc(handle, footer_offset, SEEK_SET);
 			io->read_proc(&footer, sizeof(tagTGAFOOTER), 1, handle);
@@ -1514,7 +1514,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 	}
 
 	
-	long extension_offset = 0 ;
+	INT64 extension_offset = 0 ;
 	if(hasValidThumbnail(dib)) {
 		// write extension area
 		

@@ -260,11 +260,11 @@ mng_SwapLong(DWORD *lp) {
 /**
 Returns the size, in bytes, of a FreeImageIO stream, from the current position. 
 */
-static long
+static INT64
 mng_LOF(FreeImageIO *io, fi_handle handle) {
-	long start_pos = io->tell_proc(handle);
+	INT64 start_pos = io->tell_proc(handle);
 	io->seek_proc(handle, 0, SEEK_END);
-	long file_length = io->tell_proc(handle);
+	INT64 file_length = io->tell_proc(handle);
 	io->seek_proc(handle, start_pos, SEEK_SET);
 	return file_length;
 }
@@ -280,9 +280,9 @@ should be the end of the PNG stream at the return of the function.
 @return Returns TRUE if successful, returns FALSE otherwise
 */
 static BOOL 
-mng_CountPNGChunks(FreeImageIO *io, fi_handle handle, long inPos, unsigned *m_TotalBytesOfChunks) {
-	long mLOF;
-	long mPos;
+mng_CountPNGChunks(FreeImageIO *io, fi_handle handle, INT64 inPos, unsigned *m_TotalBytesOfChunks) {
+	INT64 mLOF;
+	INT64 mPos;
 	BOOL mEnd = FALSE;
 	DWORD mLength = 0;
 	BYTE mChunkName[5];
@@ -362,7 +362,7 @@ mng_FindChunk(FIMEMORY *hPngMemory, BYTE *chunk_name, long offset, DWORD *start_
 	DWORD mLength = 0;
 
 	BYTE *data = NULL;
-	DWORD size_in_bytes = 0;
+	UINT64 size_in_bytes = 0;
 
 	*start_pos = 0;
 	*next_pos = 0;
@@ -422,7 +422,7 @@ Remove a chunk located at (start_pos, next_pos) in the PNG stream
 static BOOL 
 mng_CopyRemoveChunks(FIMEMORY *hPngMemory, DWORD start_pos, DWORD next_pos) {
 	BYTE *data = NULL;
-	DWORD size_in_bytes = 0;
+	UINT64 size_in_bytes = 0;
 
 	// length of the chunk to remove
 	DWORD chunk_length = next_pos - start_pos;
@@ -438,7 +438,7 @@ mng_CopyRemoveChunks(FIMEMORY *hPngMemory, DWORD start_pos, DWORD next_pos) {
 	}
 	
 	// new file length
-	unsigned buffer_size = size_in_bytes + chunk_length;
+	UINT64 buffer_size = size_in_bytes + chunk_length;
 
 	BYTE *buffer = (BYTE*)malloc(buffer_size * sizeof(BYTE));
 	if(!buffer) {
@@ -467,7 +467,7 @@ Insert a chunk just before the inNextChunkName chunk
 static BOOL 
 mng_CopyInsertChunks(FIMEMORY *hPngMemory, BYTE *inNextChunkName, BYTE *inInsertChunk, DWORD inChunkLength, DWORD start_pos, DWORD next_pos) {
 	BYTE *data = NULL;
-	DWORD size_in_bytes = 0;
+	UINT64 size_in_bytes = 0;
 
 	// length of the chunk to check
 	DWORD chunk_length = next_pos - start_pos;
@@ -483,7 +483,7 @@ mng_CopyInsertChunks(FIMEMORY *hPngMemory, BYTE *inNextChunkName, BYTE *inInsert
 	}
 	
 	// new file length
-	unsigned buffer_size = inChunkLength + size_in_bytes;
+	UINT64 buffer_size = inChunkLength + size_in_bytes;
 
 	BYTE *buffer = (BYTE*)malloc(buffer_size * sizeof(BYTE));
 	if(!buffer) {
@@ -746,13 +746,13 @@ Load a FIBITMAP from a MNG or a JNG stream
 @return Returns a dib if successful, returns NULL otherwise
 */
 FIBITMAP* 
-mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, long Offset, int flags = 0) {
+mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, INT64 Offset, int flags = 0) {
 	DWORD mLength = 0;
 	BYTE mChunkName[5];
 	BYTE *mChunk = NULL;
 	DWORD crc_file;
-	long LastOffset;
-	long mOrigPos;
+	INT64 LastOffset;
+	INT64 mOrigPos;
 	BYTE *PLTE_file_chunk = NULL;	// whole PLTE chunk (lentgh, name, array, crc)
 	DWORD PLTE_file_size = 0;		// size of PLTE chunk
 
@@ -800,7 +800,7 @@ mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, long Offset, in
 	BOOL header_only = (flags & FIF_LOAD_NOPIXELS) == FIF_LOAD_NOPIXELS;
 	
 	// get the file size
-	const long mLOF = mng_LOF(io, handle);
+	const INT64 mLOF = mng_LOF(io, handle);
 	// go to the first chunk
 	io->seek_proc(handle, Offset, SEEK_SET);
 
@@ -1017,7 +1017,7 @@ mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, long Offset, in
 					// load the PNG alpha layer
 					if(mHasIDAT) {
 						BYTE *data = NULL;
-						DWORD size_in_bytes = 0;
+						UINT64 size_in_bytes = 0;
 
 						// get a pointer to the IDAT buffer
 						FreeImage_AcquireMemory(hIDATMemory, &data, &size_in_bytes);
@@ -1026,7 +1026,7 @@ mng_ReadChunks(int format_id, FreeImageIO *io, fi_handle handle, long Offset, in
 							if(hPngMemory == NULL) {
 								hPngMemory = FreeImage_OpenMemory();
 							}
-							mng_WritePNGStream(jng_width, jng_height, jng_alpha_sample_depth, data, size_in_bytes, hPngMemory);
+							mng_WritePNGStream(jng_width, jng_height, jng_alpha_sample_depth, data, (DWORD)size_in_bytes, hPngMemory);
 							// load the PNG
 							if(dib_alpha) {
 								FreeImage_Unload(dib_alpha);
@@ -1235,13 +1235,13 @@ mng_WriteJNG(int format_id, FreeImageIO *io, FIBITMAP *dib, fi_handle handle, in
 		}
 		{
 			BYTE *jpeg_data = NULL;
-			DWORD size_in_bytes = 0;
+			UINT64 size_in_bytes = 0;
 			
 			// get a pointer to the stream buffer
 			FreeImage_AcquireMemory(hJpegMemory, &jpeg_data, &size_in_bytes);
 			// write chunks
 			for(DWORD k = 0; k < size_in_bytes;) {
-				DWORD bytes_left = size_in_bytes - k;
+				DWORD bytes_left = (DWORD)(size_in_bytes - k);
 				DWORD chunk_size = MIN(JPEG_CHUNK_SIZE, bytes_left);
 				mng_WriteChunk(mng_JDAT, &jpeg_data[k], chunk_size, hJngMemory);
 				k += chunk_size;
@@ -1273,7 +1273,7 @@ mng_WriteJNG(int format_id, FreeImageIO *io, FIBITMAP *dib, fi_handle handle, in
 					if(!bResult) break;
 					
 					BYTE *png_data = NULL;
-					DWORD size_in_bytes = 0;
+					UINT64 size_in_bytes = 0;
 					
 					// get a pointer to the stream buffer
 					FreeImage_AcquireMemory(hPngMemory, &png_data, &size_in_bytes);
@@ -1295,7 +1295,7 @@ mng_WriteJNG(int format_id, FreeImageIO *io, FIBITMAP *dib, fi_handle handle, in
 		// write the JNG on output stream
 		{
 			BYTE *jng_data = NULL;
-			DWORD size_in_bytes = 0;
+			UINT64 size_in_bytes = 0;
 			FreeImage_AcquireMemory(hJngMemory, &jng_data, &size_in_bytes);
 			io->write_proc(jng_data, 1, size_in_bytes, handle);			
 		}

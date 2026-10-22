@@ -65,7 +65,7 @@ static int s_format_id;
 static void
 _ReadProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
     pfi_ioStructure pfio = (pfi_ioStructure)png_get_io_ptr(png_ptr);
-	unsigned n = pfio->s_io->read_proc(data, (unsigned int)size, 1, pfio->s_handle);
+	UINT64 n = pfio->s_io->read_proc(data, size, 1, pfio->s_handle);
 	if(size && (n == 0)) {
 		throw "Read error: invalid or corrupted PNG file";
 	}
@@ -74,7 +74,7 @@ _ReadProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
 static void
 _WriteProc(png_structp png_ptr, unsigned char *data, png_size_t size) {
     pfi_ioStructure pfio = (pfi_ioStructure)png_get_io_ptr(png_ptr);
-    pfio->s_io->write_proc(data, (unsigned int)size, 1, pfio->s_handle);
+    pfio->s_io->write_proc(data, size, 1, pfio->s_handle);
 }
 
 static void
@@ -999,7 +999,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 			if (iccProfile->size && iccProfile->data) {
 				// skip ICC profile check
 				png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, 1);
-				png_set_iCCP(png_ptr, info_ptr, "Embedded Profile", 0, (png_const_bytep)iccProfile->data, iccProfile->size);
+				png_set_iCCP(png_ptr, info_ptr, "Embedded Profile", 0, (png_const_bytep)iccProfile->data, (png_uint_32) iccProfile->size);
 			}
 
 			// write metadata

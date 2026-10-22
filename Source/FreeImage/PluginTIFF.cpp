@@ -173,20 +173,20 @@ typedef struct {
 static tmsize_t
 _tiffReadProc(thandle_t handle, void *buf, tmsize_t size) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
-	return fio->io->read_proc(buf, (unsigned)size, 1, fio->handle) * size;
+	return fio->io->read_proc(buf, size, 1, fio->handle) * size;
 }
 
 static tmsize_t
 _tiffWriteProc(thandle_t handle, void *buf, tmsize_t size) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
-	return fio->io->write_proc(buf, (unsigned)size, 1, fio->handle) * size;
+	return fio->io->write_proc(buf, size, 1, fio->handle) * size;
 }
 
 static toff_t
 _tiffSeekProc(thandle_t handle, toff_t off, int whence) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
-	fio->io->seek_proc(fio->handle, (long)off, whence);
-	return fio->io->tell_proc(fio->handle);
+	fio->io->seek_proc(fio->handle, off, whence);
+    return fio->io->tell_proc( fio->handle );
 }
 
 static int
@@ -199,9 +199,9 @@ _tiffCloseProc(thandle_t fd) {
 static toff_t
 _tiffSizeProc(thandle_t handle) {
     fi_TIFFIO *fio = (fi_TIFFIO*)handle;
-    long currPos = fio->io->tell_proc(fio->handle);
+    INT64 currPos = fio->io->tell_proc(fio->handle);
     fio->io->seek_proc(fio->handle, 0, SEEK_END);
-    long fileSize = fio->io->tell_proc(fio->handle);
+    INT64 fileSize = fio->io->tell_proc(fio->handle);
     fio->io->seek_proc(fio->handle, currPos, SEEK_SET);
     return fileSize;
 }
@@ -874,7 +874,7 @@ tiff_read_exif_profile(FreeImageIO *io, fi_handle handle, TIFF *tiff, FIBITMAP *
 	// get the IFD offset
 	if(TIFFGetField(tiff, TIFFTAG_EXIFIFD, &exif_offset)) {
 
-		const long tell_pos = io->tell_proc(handle);
+		const INT64 tell_pos = io->tell_proc(handle);
 		const uint16_t cur_dir = TIFFCurrentDirectory(tiff);
 
 		// read EXIF tags
@@ -918,10 +918,10 @@ static BOOL
 tiff_write_iptc_profile(TIFF *tiff, FIBITMAP *dib) {
 	if(FreeImage_GetMetadataCount(FIMD_IPTC, dib)) {
 		BYTE *profile = NULL;
-		uint32_t profile_size = 0;
+		UINT64 profile_size = 0;
 		// create a binary profile
 		if(write_iptc_profile(dib, &profile, &profile_size)) {
-			uint32_t iptc_size = profile_size;
+			UINT64 iptc_size = profile_size;
 			iptc_size += (4-(iptc_size & 0x03)); // Round up for long word alignment
 			BYTE *iptc_profile = (BYTE*)malloc(iptc_size);
 			if(!iptc_profile) {
@@ -931,7 +931,7 @@ tiff_write_iptc_profile(TIFF *tiff, FIBITMAP *dib) {
 			memset(iptc_profile, 0, iptc_size);
 			memcpy(iptc_profile, profile, profile_size);
 			if (TIFFIsByteSwapped(tiff)) {
-				TIFFSwabArrayOfLong((uint32_t *) iptc_profile, (unsigned long)iptc_size/4);
+				TIFFSwabArrayOfLong((uint32_t *) iptc_profile, iptc_size/4);
 			}
 			// Tag is type TIFF_LONG so byte length is divided by four
 			TIFFSetField(tiff, TIFFTAG_RICHTIFFIPTC, iptc_size/4, iptc_profile);
@@ -1354,7 +1354,7 @@ ReadThumbnail(FreeImageIO *io, fi_handle handle, void *data, TIFF *tiff, FIBITMA
 
 		if(!TIFFLastDirectory(tiff)) {
 			// save current position
-			const long tell_pos = io->tell_proc(handle);
+			const INT64 tell_pos = io->tell_proc(handle);
 			const uint16_t cur_dir = TIFFCurrentDirectory(tiff);
 
 			// load the thumbnail
@@ -1383,7 +1383,7 @@ ReadThumbnail(FreeImageIO *io, fi_handle handle, void *data, TIFF *tiff, FIBITMA
 		if(TIFFGetField(tiff, TIFFTAG_SUBIFD, &subIFD_count, &subIFD_offsets)) {
 			if(subIFD_count > 0) {
 				// save current position
-				const long tell_pos = io->tell_proc(handle);
+				const INT64 tell_pos = io->tell_proc(handle);
 				const uint16_t cur_dir = TIFFCurrentDirectory(tiff);
 
 				// this code can cause unwanted recursion causing an overflow, because of the way TIFFSetSubDirectory work

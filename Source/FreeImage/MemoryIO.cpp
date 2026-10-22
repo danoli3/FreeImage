@@ -34,7 +34,7 @@
 // =====================================================================
 
 FIMEMORY * DLL_CALLCONV 
-FreeImage_OpenMemory(BYTE *data, DWORD size_in_bytes) {
+FreeImage_OpenMemory(BYTE *data, UINT64 size_in_bytes) {
 	// allocate a memory handle
 	FIMEMORY *stream = (FIMEMORY*)malloc(sizeof(FIMEMORY));
 	if(stream) {
@@ -118,7 +118,7 @@ FreeImage_SaveToMemory(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, FIMEMORY *stream, i
 // =====================================================================
 
 BOOL DLL_CALLCONV
-FreeImage_AcquireMemory(FIMEMORY *stream, BYTE **data, DWORD *size_in_bytes) {
+FreeImage_AcquireMemory(FIMEMORY *stream, BYTE **data, UINT64 *size_in_bytes) {
 	if (stream) {
 		FIMEMORYHEADER *mem_header = (FIMEMORYHEADER*)(stream->data);
 
@@ -142,7 +142,7 @@ Moves the memory pointer to a specified location
 @return Returns TRUE if successful, returns FALSE otherwise
 */
 BOOL DLL_CALLCONV
-FreeImage_SeekMemory(FIMEMORY *stream, long offset, int origin) {
+FreeImage_SeekMemory(FIMEMORY *stream, INT64 offset, int origin) {
 	FreeImageIO io;
 	SetMemoryIO(&io);
 
@@ -159,7 +159,7 @@ Gets the current position of a memory pointer
 @param stream Target FIMEMORY structure
 @return Returns the current file position if successful, -1 otherwise
 */
-long DLL_CALLCONV
+INT64 DLL_CALLCONV
 FreeImage_TellMemory(FIMEMORY *stream) {
 	FreeImageIO io;
 	SetMemoryIO(&io);
@@ -183,8 +183,8 @@ Reads data from a memory stream
 @param stream Pointer to FIMEMORY structure
 @return Returns the number of full items actually read, which may be less than count if an error occurs
 */
-unsigned DLL_CALLCONV 
-FreeImage_ReadMemory(void *buffer, unsigned size, unsigned count, FIMEMORY *stream) {
+UINT64 DLL_CALLCONV
+FreeImage_ReadMemory(void *buffer, UINT64 size, UINT64 count, FIMEMORY *stream) {
 	FreeImageIO io;
 	SetMemoryIO(&io);
 
@@ -203,8 +203,8 @@ Writes data to a memory stream.
 @param stream Pointer to FIMEMORY structure
 @return Returns the number of full items actually written, which may be less than count if an error occurs
 */
-unsigned DLL_CALLCONV 
-FreeImage_WriteMemory(const void *buffer, unsigned size, unsigned count, FIMEMORY *stream) {
+UINT64 DLL_CALLCONV
+FreeImage_WriteMemory(const void *buffer, UINT64 size, UINT64 count, FIMEMORY *stream) {
 	if (stream != NULL) {
 		FreeImageIO io;
 		SetMemoryIO(&io);

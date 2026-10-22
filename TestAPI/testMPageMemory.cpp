@@ -116,7 +116,7 @@ BOOL testSaveMultiBitmapToMemory(const char *input, const char *output, int outp
 
 		// get the buffer from the memory stream
 		BYTE *mem_buffer = NULL;
-		DWORD size_in_bytes = 0;
+		UINT64 size_in_bytes = 0;
 
 		bSuccess = FreeImage_AcquireMemory(dst_memory, &mem_buffer, &size_in_bytes);
 		assert(bSuccess);
@@ -228,7 +228,7 @@ BOOL testMemoryStreamMultiPageOpenSave(const char *lpszPathName, const char *out
 		
 		// get the dst buffer from the memory stream
 		BYTE *dst_buffer = NULL;
-		DWORD size_in_bytes = 0;
+		UINT64 size_in_bytes = 0;
 		
 		FreeImage_AcquireMemory(dst_stream, &dst_buffer, &size_in_bytes);
 		

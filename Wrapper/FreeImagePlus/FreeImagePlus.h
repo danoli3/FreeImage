@@ -1376,7 +1376,7 @@ public :
 	@param size_in_bytes Buffer size in bytes (returned value)
 	@see FreeImage_AcquireMemory
 	*/
-	BOOL acquire(BYTE **data, DWORD *size_in_bytes);
+	BOOL acquire(BYTE **data, UINT64 *size_in_bytes);
 	//@}
 
 private:

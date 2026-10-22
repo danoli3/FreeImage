@@ -83,7 +83,7 @@ Validate(FreeImageIO *io, fi_handle handle) {
 	BYTE jpc_signature[] = { 0xFF, 0x4F };
 	BYTE signature[2] = { 0, 0 };
 
-	long tell = io->tell_proc(handle);
+	UINT64 tell = io->tell_proc(handle);
 	io->read_proc(signature, 1, sizeof(jpc_signature), handle);
 	io->seek_proc(handle, tell, SEEK_SET);
 

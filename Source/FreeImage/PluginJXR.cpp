@@ -727,7 +727,7 @@ static ERR
 WriteMetadata(PKImageEncode *pIE, FIBITMAP *dib) {
 	ERR error_code = 0;		// error code as returned by the interface
 	BYTE *profile = NULL;
-	unsigned profile_size = 0;
+	UINT64 profile_size = 0;
 	
 	try {
 		// write ICC profile

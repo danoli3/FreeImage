@@ -25,28 +25,40 @@
 #include "Utilities.h"
 #include "FreeImageIO.h"
 
+#if !defined(_WIN32)
+#include <sys/types.h>
+#endif
+
 // =====================================================================
 // File IO functions
 // =====================================================================
 
-unsigned DLL_CALLCONV 
-_ReadProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-	return (unsigned)fread(buffer, size, count, (FILE *)handle);
+UINT64 DLL_CALLCONV
+_ReadProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
+	return fread(buffer, size, count, (FILE *)handle);
 }
 
-unsigned DLL_CALLCONV 
-_WriteProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-	return (unsigned)fwrite(buffer, size, count, (FILE *)handle);
+UINT64 DLL_CALLCONV
+_WriteProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
+	return fwrite(buffer, size, count, (FILE *)handle);
 }
 
 int DLL_CALLCONV
-_SeekProc(fi_handle handle, long offset, int origin) {
-	return fseek((FILE *)handle, offset, origin);
+_SeekProc(fi_handle handle, INT64 offset, int origin) {
+#if defined(_WIN32)
+	return _fseeki64((FILE *)handle, offset, origin);
+#else
+	return fseeko((FILE *)handle, (off_t)offset, origin);
+#endif
 }
 
-long DLL_CALLCONV
+INT64 DLL_CALLCONV
 _TellProc(fi_handle handle) {
-	return ftell((FILE *)handle);
+#if defined(_WIN32)
+	return _ftelli64((FILE *)handle);
+#else
+	return (INT64)ftello((FILE *)handle);
+#endif
 }
 
 // ----------------------------------------------------------
@@ -75,16 +87,16 @@ If size or count is 0, _MemoryReadProc returns 0 and the buffer contents are unc
 @param handle
 @return
 */
-unsigned DLL_CALLCONV
-_MemoryReadProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+UINT64 DLL_CALLCONV
+_MemoryReadProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
 	if (!handle || !buffer || (size == 0) || (count == 0)) {
 		return 0;
 	}
 
 	FIMEMORYHEADER *mem_header = (FIMEMORYHEADER*)(((FIMEMORY*)handle)->data);
 
-	const int required_bytes = (int)(size) * count;
-	const int remaining_bytes = mem_header->file_length - mem_header->current_position;
+	const int required_bytes = (int)(size * count);
+	const int remaining_bytes = (int)(mem_header->file_length - mem_header->current_position);
 
 	if ((required_bytes > 0) && (remaining_bytes > 0)) {
 		if (required_bytes <= remaining_bytes) {
@@ -105,19 +117,19 @@ _MemoryReadProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
 	return 0;
 }
 
-unsigned DLL_CALLCONV 
-_MemoryWriteProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+UINT64 DLL_CALLCONV 
+_MemoryWriteProc(void *buffer, UINT64 size, UINT64 count, fi_handle handle) {
 	if (!handle || !buffer) {
 		return 0;
 	}
 
 	FIMEMORYHEADER *mem_header = (FIMEMORYHEADER*)(((FIMEMORY*)handle)->data);
 
-	const long required_bytes = (long)(size * count);
+	const INT64 required_bytes = (INT64)(size * count);
 
 	// double the data block size if we need to
 	while( (mem_header->current_position + required_bytes) >= mem_header->data_length ) {
-		long newdatalen = 0;
+		INT64 newdatalen = 0;
 
 		// if we are at or above 1G, we cant double without going negative
 		if( mem_header->data_length & 0x40000000 ) {
@@ -167,7 +179,7 @@ The pointer can also be positioned beyond the end of the file.
 @return If successful, returns 0. Otherwise, returns -1.
 */
 int DLL_CALLCONV 
-_MemorySeekProc(fi_handle handle, long offset, int origin) {
+_MemorySeekProc(fi_handle handle, INT64 offset, int origin) {
 	if (!handle) {
 		return -1;
 	}
@@ -207,7 +219,7 @@ _MemorySeekProc(fi_handle handle, long offset, int origin) {
 	return -1;
 }
 
-long DLL_CALLCONV 
+INT64 DLL_CALLCONV 
 _MemoryTellProc(fi_handle handle) {
 	if (!handle) {
 		return -1;

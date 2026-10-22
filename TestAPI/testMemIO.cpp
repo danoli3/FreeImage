@@ -125,7 +125,7 @@ void testAcquireMemIO(const char *lpszPathName) {
 
 	// get the buffer from the memory stream
 	BYTE *mem_buffer = NULL;
-	DWORD size_in_bytes = 0;
+	UINT64 size_in_bytes = 0;
 
 	FreeImage_AcquireMemory(hmem, &mem_buffer, &size_in_bytes);
 

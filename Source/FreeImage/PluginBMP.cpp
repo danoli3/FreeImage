@@ -223,12 +223,12 @@ Load uncompressed image pixels for 1-, 4-, 8-, 16-, 24- and 32-bit dib
 */
 static BOOL 
 LoadPixelData(FreeImageIO *io, fi_handle handle, FIBITMAP *dib, int height, unsigned pitch, unsigned bit_count) {
-	unsigned count = 0;
+	UINT64 count = 0;
 
 	// Load pixel data
 	// NB: height can be < 0 for BMP data
 	if (height > 0) {
-		count = io->read_proc((void *)FreeImage_GetBits(dib), height * pitch, 1, handle);
+		count = io->read_proc((void *)FreeImage_GetBits(dib), ( (UINT64) height ) * pitch, 1, handle);
 		if(count != 1) {
 			return FALSE;
 		}
@@ -1197,7 +1197,8 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		DWORD type = 0;
 
 		// we use this offset value to make seemingly absolute seeks relative in the file		
-		long offset_in_file = io->tell_proc(handle);
+		UINT64 _offset_in_file = io->tell_proc(handle);
+		long offset_in_file = (long) _offset_in_file;
 
 		// read the fileheader
 		memset(&bitmapfileheader, 0, sizeof(BITMAPFILEHEADER));
