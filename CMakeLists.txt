@@ -158,6 +158,7 @@ option(USE_SYSTEM_JXR "Link against system jxrlib instead of the bundled copy" $
 # unless their system-library switch (or the master switch) selects an SDK.
 option(BUILD_LIBHEIF "Enable HEIF/AVIF support" OFF)
 option(BUILD_LIBJXL "Enable JPEG XL support" OFF)
+option(FREEIMAGE_BUNDLE_AOM "Build bundled libaom for AV1 support in bundled libheif" ON)
 option(USE_SYSTEM_LIBHEIF "Use an installed libheif SDK" ${FREEIMAGE_SYSTEM_DEFAULT})
 option(USE_SYSTEM_LIBJXL "Use an installed libjxl SDK" ${FREEIMAGE_SYSTEM_DEFAULT})
 include(cmake/FreeImageCodecs.cmake)
