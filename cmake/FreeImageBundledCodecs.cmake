@@ -25,8 +25,9 @@ function(freeimage_bundled_project name archive hash)
         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
         -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE)
-    # Forward target configuration, not host-specific dependency paths. Each
-    # upstream project chooses its own language standard in its isolated build.
+    # Forward target configuration, including the selected MSVC CRT, not
+    # host-specific dependency paths. Each upstream project chooses its own
+    # language standard in its isolated build.
     foreach(var CMAKE_TOOLCHAIN_FILE CMAKE_SYSROOT CMAKE_OSX_SYSROOT
                 CMAKE_OSX_DEPLOYMENT_TARGET CMAKE_OSX_ARCHITECTURES
                 CMAKE_SYSTEM_NAME CMAKE_SYSTEM_PROCESSOR
@@ -38,6 +39,11 @@ function(freeimage_bundled_project name archive hash)
             list(APPEND common "-D${var}:STRING=${value}")
         endif()
     endforeach()
+    # Highway's CMake minimum is older than 3.15, so CMP0091 would otherwise
+    # remain unset/OLD and it would ignore CMAKE_MSVC_RUNTIME_LIBRARY.
+    if(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY AND MSVC)
+        list(APPEND common "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW")
+    endif()
     if(POLICY CMP0135)
         cmake_policy(SET CMP0135 NEW)
     endif()

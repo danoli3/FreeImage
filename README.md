@@ -70,6 +70,24 @@ cmake --build build --config Debug
 ```
 See [Generate Visual Studio project files](#generate-visual-studio-project-files) below for opening the solution directly in the IDE.
 
+To select the MSVC C runtime, pass `-DFREEIMAGE_MSVC_RUNTIME=MD` for the
+dynamic CRT (`/MDd` in Debug and `/MD` in Release), or
+`-DFREEIMAGE_MSVC_RUNTIME=MT` for the static CRT (`/MTd` in Debug and `/MT` in
+Release). The default `Default` leaves CMake's runtime selection unchanged;
+CMake's default with this project's policy is `/MDd` in Debug and `/MD`
+in Release.
+This setting is forwarded to bundled HEIF and JPEG XL dependencies, including
+AOM and Highway. Prebuilt system libraries are not changed by this option; use
+libraries built with the same CRT setting. Static FreeImage consumers should
+also use the same CRT.
+
+For example, to build and test a DLL with the static CRT:
+```powershell
+cmake -S . -B build -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=OFF -DFREEIMAGE_MSVC_RUNTIME=MT
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
 **Windows (MinGW, e.g. a toolchain already on `PATH`)**
 ```bash
 cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"

@@ -34,6 +34,33 @@ endif()
 
 project(FreeImage VERSION ${FREEIMAGE_VERSION} LANGUAGES C CXX)
 
+# Keep the MSVC CRT selectable for consumers that need to match another
+# library's RuntimeLibrary setting. CMake's policy CMP0091 is NEW from the
+# minimum version above, so this initializes the runtime property on targets
+# created below. Default deliberately leaves CMake's choice untouched.
+set(FREEIMAGE_MSVC_RUNTIME "Default" CACHE STRING
+    "MSVC runtime library: Default, MD (dynamic CRT), or MT (static CRT)")
+set_property(CACHE FREEIMAGE_MSVC_RUNTIME PROPERTY STRINGS Default MD MT)
+if(NOT FREEIMAGE_MSVC_RUNTIME STREQUAL "Default"
+   AND NOT FREEIMAGE_MSVC_RUNTIME STREQUAL "MD"
+   AND NOT FREEIMAGE_MSVC_RUNTIME STREQUAL "MT")
+    message(FATAL_ERROR
+        "Invalid FREEIMAGE_MSVC_RUNTIME='${FREEIMAGE_MSVC_RUNTIME}'. Choose Default, MD, or MT.")
+endif()
+if(MSVC)
+    if(FREEIMAGE_MSVC_RUNTIME STREQUAL "MD")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+        message(STATUS "MSVC runtime library: dynamic CRT (/MDd Debug, /MD Release)")
+    elseif(FREEIMAGE_MSVC_RUNTIME STREQUAL "MT")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        message(STATUS "MSVC runtime library: static CRT (/MTd Debug, /MT Release)")
+    else()
+        message(STATUS "MSVC runtime library: CMake default (FREEIMAGE_MSVC_RUNTIME=Default)")
+    endif()
+elseif(NOT FREEIMAGE_MSVC_RUNTIME STREQUAL "Default")
+    message(STATUS "FREEIMAGE_MSVC_RUNTIME is only applied by MSVC-compatible toolchains")
+endif()
+
 set(FREEIMAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(FREEIMAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(FREEIMAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
