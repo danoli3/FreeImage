@@ -29,8 +29,10 @@ source and relinking obligations. Selecting `USE_SYSTEM_LIBHEIF=ON` retains
 the system SDK/dynamic-library approach.
 
 HEIF backends are built in rather than dynamically loaded plugins. No x265,
-x264, dav1d or SVT-AV1 dependency is added. AOM and libde265 use portable code
-to avoid requiring NASM or assuming host SIMD features in cross builds;
+x264, dav1d or SVT-AV1 dependency is added. AOM is enabled by default for AV1
+support; set `FREEIMAGE_BUNDLE_AOM=OFF` to omit it and avoid its Perl build-time
+requirement, at the cost of AVIF support. In either mode libde265 uses portable
+code to avoid requiring NASM or assuming host SIMD features in cross builds;
 Highway retains JPEG XL's runtime-dispatched SIMD support.
 
 Kvazaar supports lossy HEIF output, including alpha and metadata, but the

@@ -108,9 +108,15 @@ int main(int argc, char **) {
 
     Test("rgb.heic", FIF_HEIF, false);
     Test("rgba.heic", FIF_HEIF, true);
+#if !defined(FREEIMAGE_TEST_BUNDLED_HEIF) || defined(FREEIMAGE_TEST_BUNDLED_AOM)
     Test("rgb.avif", FIF_AVIF, false);
     Test("rgba.avif", FIF_AVIF, true);
+#endif
     Test("metadata.heic", FIF_HEIF, false);
     FreeImage_DeInitialise();
+#if defined(FREEIMAGE_TEST_BUNDLED_HEIF) && !defined(FREEIMAGE_TEST_BUNDLED_AOM)
+    std::puts("HEIF RGB, alpha, orientation, header-only and truncated-input tests passed (AVIF backend disabled)");
+#else
     std::puts("HEIF/AVIF RGB, alpha, orientation, header-only and truncated-input tests passed");
+#endif
 }

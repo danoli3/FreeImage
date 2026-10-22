@@ -248,7 +248,10 @@ Bundled builds require CMake 3.20 or newer. Both format switches remain OFF by d
 checked-in, SHA-256-verified source archives and their required backends;
 no network, package manager, external SDK or pkg-config is needed. Sources
 are unpacked inside the build directory. HEIF includes libde265/Kvazaar for
-HEVC and libaom for AV1; JPEG XL includes Highway, Brotli and Little CMS.
+HEVC and libaom for AV1 by default; JPEG XL includes Highway, Brotli and
+Little CMS. Set `-DFREEIMAGE_BUNDLE_AOM=OFF` to omit libaom and avoid its Perl
+build-time requirement. This keeps bundled HEIF decoding/encoding but disables
+AVIF support. `FREEIMAGE_BUNDLE_AOM` defaults to ON.
 The compiler must support C++20 for bundled libheif and C++17 for bundled
 libjxl; these requirements do not change FreeImage's own language standard.
 The classic Makefiles still provide unsupported codec stubs.
