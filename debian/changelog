@@ -1,3 +1,12 @@
+freeimage-maintained (3.19.26-1) unstable; urgency=medium
+
+  * Fix TIFF JPEG decoding when stream and TIFF sampling factors differ; add regression coverage.
+  * Reject oversized ICO dimensions before decoding.
+  * Add selectable MSVC dynamic/static runtime configuration.
+  * Prepare tagged Linux package builds for FreeImage 3.19.26.
+
+ -- FreeImage Packaging Contributors <noreply@github.com>  Thu, 22 Oct 2026 00:00:00 +1100
+
 freeimage-maintained (3.19.25-1) unstable; urgency=high
 
   * Bundle offline HEIF/AVIF and JPEG XL codecs with pinned dependencies.

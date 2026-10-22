@@ -2,7 +2,13 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
-## 3.19.25 — Unreleased
+## 3.19.26 — Unreleased
+
+- Fix TIFF JPEG decoding when the JPEG stream's sampling factors differ from the TIFF tags; add regression coverage for the mismatch. (#191, #193)
+- Reject oversized ICO dimensions before allocating or decoding image data. (#193)
+- Add a CMake option to select the MSVC runtime library (default, dynamic `/MD`, or static `/MT`). (#192)
+
+## 3.19.25 — 17 Oct 2026
 
 - Bundle pinned, SHA-256-verified HEIF/AVIF and JPEG XL codec sources and dependencies for offline CMake builds, while retaining optional system-library selection, cross-compilation and static/shared builds. Add license documentation and cross-platform CI. (#179)
 - Add `FreeImage_GetChannelsNumber` to report channel counts for bitmap and typed image formats, including two-channel complex images. (#180)
