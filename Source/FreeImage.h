@@ -37,6 +37,7 @@
 // Compiler options ---------------------------------------------------------
 
 #include <wchar.h>	// needed for UNICODE functions
+#include <stdint.h>	// fixed-width types for large-file I/O
 
 #if defined(FREEIMAGE_LIB)
 	#define DLL_API
@@ -640,6 +641,19 @@ FI_STRUCT(FreeImageIO) {
     FI_TellProc  tell_proc;     //! pointer to the function used to aquire the current position
 };
 
+// Large-file I/O callbacks. These are additive; FreeImageIO remains ABI stable.
+typedef uint64_t (DLL_CALLCONV *FI_ReadProc64) (void *buffer, uint64_t size, uint64_t count, fi_handle handle);
+typedef uint64_t (DLL_CALLCONV *FI_WriteProc64) (void *buffer, uint64_t size, uint64_t count, fi_handle handle);
+typedef int (DLL_CALLCONV *FI_SeekProc64) (fi_handle handle, int64_t offset, int origin);
+typedef int64_t (DLL_CALLCONV *FI_TellProc64) (fi_handle handle);
+
+FI_STRUCT(FreeImageIO64) {
+    FI_ReadProc64 read_proc;
+    FI_WriteProc64 write_proc;
+    FI_SeekProc64 seek_proc;
+    FI_TellProc64 tell_proc;
+};
+
 #if (defined(_WIN32) || defined(__WIN32__))
 #pragma pack(pop)
 #else
@@ -674,6 +688,9 @@ typedef BOOL (DLL_CALLCONV *FI_SupportsExportBPPProc)(int bpp);
 typedef BOOL (DLL_CALLCONV *FI_SupportsExportTypeProc)(FREE_IMAGE_TYPE type);
 typedef BOOL (DLL_CALLCONV *FI_SupportsICCProfilesProc)(void);
 typedef BOOL (DLL_CALLCONV *FI_SupportsNoPixelsProc)(void);
+typedef void *(DLL_CALLCONV *FI_OpenProc64)(FreeImageIO64 *io, fi_handle handle, BOOL read);
+typedef void (DLL_CALLCONV *FI_CloseProc64)(FreeImageIO64 *io, fi_handle handle, void *data);
+typedef FIBITMAP *(DLL_CALLCONV *FI_LoadProc64)(FreeImageIO64 *io, fi_handle handle, int page, int flags, void *data);
 
 FI_STRUCT (Plugin) {
 	FI_FormatProc format_proc;
@@ -692,6 +709,9 @@ FI_STRUCT (Plugin) {
 	FI_SupportsExportTypeProc supports_export_type_proc;
 	FI_SupportsICCProfilesProc supports_icc_profiles_proc;
 	FI_SupportsNoPixelsProc supports_no_pixels_proc;
+	FI_OpenProc64 open64_proc;
+	FI_CloseProc64 close64_proc;
+	FI_LoadProc64 load64_proc;
 };
 
 typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
@@ -865,8 +885,11 @@ DLL_API BOOL DLL_CALLCONV FreeImage_HasPixels(FIBITMAP *dib);
 // Load / Save routines -----------------------------------------------------
 
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Load(FREE_IMAGE_FORMAT fif, const char *filename, int flags FI_DEFAULT(0));
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Load64(FREE_IMAGE_FORMAT fif, const char *filename, int flags FI_DEFAULT(0));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, int flags FI_DEFAULT(0));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags FI_DEFAULT(0));
+// Uses a format plugin's 64-bit callbacks; currently supported by TIFF only.
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_Save(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, const char *filename, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveU(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, const wchar_t *filename, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveToHandle(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, FreeImageIO *io, fi_handle handle, int flags FI_DEFAULT(0));
