@@ -12,7 +12,7 @@ license and patent notices are in `licenses/` and installed with FreeImage.
 
 | Feature | Sources | Licenses (see full texts) |
 | --- | --- | --- |
-| HEIF container | libheif 1.23.5 | LGPL-3.0-or-later |
+| HEIF container | libheif 1.23.6 | LGPL-3.0-or-later |
 | HEVC decode | libde265 1.1.3 | LGPL-3.0-or-later |
 | HEVC encode | Kvazaar 2.3.2 | BSD-3-Clause |
 | AV1 decode/encode | libaom 3.15.1 | BSD-2-Clause, patent grant |

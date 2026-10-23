@@ -26,7 +26,7 @@ static const char * DLL_CALLCONV HeifFormat() { return "HEIF"; }
 static const char * DLL_CALLCONV AvifFormat() { return "AVIF"; }
 static const char * DLL_CALLCONV HeifDescription() { return "HEIF image"; }
 static const char * DLL_CALLCONV AvifDescription() { return "AVIF image"; }
-static const char * DLL_CALLCONV HeifExtension() { return "heif,heic,heifs,heics"; }
+static const char * DLL_CALLCONV HeifExtension() { return "heif,heic,heifs,heics,hif"; }
 static const char * DLL_CALLCONV AvifExtension() { return "avif"; }
 static const char * DLL_CALLCONV HeifMime() { return "image/heif"; }
 static const char * DLL_CALLCONV AvifMime() { return "image/avif"; }
