@@ -244,6 +244,18 @@ cmake -S . -B build -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
 cmake --build build --config Release --parallel 4
 ```
 
+Independent bundled dependencies can build concurrently when the top-level
+build uses `--parallel`. Libheif starts after libde265, Kvazaar and (when
+enabled) libaom have been installed; JPEG XL similarly waits for its own
+prerequisites.
+
+Each nested dependency build defaults to two compiler jobs. Override this
+at configure time with `-DFREEIMAGE_CODEC_BUILD_JOBS=4` (a positive integer).
+This setting applies to bundled HEIF/AVIF and JPEG XL dependencies, including
+multi-configuration generators. It is separate from the top-level
+`cmake --build ... --parallel` setting: several dependencies can run at once,
+so choose both limits to fit the available CPUs and memory.
+
 Bundled builds require CMake 3.20 or newer. Both format switches remain OFF by default. When enabled, CMake builds the
 checked-in, SHA-256-verified source archives and their required backends;
 no network, package manager, external SDK or pkg-config is needed. Sources

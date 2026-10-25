@@ -24,6 +24,7 @@ jobs:
           cmake -S . -B build
           -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=11
           -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=${{ matrix.static }}
+          -DFREEIMAGE_CODEC_BUILD_JOBS=2
           -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
           -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
           -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE

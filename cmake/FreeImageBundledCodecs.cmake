@@ -7,6 +7,14 @@ endif()
 include(ExternalProject)
 include(GNUInstallDirs)
 
+# Nested cmake --build calls do not inherit the parent's --parallel limit.
+# Keep the existing bounded default, but let callers tune each codec build.
+set(FREEIMAGE_CODEC_BUILD_JOBS "2" CACHE STRING "Parallel jobs per bundled HEIF/JPEG XL dependency")
+if(NOT FREEIMAGE_CODEC_BUILD_JOBS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "FREEIMAGE_CODEC_BUILD_JOBS must be a positive integer")
+endif()
+message(STATUS "Bundled codec jobs per dependency: ${FREEIMAGE_CODEC_BUILD_JOBS}")
+
 function(freeimage_bundled_project name archive hash)
     set(options)
     set(oneValueArgs)
@@ -60,7 +68,7 @@ function(freeimage_bundled_project name archive hash)
         ${patch_args}
         CMAKE_ARGS ${common} ${CODEC_ARGS}
         LIST_SEPARATOR |
-        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG> --parallel 2
+        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG> --parallel ${FREEIMAGE_CODEC_BUILD_JOBS}
         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config $<CONFIG>
         DEPENDS ${CODEC_DEPENDS}
         EXCLUDE_FROM_ALL TRUE)
