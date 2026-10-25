@@ -182,3 +182,25 @@ if(BUILD_TESTS AND BUILD_LIBTIFF)
     endif()
     add_test(NAME UnicodeMultiPageTest COMMAND UnicodeMultiPageTest)
 endif()
+
+if(BUILD_TESTS)
+    add_executable(CodecDisplayTest testCodecDisplay.cpp)
+    target_link_libraries(CodecDisplayTest PRIVATE FreeImage)
+    target_compile_definitions(CodecDisplayTest PRIVATE
+        FREEIMAGE_TEST_JP2=$<BOOL:${BUILD_LIBOPENJPEG}>
+        FREEIMAGE_TEST_JXR=$<BOOL:${BUILD_JXR}>)
+    add_test(NAME CodecDisplayTest COMMAND CodecDisplayTest
+        "${CMAKE_CURRENT_BINARY_DIR}/codec-display-$<CONFIG>.jp2")
+    set_tests_properties(CodecDisplayTest PROPERTIES TIMEOUT 60)
+
+    add_executable(CodecDiagnostics EXCLUDE_FROM_ALL ../Examples/codec-diagnostics/main.cpp)
+    target_link_libraries(CodecDiagnostics PRIVATE FreeImage)
+    target_compile_features(CodecDiagnostics PRIVATE cxx_std_11)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        foreach(target CodecDisplayTest CodecDiagnostics)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:${target}> VERBATIM)
+        endforeach()
+    endif()
+endif()

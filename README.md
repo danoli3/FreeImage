@@ -46,7 +46,7 @@ Original library can be found : https://freeimage.sourceforge.io
 
 ## Building this fork
 
-JPEG-XR is included only on Windows (`BUILD_JXR` defaults to `WIN32`). Camera RAW is included by default (`-DBUILD_LIBRAWLITE=OFF` leaves it out).
+JPEG-XR is enabled by default only on Windows (`BUILD_JXR` defaults to `WIN32`); pass `-DBUILD_JXR=ON` to include it on other platforms. Camera RAW is included by default (`-DBUILD_LIBRAWLITE=OFF` leaves it out).
 
 ### Simply build it
 
@@ -54,6 +54,9 @@ JPEG-XR is included only on Windows (`BUILD_JXR` defaults to `WIN32`). Camera RA
 cmake . -B cmake-build
 cmake --build cmake-build # On Linux, add -j$(nproc) for multicore build
 ```
+
+For JP2/JXR format detection and display-conversion troubleshooting, see the
+[codec diagnostic example](Examples/codec-diagnostics/README.md).
 
 ### Platform-specific examples
 
