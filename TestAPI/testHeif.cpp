@@ -100,6 +100,25 @@ static void Test(const char *filename, FREE_IMAGE_FORMAT format, bool alpha) {
     Require(FreeImage_LoadFromMemory(format, memory) == NULL, "truncated input rejected");
     FreeImage_CloseMemory(memory);
 }
+// Primary pixels and metadata must survive errors in an optional thumbnail.
+static void TestBadThumbnail(const char *filename, bool must_reject_thumbnail) {
+    FIBITMAP *reference = FreeImage_Load(FIF_HEIF, "metadata.heic");
+    FIBITMAP *dib = FreeImage_Load(FIF_HEIF, filename);
+    Require(reference && dib, "invalid thumbnail must not discard main image");
+    Require(FreeImage_GetWidth(dib) == 32 && FreeImage_GetHeight(dib) == 24, "bad-thumbnail main dimensions");
+    Require(FreeImage_GetBPP(dib) == 24 && FreeImage_HasPixels(dib), "bad-thumbnail main pixels");
+    for(unsigned y = 0; y < 24; ++y)
+        Require(!std::memcmp(FreeImage_GetScanLine(reference, y), FreeImage_GetScanLine(dib, y),
+            FreeImage_GetLine(reference)), "thumbnail failure preserves main pixels");
+    if(must_reject_thumbnail) Require(FreeImage_GetThumbnail(dib) == NULL, "invalid thumbnail omitted");
+    FITAG *tag = NULL;
+    Require(FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, "Orientation", &tag), "thumbnail failure preserves EXIF");
+    FreeImage_Unload(reference);
+    FreeImage_Unload(dib);
+    dib = FreeImage_Load(FIF_HEIF, filename, FIF_LOAD_NOPIXELS);
+    Require(dib && !FreeImage_HasPixels(dib) && FreeImage_GetWidth(dib) == 32, "bad-thumbnail header-only");
+    FreeImage_Unload(dib);
+}
 int main(int argc, char **) {
     encode = argc > 1;
     FreeImage_Initialise();
@@ -113,6 +132,10 @@ int main(int argc, char **) {
     Test("rgba.avif", FIF_AVIF, true);
 #endif
     Test("metadata.heic", FIF_HEIF, false);
+    TestBadThumbnail("bad-thumbnail.heic", true);
+    // Older libheif versions may accept the inconsistent dimensions. Either
+    // way, a thumbnail must not make loading the primary image fail.
+    TestBadThumbnail("thumbnail-size-mismatch.heic", false);
     FreeImage_DeInitialise();
 #if defined(FREEIMAGE_TEST_BUNDLED_HEIF) && !defined(FREEIMAGE_TEST_BUNDLED_AOM)
     std::puts("HEIF RGB, alpha, orientation, header-only and truncated-input tests passed (AVIF backend disabled)");
