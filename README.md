@@ -1,13 +1,13 @@
 What is FreeImage ?
 -----------------------------------------------------------------------------
-FreeImage is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.
+FreeImage is an Open Source library project for developers who would like to support image formats including PNG, BMP, JPEG, TIFF, WebP, JPEG 2000, JPEG XR, OpenEXR, camera RAW, and optional HEIF/HEIC, AVIF and JPEG XL as needed by today's multimedia applications.
 FreeImage is easy to use, fast, multithreading safe, and cross-platform (works with Windows, Linux and Mac OS X).
 
 ### This GitHub fork
 
-Security and bug fixes on top of upstream FreeImage, plus a CMake build that compiles FreeImage and every bundled library from one `CMakeLists.txt`. This repository is the source tree. GitHub releases are tags, not prebuilt DLLs. Build a static library or a DLL with the commands in [Building this fork](#building-this-fork).
+Security and bug fixes on top of upstream FreeImage, plus a CMake build that compiles FreeImage and every bundled library from one `CMakeLists.txt`. This repository is the source tree. [GitHub releases](https://github.com/danoli3/FreeImage/releases) provide source archives and Linux packages; see the [packaging guide](packaging/README.md). Build a static library or a DLL with the commands in [Building this fork](#building-this-fork).
 
-This tree is FreeImage **3.19.26**. `FreeImage_GetVersion()` prints `FREEIMAGE_MAJOR_VERSION`, `FREEIMAGE_MINOR_VERSION`, and `FREEIMAGE_RELEASE_SERIAL` from `Source/FreeImage.h`. CMake takes the version from the latest numeric git tag (`git describe`) and falls back to 3.19.26 when the archive has no `.git` history.
+This tree is FreeImage **3.19.27**. `FreeImage_GetVersion()` prints `FREEIMAGE_MAJOR_VERSION`, `FREEIMAGE_MINOR_VERSION`, and `FREEIMAGE_RELEASE_SERIAL` from `Source/FreeImage.h`. CMake takes the version from the latest numeric git tag (`git describe`) and falls back to 3.19.27 when the archive has no `.git` history.
 
 The ANSI C API is usable from C, C++, VB, C#, Delphi, Java, and from scripting languages such as Perl, Python, PHP, TCL, Lua, and Ruby.
 
@@ -19,22 +19,42 @@ This fork additionally builds the whole stack (FreeImage plus every bundled libr
 
 ## Supported formats & bundled libraries
 
-Formats implemented directly in FreeImage's own plugin code (no external library): BMP, ICO, TARGA/TGA, PCX, DDS, GIF, PSD, PICT, PFM, RAS/Sun Raster, SGI, XBM, XPM, Amiga IFF/LBM, Kodak PCD, PNM/PBM/PGM/PPM, CUT, and WBMP.
+Formats implemented directly in FreeImage's own plugin code (no external library): BMP, ICO, TARGA/TGA, PCX, DDS, GIF, PSD, PICT, PFM, HDR/Radiance RGBE, RAS/Sun Raster, SGI, XBM, XPM, Amiga IFF/LBM, Kodak PCD, PNM/PBM/PGM/PPM, CUT, and WBMP.
 
 Everything else is backed by a bundled copy of the format's reference library. Turn a format off with its `BUILD_*` option, or link a system copy with `USE_SYSTEM_*` (or `FREEIMAGE_USE_SYSTEM_LIBS`, which turns every `USE_SYSTEM_*` default on). See `CMakeLists.txt`.
 
 The bundled libtiff is fully synced to 4.7.2, including its integer-overflow hardening and decompression-ratio checks. OpenEXR is included when `CMAKE_CXX_STANDARD` is unset or 17 or newer, and left out for an older standard.
 
-| Formats | Library | Bundled version | Default |
-|---|---|---|---|
-| PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.58 (zlib 1.3.2) | on |
-| JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 (25 Jan 2026) | on |
-| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.2 | on |
-| JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouvain/openjpeg) | 2.5.4 | on |
-| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) (+ [Imath](https://github.com/AcademySoftwareFoundation/Imath), [libdeflate](https://github.com/ebiggers/libdeflate)) | 3.5.1 (Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0) | on for C++17+ |
-| WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on |
-| Camera RAW | [LibRaw](https://www.libraw.org/) | 0.22.2 | on |
-| JPEG-XR | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | Windows only |
+| Formats | Library | Bundled version | Default | CMake option |
+|---|---|---|---|---|
+| PNG | [libpng](http://www.libpng.org/pub/png/libpng.html) (+ [zlib](https://zlib.net/)) | 1.6.59 (zlib 1.3.2) | on | `BUILD_LIBPNG` |
+| JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 (25 Jan 2026) | on | `BUILD_LIBJPEG` |
+| TIFF | [libtiff](http://www.libtiff.org/) | 4.7.2 | on | `BUILD_LIBTIFF` |
+| JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouvain/openjpeg) | 2.5.4 | on | `BUILD_LIBOPENJPEG` |
+| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) | 3.5.2 | on for C++17+ | `BUILD_OPENEXR` |
+| WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on | `BUILD_WEBP` |
+| Camera RAW (including CR3 and X3F) | [LibRaw](https://www.libraw.org/) | 0.22.2 | on | `BUILD_LIBRAWLITE` |
+| JPEG XR (JXR/WDP/HDP) | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | on for Windows; optional elsewhere | `BUILD_JXR` |
+| HEIF/HEIC/HIF and AVIF | [libheif](https://github.com/strukturag/libheif) | 1.23.6 | off | `BUILD_LIBHEIF` |
+| JPEG XL (JXL) | [libjxl](https://github.com/libjxl/libjxl) | 0.12.0 | off | `BUILD_LIBJXL` |
+
+The optional formats use bundled sources when enabled through CMake. HEIF/AVIF
+and JPEG XL support reading and writing still images; see their sections below
+for pixel types, metadata and encoder limitations.
+
+Supporting libraries are bundled alongside the format libraries:
+
+| Used by | Bundled libraries |
+|---|---|
+| PNG, TIFF and other compressed formats | zlib 1.3.2 |
+| OpenEXR | Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0 |
+| HEIF/HEIC/HIF | libde265 1.1.3 (HEVC decoding), Kvazaar 2.3.2 (HEVC encoding) |
+| AVIF | libaom 3.15.1 (AV1 decoding/encoding; enabled by default with bundled HEIF) |
+| JPEG XL | Highway 1.4.0, Brotli 1.2.0, Little CMS 2.19.1 |
+
+See [third-party versions](THIRD_PARTY_VERSIONS.md) for version sources and
+[optional codec bundles](Source/ThirdParty/README.md) for archive checksums,
+licenses and build requirements.
 
 ## Original Source Code Upstream
 https://sourceforge.net/projects/freeimage
@@ -56,7 +76,12 @@ cmake --build cmake-build # On Linux, add -j$(nproc) for multicore build
 ```
 
 For JP2/JXR format detection and display-conversion troubleshooting, see the
-[codec diagnostic example](Examples/codec-diagnostics/README.md).
+[codec diagnostic example](Examples/codec-diagnostics/README.md). Detect the
+file signature before falling back to its extension: a raw J2K codestream can
+have a `.jp2` filename. JPEG 2000 and JPEG XR can decode to native 16-bit or
+floating-point image types. Check `FreeImage_GetImageType()` before display
+conversion; HDR previews require an explicit tone-mapping policy. The example
+provides a 24-bit RGB preview without changing the native decoded pixels.
 
 ### Platform-specific examples
 
@@ -162,31 +187,38 @@ ctest --test-dir cmake-build-debug -C Debug # Optionally --rerun-failed --output
 
 > This ctest command only works with CMake 3.20 or higher. For earlier versions, you must `cd` into `cmake-build-debug` and call ctest without `--test-dir cmake-build-debug`.
 
-### Optional HEIF and AVIF decoding
+### Optional HEIF/HEIC/HIF and AVIF
 
-For an external SDK, select `-DUSE_SYSTEM_LIBHEIF=ON` and install **libheif 1.12 or newer** and its HEVC/AV1 decoder backends. On Unix, install pkg-config,
-then configure CMake with `-DBUILD_LIBHEIF=ON`. For example, Ubuntu 22.04 uses
-`sudo apt install libheif-dev pkg-config`; macOS uses `brew install libheif pkg-config`.
-This optional system dependency is disabled by default and is not bundled.
-The legacy make build registers the format names but does not enable decoding.
+Enable with `-DBUILD_LIBHEIF=ON` to build bundled libheif 1.23.6, libde265,
+Kvazaar and libaom. The option defaults to OFF. Source archives are included
+and SHA-256 verified; no external codec SDK or network download is needed.
+See [bundled codec build instructions](#build-heifavif-and-jpeg-xl-from-bundled-sources)
+for compiler requirements and how to omit AOM when only HEVC is needed.
 
-Use `FIF_HEIF` for HEIF/HEIC and `FIF_AVIF` for AVIF, or detect the format with
-`FreeImage_GetFileType`. The decoder loads the primary still image as 8-bit RGB
-or RGBA, preserves embedded ICC profiles, and supports `FIF_LOAD_NOPIXELS`.
-High-bit-depth sources are converted to 8-bit output. Writing supports 24-bit RGB and 32-bit RGBA when an encoder backend is installed.
-Raw EXIF is imported/exported; embedded thumbnails are imported.
-Animation and XMP import are not included.
-Actual codec availability depends on the installed libheif backends. Regenerating the test fixtures additionally requires HEVC and AV1 encoders
-(x265 and AOM); ordinary tests only require decoders.
+For an external SDK, also select `-DUSE_SYSTEM_LIBHEIF=ON` and install
+**libheif 1.12 or newer** with its HEVC/AV1 backends. Ubuntu can use
+`sudo apt install libheif-dev pkg-config`; macOS can use
+`brew install libheif pkg-config`. Available decoders and encoders depend on
+the SDK's backends. The legacy make build registers unsupported format stubs.
+
+Use `FIF_HEIF` for HEIF/HEIC/HIF and `FIF_AVIF` for AVIF, or detect the format
+with `FreeImage_GetFileType`. The decoder loads the primary still image as
+8-bit RGB or RGBA, including alpha and ICC profiles, and supports
+`FIF_LOAD_NOPIXELS`. High-bit-depth sources are converted to 8-bit output.
+Raw EXIF is imported/exported and parsed EXIF is available on load; embedded
+thumbnails are imported when decodable. A corrupt thumbnail is skipped with
+a diagnostic, allowing the primary image to load. Animation and XMP import
+are not included.
+
+Saving accepts 24-bit RGB or 32-bit RGBA, quality 1..100 (default 90), and
+`HEIF_LOSSLESS` when the selected encoder supports exact RGB/4:4:4 coding.
+Bundled Kvazaar supports lossy HEIF output; exact RGB lossless HEIF requires
+a suitable system encoder such as x265. Bundled AOM supports lossless AVIF.
+Encoder availability is reflected by `FreeImage_FIFSupportsWriting`.
 
 The decoder is adapted from [FreeImageRe's PluginHEIF.cpp](https://github.com/agruzdev/FreeImageRe/blob/b51d3945bfe785ad382a0969f1376aee344af8c6/Source/Plugins/PluginHEIF.cpp)
-under its FIPL/GPLv2 licensing. System libheif is licensed under LGPL-3.0-or-later;
-its codec backends have their own licenses.
-
-HEIF/AVIF saving accepts quality 1..100 (default 90) and HEIF_LOSSLESS.
-Lossless mode requests RGB/4:4:4 coding to avoid chroma subsampling loss.
-Encoder availability is reflected by FreeImage_FIFSupportsWriting.
-Exif import validates the HEIF TIFF-header offset before parsing.
+under its FIPL/GPLv2 licensing. libheif and libde265 are LGPL-3.0-or-later;
+other backends have their own licenses. See the bundled license notices.
 
 ### Saving files safely
 
@@ -199,7 +231,7 @@ and symlink destinations are rejected; hard links are replaced, not updated in p
 
 ### Optional JPEG XL
 
-Configure with `-DBUILD_LIBJXL=ON` to build bundled JPEG XL sources. For an external SDK, also set `-DUSE_SYSTEM_LIBJXL=ON` and install libjxl >=0.7 (pkg-config on Unix, or the Windows SDK setup below).
+Configure with `-DBUILD_LIBJXL=ON` (default OFF) to build bundled libjxl 0.12.0, Highway, Brotli and Little CMS. For an external SDK, also set `-DUSE_SYSTEM_LIBJXL=ON` and install libjxl >=0.7 (pkg-config on Unix, or the Windows SDK setup below).
 The FIF_JPEGXL plugin reads/writes still images: RGB/RGBA and grayscale,
 8/16-bit integer and 32-bit float, ICC profiles, and header-only loading.
 Animations are rejected. EXIF/XMP and thumbnails are not imported initially.

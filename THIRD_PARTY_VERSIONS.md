@@ -27,10 +27,12 @@ these libraries has a newer stable upstream release.
 OpenEXR, LibDeflate, and LibTIFF4 re-synced against their upstream release
 tags on 2026-10-02 for issue #137. All vendored version entries, including
 OpenEXR's auxiliary codecs below, were rechecked against their source headers
-on 2026-10-22 for FreeImage 3.19.26. No vendored dependency versions
-changed since that review. The existing vendored versions above are unchanged
-from 3.19.23. HEIF/AVIF and JPEG XL originally used optional
-system libraries; the optional bundled snapshots below were added for #177.
+on 2026-10-25 for FreeImage 3.19.27. The source-tree versions above and
+OpenEXR's auxiliary codecs are unchanged from 3.19.26. The optional libheif
+archive below was updated from 1.23.5 to 1.23.6 in #203; all eight bundled
+archive versions and SHA-256 digests were rechecked against `sources.json`.
+The existing vendored versions above are unchanged from 3.19.23. HEIF/AVIF and
+JPEG XL originally used optional system libraries; the optional bundled snapshots below were added for #177.
 The latest-upstream column retains the previous release review; this check
 verifies the bundled versions rather than asserting a fresh upstream-release
 audit.
@@ -56,7 +58,7 @@ retain installed-SDK discovery. These archives and license copies are under
 
 | Library | Bundled | Purpose |
 | --- | --- | --- |
-| libheif | 1.23.5 | HEIF/AVIF container |
+| libheif | 1.23.6 | HEIF/AVIF container |
 | libde265 | 1.1.3 | HEVC decoding |
 | Kvazaar | 2.3.2 | HEVC encoding |
 | libaom | 3.15.1 | AV1 decoding/encoding |

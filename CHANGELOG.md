@@ -2,7 +2,17 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
-## 3.19.26 — Unreleased
+## 3.19.27 — Unreleased
+
+- Preserve the HEIF primary image when an optional embedded thumbnail cannot be decoded; add corrupt-thumbnail regression tests. (#204, #206)
+- Update bundled libheif from 1.23.5 to 1.23.6 and recognize the `.hif` extension. (#199, #203)
+- Install MSVC Debug symbols for both static libraries and DLLs, with CI covering the distinct compiler/linker PDB paths. (#203)
+- Allow bundled HEIF builds without AOM using `FREEIMAGE_BUNDLE_AOM=OFF`, retaining HEVC support while omitting AVIF and AOM's Perl requirement. (#195)
+- Detect logical CPU count for nested codec builds and honor `CMAKE_BUILD_PARALLEL_LEVEL`, with an optional `FREEIMAGE_CODEC_BUILD_JOBS` override. (#202)
+- Fix non-Windows JPEG XR builds by defining `__ANSI__` for bundled JXR sources and adding missing C declarations. Add JP2/JXR file, memory and display-preview diagnostics, synthetic regression tests and supplied-sample CI. Native high-bit-depth/HDR pixel types remain unchanged. (#198, #207)
+- Refresh the supported-format table, bundled library versions and optional-codec build instructions in the README.
+
+## 3.19.26 — 22 Oct 2026
 
 - Fix TIFF JPEG decoding when the JPEG stream's sampling factors differ from the TIFF tags; add regression coverage for the mismatch. (#191, #193)
 - Reject oversized ICO dimensions before allocating or decoding image data. (#193)
