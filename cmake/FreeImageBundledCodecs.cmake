@@ -7,6 +7,14 @@ endif()
 include(ExternalProject)
 include(GNUInstallDirs)
 
+# Empty selects automatic parallelism at build time: honor the standard
+# CMAKE_BUILD_PARALLEL_LEVEL environment variable, then detect host CPUs.
+set(FREEIMAGE_CODEC_BUILD_JOBS "" CACHE STRING "Parallel jobs per bundled codec (empty uses environment or CPU count)")
+if(NOT "${FREEIMAGE_CODEC_BUILD_JOBS}" STREQUAL "" AND
+   NOT FREEIMAGE_CODEC_BUILD_JOBS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "FREEIMAGE_CODEC_BUILD_JOBS must be empty or a positive integer")
+endif()
+
 function(freeimage_bundled_project name archive hash)
     set(options)
     set(oneValueArgs)
@@ -60,10 +68,16 @@ function(freeimage_bundled_project name archive hash)
         ${patch_args}
         CMAKE_ARGS ${common} ${CODEC_ARGS}
         LIST_SEPARATOR |
-        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG> --parallel 2
+        BUILD_COMMAND ${CMAKE_COMMAND}
+            "-DFREEIMAGE_CODEC_BINARY_DIR:PATH=<BINARY_DIR>"
+            "-DFREEIMAGE_CODEC_CONFIG:STRING=$<CONFIG>"
+            "-DFREEIMAGE_CODEC_BUILD_JOBS:STRING=${FREEIMAGE_CODEC_BUILD_JOBS}"
+            -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BuildBundledCodec.cmake"
         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config $<CONFIG>
         DEPENDS ${CODEC_DEPENDS}
         EXCLUDE_FROM_ALL TRUE)
+    ExternalProject_Add_StepDependencies(freeimage_${name} build
+        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BuildBundledCodec.cmake")
 endfunction()
 
 function(freeimage_build_bundled_codec codec)
