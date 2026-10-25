@@ -1,3 +1,13 @@
+// FreeImage.h supplies Windows bitmap types and defines _WINDOWS_ when the
+// SDK has not been included. Include the SDK first for sparse-file controls.
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <winioctl.h>
+#endif
+
 #include "FreeImage.h"
 #include <algorithm>
 #include <cstdio>
@@ -8,11 +18,6 @@
 #include <vector>
 
 #ifdef _WIN32
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <winioctl.h>
 #include <io.h>
 #define fi_fseeko _fseeki64
 #else
