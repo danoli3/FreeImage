@@ -271,6 +271,27 @@ codec SDKs, use their exported CMake targets or provide any missing transitive
 libraries through FreeImage_<codec>_EXTRA_LIBRARIES in SDK mode. Installed
 FreeImage CMake consumers use the same discovery rules.
 
+### Large-file TIFF input
+
+`FreeImage_Load64(FIF_TIFF, filename, flags)` reads a single TIFF image using
+64-bit file offsets, including BigTIFF files with directories or pixel strips
+beyond 2 GiB or 4 GiB. `FIF_LOAD_NOPIXELS`, Exif metadata and embedded
+thumbnails use the same path.
+
+For a custom seekable stream, use `FreeImage_LoadFromHandle64` with a
+`FreeImageIO64` callback table. Read, seek and tell callbacks are required;
+write may be NULL for read-only input. Read/write return complete element
+counts, as `fread`/`fwrite` do, and each transfer must fit in `size_t`. Seek
+offsets and tell positions are signed 64-bit values; seek returns zero on
+success and tell returns a negative value on failure. The caller owns the
+handle and closes it after loading.
+
+These entry points currently support TIFF only and return NULL for other
+formats. The existing `FreeImageIO` and external `Plugin` layouts are
+unchanged. The new path does not extend saving, multipage operations or the
+DWORD-sized memory-stream API. File-position support does not increase the
+address space available for decoded pixel buffers.
+
 ### Unicode multipage filenames (Windows)
 
 Use `FreeImage_OpenMultiBitmapU` with a `wchar_t` UTF-16 path to create, read,

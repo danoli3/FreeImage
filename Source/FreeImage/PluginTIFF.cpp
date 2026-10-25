@@ -40,6 +40,8 @@
 #include "FreeImage.h"
 #include "Utilities.h"
 #include <tiffio.h>
+#include <memory>
+#include <limits.h>
 #include "../Metadata/FreeImageTag.h"
 #include "../OpenEXR/Half/half.h"
 
@@ -178,7 +180,10 @@ static tmsize_t
 _tiffReadProc(thandle_t handle, void *buf, tmsize_t size) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
 	if (size < 0) return 0;
-	if (fio->io64) return (tmsize_t)(fio->io64->read_proc(buf, (uint64_t)size, 1, fio->handle) * (uint64_t)size);
+	if (fio->io64) {
+		const uint64_t bytes = fio->io64->read_proc(buf, 1, (uint64_t)size, fio->handle);
+		return bytes <= (uint64_t)size ? (tmsize_t)bytes : (tmsize_t)-1;
+	}
 	if ((uint64_t)size > UINT_MAX) return 0;
 	return (tmsize_t)(fio->io->read_proc(buf, (unsigned)size, 1, fio->handle) * (uint64_t)size);
 }
@@ -187,7 +192,11 @@ static tmsize_t
 _tiffWriteProc(thandle_t handle, void *buf, tmsize_t size) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
 	if (size < 0) return 0;
-	if (fio->io64) return (tmsize_t)(fio->io64->write_proc(buf, (uint64_t)size, 1, fio->handle) * (uint64_t)size);
+	if (fio->io64) {
+		if (!fio->io64->write_proc) return 0; // Read-only streams need no writer.
+		const uint64_t bytes = fio->io64->write_proc(buf, 1, (uint64_t)size, fio->handle);
+		return bytes <= (uint64_t)size ? (tmsize_t)bytes : (tmsize_t)-1;
+	}
 	if ((uint64_t)size > UINT_MAX) return 0;
 	return (tmsize_t)(fio->io->write_proc(buf, (unsigned)size, 1, fio->handle) * (uint64_t)size);
 }
@@ -196,8 +205,14 @@ static toff_t
 _tiffSeekProc(thandle_t handle, toff_t off, int whence) {
 	fi_TIFFIO *fio = (fi_TIFFIO*)handle;
 	if (fio->io64) {
-		if (fio->io64->seek_proc(fio->handle, (int64_t)off, whence) != 0) return (toff_t)-1;
-		return (toff_t)fio->io64->tell_proc(fio->handle);
+		// libtiff uses unsigned toff_t, including two's-complement negative
+		// relative displacements. Absolute positions above INT64_MAX cannot
+		// be represented by our signed offset contract.
+		if (whence == SEEK_SET && off > INT64_MAX) return (toff_t)-1;
+		const int64_t offset = off <= INT64_MAX ? (int64_t)off : -1 - (int64_t)(~off);
+		if (fio->io64->seek_proc(fio->handle, offset, whence) != 0) return (toff_t)-1;
+		const int64_t position = fio->io64->tell_proc(fio->handle);
+		return position >= 0 ? (toff_t)position : (toff_t)-1;
 	}
 	fio->io->seek_proc(fio->handle, (long)off, whence);
 	return (toff_t)fio->io->tell_proc(fio->handle);
@@ -214,11 +229,11 @@ static toff_t
 _tiffSizeProc(thandle_t handle) {
     fi_TIFFIO *fio = (fi_TIFFIO*)handle;
     if (fio->io64) {
-        int64_t currPos = fio->io64->tell_proc(fio->handle);
-        fio->io64->seek_proc(fio->handle, 0, SEEK_END);
-        int64_t fileSize = fio->io64->tell_proc(fio->handle);
-        fio->io64->seek_proc(fio->handle, currPos, SEEK_SET);
-        return (toff_t)fileSize;
+        const int64_t currPos = fio->io64->tell_proc(fio->handle);
+        if (currPos < 0 || fio->io64->seek_proc(fio->handle, 0, SEEK_END) != 0) return 0;
+        const int64_t fileSize = fio->io64->tell_proc(fio->handle);
+        const int restored = fio->io64->seek_proc(fio->handle, currPos, SEEK_SET);
+        return fileSize >= 0 && restored == 0 ? (toff_t)fileSize : 0;
     }
     long currPos = fio->io->tell_proc(fio->handle);
     fio->io->seek_proc(fio->handle, 0, SEEK_END);
@@ -1156,33 +1171,6 @@ Open(FreeImageIO *io, fi_handle handle, BOOL read) {
 		return NULL;
 	}
 	return fio;
-}
-
-static void * DLL_CALLCONV
-Open64(FreeImageIO64 *io, fi_handle handle, BOOL read) {
-	fi_TIFFIO *fio = (fi_TIFFIO*)malloc(sizeof(fi_TIFFIO));
-	if (!fio) return NULL;
-	fio->io = NULL;
-	fio->io64 = io;
-	fio->handle = handle;
-	fio->thumbnailCount = 0;
-	fio->tif = TIFFFdOpen((thandle_t)fio, "", read ? "r" : "w");
-	if (fio->tif == NULL) { free(fio); return NULL; }
-	return fio;
-}
-
-static void DLL_CALLCONV
-Close64(FreeImageIO64 *io, fi_handle handle, void *data) {
-	if (data) {
-		fi_TIFFIO *fio = (fi_TIFFIO*)data;
-		TIFFClose(fio->tif);
-		free(fio);
-	}
-}
-
-static FIBITMAP * DLL_CALLCONV
-Load64(FreeImageIO64 *io, fi_handle handle, int page, int flags, void *data) {
-	return Load(NULL, handle, page, flags, data);
 }
 
 static void DLL_CALLCONV
@@ -2423,6 +2411,18 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 // --------------------------------------------------------------------------
 
+// Private 64-bit input path; the external Plugin descriptor remains unchanged.
+FIBITMAP * DLL_CALLCONV
+LoadTIFFFromHandle64(FreeImageIO64 *io, fi_handle handle, int flags) {
+	fi_TIFFIO fio = {};
+	fio.io64 = io;
+	fio.handle = handle;
+	fio.tif = TIFFFdOpen((thandle_t)&fio, "", "r");
+	if (!fio.tif) return NULL;
+	std::unique_ptr<TIFF, void (*)(TIFF *)> tiff(fio.tif, TIFFClose);
+	return Load(NULL, handle, -1, flags, &fio);
+}
+
 /**
 Save a single image into a TIF
 
@@ -2822,9 +2822,6 @@ InitTIFF(Plugin *plugin, int format_id) {
 	plugin->pagecount_proc = PageCount;
 	plugin->pagecapability_proc = NULL;
 	plugin->load_proc = Load;
-	plugin->open64_proc = Open64;
-	plugin->close64_proc = Close64;
-	plugin->load64_proc = Load64;
 	plugin->save_proc = Save;
 	plugin->validate_proc = Validate;
 	plugin->mime_proc = MimeType;

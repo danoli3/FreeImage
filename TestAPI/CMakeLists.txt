@@ -46,7 +46,17 @@ if (BUILD_TESTS)
 
     add_executable(LargeFileTIFFTest testLargeFileTIFF.cpp)
     target_link_libraries(LargeFileTIFFTest PRIVATE FreeImage)
+    if(UNIX AND NOT APPLE)
+        # The fixture writer needs the same large-file ABI as the library.
+        target_compile_definitions(LargeFileTIFFTest PRIVATE _FILE_OFFSET_BITS=64)
+    endif()
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET LargeFileTIFFTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:LargeFileTIFFTest> VERBATIM)
+    endif()
     add_test(NAME LargeFileTIFFTest COMMAND LargeFileTIFFTest)
+    set_tests_properties(LargeFileTIFFTest PROPERTIES TIMEOUT 30)
 
     add_executable(IffPbmRleTest testIffPbmRle.cpp)
     target_link_libraries(IffPbmRleTest PRIVATE FreeImage)

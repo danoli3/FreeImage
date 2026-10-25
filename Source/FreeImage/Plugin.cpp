@@ -44,6 +44,7 @@
 #include "../Metadata/FreeImageTag.h"
 #include <string>
 #include <vector>
+#include <memory>
 #ifdef _WIN32
 #include <fcntl.h>
 #else
@@ -413,38 +414,26 @@ FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handl
 
 FIBITMAP * DLL_CALLCONV
 FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags) {
-	if (io == NULL || handle == NULL || fif < 0 || fif >= FreeImage_GetFIFCount()) {
+	if (!s_plugins || s_plugin_reference_count <= 0 || fif != FIF_TIFF || !io || !handle ||
+		!io->read_proc || !io->seek_proc || !io->tell_proc) {
 		return NULL;
 	}
 	PluginNode *node = s_plugins->FindNodeFromFIF(fif);
-	if (node == NULL || node->m_plugin->load64_proc == NULL) {
+	if (!node || !node->m_enabled || !node->m_plugin->load_proc) {
 		return NULL;
 	}
-	void *data = node->m_plugin->open64_proc ? node->m_plugin->open64_proc(io, handle, TRUE) : NULL;
-	if (data == NULL) {
-		return NULL;
-	}
-	FIBITMAP *bitmap = node->m_plugin->load64_proc(io, handle, -1, flags, data);
-	if (node->m_plugin->close64_proc) {
-		node->m_plugin->close64_proc(io, handle, data);
-	}
-	return bitmap;
+	return LoadTIFFFromHandle64(io, handle, flags);
 }
 
 FIBITMAP * DLL_CALLCONV
 FreeImage_Load64(FREE_IMAGE_FORMAT fif, const char *filename, int flags) {
-	if (filename == NULL) {
+	if (!filename) {
 		return NULL;
 	}
 	FreeImageIO64 io;
 	SetDefaultIO64(&io);
-	FILE *handle = fopen(filename, "rb");
-	if (handle == NULL) {
-		return NULL;
-	}
-	FIBITMAP *bitmap = FreeImage_LoadFromHandle64(fif, &io, (fi_handle)handle, flags);
-	fclose(handle);
-	return bitmap;
+	std::unique_ptr<FILE, int (*)(FILE *)> handle(fopen(filename, "rb"), fclose);
+	return handle ? FreeImage_LoadFromHandle64(fif, &io, (fi_handle)handle.get(), flags) : NULL;
 }
 
 FIBITMAP * DLL_CALLCONV

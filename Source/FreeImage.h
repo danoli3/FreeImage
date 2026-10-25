@@ -641,7 +641,12 @@ FI_STRUCT(FreeImageIO) {
     FI_TellProc  tell_proc;     //! pointer to the function used to aquire the current position
 };
 
-// Large-file I/O callbacks. These are additive; FreeImageIO remains ABI stable.
+// Additive large-file input API; FreeImageIO and Plugin keep their original ABI.
+// Transfers return complete elements, as fread/fwrite do. Each transfer must fit
+// in size_t; positions use signed 64-bit offsets. For TIFF input, read_proc,
+// seek_proc and tell_proc are required; write_proc may be NULL. seek_proc
+// returns zero on success; tell_proc returns a negative value on failure.
+// The caller retains ownership of the seekable handle.
 typedef uint64_t (DLL_CALLCONV *FI_ReadProc64) (void *buffer, uint64_t size, uint64_t count, fi_handle handle);
 typedef uint64_t (DLL_CALLCONV *FI_WriteProc64) (void *buffer, uint64_t size, uint64_t count, fi_handle handle);
 typedef int (DLL_CALLCONV *FI_SeekProc64) (fi_handle handle, int64_t offset, int origin);
@@ -688,9 +693,6 @@ typedef BOOL (DLL_CALLCONV *FI_SupportsExportBPPProc)(int bpp);
 typedef BOOL (DLL_CALLCONV *FI_SupportsExportTypeProc)(FREE_IMAGE_TYPE type);
 typedef BOOL (DLL_CALLCONV *FI_SupportsICCProfilesProc)(void);
 typedef BOOL (DLL_CALLCONV *FI_SupportsNoPixelsProc)(void);
-typedef void *(DLL_CALLCONV *FI_OpenProc64)(FreeImageIO64 *io, fi_handle handle, BOOL read);
-typedef void (DLL_CALLCONV *FI_CloseProc64)(FreeImageIO64 *io, fi_handle handle, void *data);
-typedef FIBITMAP *(DLL_CALLCONV *FI_LoadProc64)(FreeImageIO64 *io, fi_handle handle, int page, int flags, void *data);
 
 FI_STRUCT (Plugin) {
 	FI_FormatProc format_proc;
@@ -709,9 +711,6 @@ FI_STRUCT (Plugin) {
 	FI_SupportsExportTypeProc supports_export_type_proc;
 	FI_SupportsICCProfilesProc supports_icc_profiles_proc;
 	FI_SupportsNoPixelsProc supports_no_pixels_proc;
-	FI_OpenProc64 open64_proc;
-	FI_CloseProc64 close64_proc;
-	FI_LoadProc64 load64_proc;
 };
 
 typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
@@ -888,7 +887,7 @@ DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Load(FREE_IMAGE_FORMAT fif, const char 
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Load64(FREE_IMAGE_FORMAT fif, const char *filename, int flags FI_DEFAULT(0));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, int flags FI_DEFAULT(0));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags FI_DEFAULT(0));
-// Uses a format plugin's 64-bit callbacks; currently supported by TIFF only.
+// TIFF-only single-image input. Other formats return NULL; existing APIs are unchanged.
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_Save(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, const char *filename, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveU(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, const wchar_t *filename, int flags FI_DEFAULT(0));
