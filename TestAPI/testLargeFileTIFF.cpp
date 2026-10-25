@@ -271,7 +271,7 @@ static bool checkSparseFile() {
     return passed;
 }
 
-static void DLL_CALLCONV message(FREE_IMAGE_FORMAT, const char *text) {
+static void message(FREE_IMAGE_FORMAT, const char *text) {
     std::fprintf(stderr, "TIFF: %s\n", text);
 }
 
