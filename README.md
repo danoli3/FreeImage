@@ -241,7 +241,7 @@ entry point returns NULL on non-Windows platforms; use native `char` paths there
 
 ```sh
 cmake -S . -B build -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
-cmake --build build --config Release --parallel 4
+cmake --build build --config Release --parallel
 ```
 
 Independent bundled dependencies can build concurrently when the top-level
@@ -249,12 +249,28 @@ build uses `--parallel`. Libheif starts after libde265, Kvazaar and (when
 enabled) libaom have been installed; JPEG XL similarly waits for its own
 prerequisites.
 
-Each nested dependency build defaults to two compiler jobs. Override this
-at configure time with `-DFREEIMAGE_CODEC_BUILD_JOBS=4` (a positive integer).
-This setting applies to bundled HEIF/AVIF and JPEG XL dependencies, including
-multi-configuration generators. It is separate from the top-level
-`cmake --build ... --parallel` setting: several dependencies can run at once,
-so choose both limits to fit the available CPUs and memory.
+Nested dependency builds automatically use the host's available logical CPU
+count, detected with CMake's `ProcessorCount()` (falling back to one job if
+unavailable). Set the standard `CMAKE_BUILD_PARALLEL_LEVEL` environment variable
+to choose a job count for both the top-level build and nested dependencies:
+
+```sh
+CMAKE_BUILD_PARALLEL_LEVEL=8 cmake --build build --config Release
+```
+
+On PowerShell, set `$env:CMAKE_BUILD_PARALLEL_LEVEL = 8` before building.
+For a separate per-dependency limit, configure with
+`-DFREEIMAGE_CODEC_BUILD_JOBS=8`. This cache setting defaults to empty
+(automatic); an explicit positive integer takes precedence over the environment.
+Clear an existing override with `-DFREEIMAGE_CODEC_BUILD_JOBS=` to restore
+automatic detection. The environment is read at build time, so changing it
+needs no reconfigure. These settings also work with multi-configuration generators.
+
+The top-level `--parallel` option without a count uses the native build tool's
+default; it does not universally mean all CPU threads. A numeric `--parallel N`
+on the top-level command does not propagate to nested builds, so use the
+environment variable to configure both. Several dependencies can run at once;
+these are per-build limits, rather than one shared limit across all processes.
 
 Bundled builds require CMake 3.20 or newer. Both format switches remain OFF by default. When enabled, CMake builds the
 checked-in, SHA-256-verified source archives and their required backends;
