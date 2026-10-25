@@ -177,13 +177,18 @@ static FIBITMAP * DLL_CALLCONV Load(FreeImageIO *io, fi_handle handle, int, int 
             }
         }
         if(!(flags & FIF_LOAD_NOPIXELS) && heif_image_handle_get_number_of_thumbnails(image_handle.get()) > 0) {
-            heif_item_id id;
-            if(heif_image_handle_get_list_of_thumbnail_IDs(image_handle.get(), &id, 1) == 1) {
-                heif_image_handle *raw_thumbnail = NULL;
-                Check(heif_image_handle_get_thumbnail(image_handle.get(), id, &raw_thumbnail));
-                std::unique_ptr<heif_image_handle, void (*)(const heif_image_handle *)> thumbnail_handle(raw_thumbnail, heif_image_handle_release);
-                std::unique_ptr<FIBITMAP, void (*)(FIBITMAP *)> thumbnail(DecodeImage(thumbnail_handle.get(), 0, stream.length), FreeImage_Unload);
-                if(thumbnail) FreeImage_SetThumbnail(dib.get(), thumbnail.get());
+            // A broken or unsupported thumbnail must not discard the decoded main image.
+            try {
+                heif_item_id id;
+                if(heif_image_handle_get_list_of_thumbnail_IDs(image_handle.get(), &id, 1) == 1) {
+                    heif_image_handle *raw_thumbnail = NULL;
+                    Check(heif_image_handle_get_thumbnail(image_handle.get(), id, &raw_thumbnail));
+                    std::unique_ptr<heif_image_handle, void (*)(const heif_image_handle *)> thumbnail_handle(raw_thumbnail, heif_image_handle_release);
+                    std::unique_ptr<FIBITMAP, void (*)(FIBITMAP *)> thumbnail(DecodeImage(thumbnail_handle.get(), 0, stream.length), FreeImage_Unload);
+                    if(thumbnail) FreeImage_SetThumbnail(dib.get(), thumbnail.get());
+                }
+            } catch(const std::exception &error) {
+                FreeImage_OutputMessageProc(Format, "Ignoring embedded thumbnail: %s", error.what());
             }
         }
         return dib.release();
