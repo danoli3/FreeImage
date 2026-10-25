@@ -88,6 +88,13 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
+MSVC Debug installs include available PDB symbols. Static builds install the
+compiler-generated `FreeImage.pdb` beside the `.lib` in `lib/` (the
+`Development` component). DLL builds install the linker-generated PDB beside
+the DLL in `bin/` (the `Runtime` component). Toolchains or debug formats that
+embed symbols in object files do not produce a separate compiler PDB; its
+absence does not prevent installation. Release installs omit these PDB files.
+
 **Windows (MinGW, e.g. a toolchain already on `PATH`)**
 ```bash
 cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles"

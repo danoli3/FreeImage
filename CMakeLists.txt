@@ -1497,6 +1497,28 @@ install(TARGETS ${PROJECT_NAME}
         COMPONENT Development
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+if(MSVC)
+    if(FREEIMAGE_STATIC)
+        # Static libraries have a compiler PDB (/Fd), not a linker PDB.
+        # Give Debug builds a stable name/location for both VS and Ninja.
+        set(FreeImage_COMPILE_PDB_DIR "${CMAKE_CURRENT_BINARY_DIR}/pdb/Debug")
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            COMPILE_PDB_NAME_DEBUG "${PROJECT_NAME}"
+            COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG "${FreeImage_COMPILE_PDB_DIR}")
+        install(FILES "${FreeImage_COMPILE_PDB_DIR}/${PROJECT_NAME}.pdb"
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            COMPONENT Development
+            CONFIGURATIONS Debug
+            OPTIONAL)
+    else()
+        # TARGET_PDB_FILE is valid only for targets with a linker artifact.
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            COMPONENT Runtime
+            CONFIGURATIONS Debug
+            OPTIONAL)
+    endif()
+endif()
 install(FILES Source/FreeImage.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     COMPONENT Development
