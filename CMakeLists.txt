@@ -526,6 +526,11 @@ if(BUILD_JXR)
     include_directories(Source/LibJXR/common/include)
     include_directories(Source/LibJXR/jxrgluelib)
     add_definitions(-DINCLUDE_LIB_JXR)
+    if(NOT WIN32)
+        # Match the portable JXR build used by the classic Makefiles.
+        set_property(SOURCE ${FreeImage_JXR_SRCS} Source/FreeImage/PluginJXR.cpp
+            APPEND PROPERTY COMPILE_DEFINITIONS __ANSI__)
+    endif()
     endif()
 endif()
 
