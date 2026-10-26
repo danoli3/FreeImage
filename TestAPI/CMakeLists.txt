@@ -148,7 +148,7 @@ if(BUILD_TESTS AND BUILD_LIBJXL)
         add_custom_command(TARGET JpegXLTest POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:JpegXLTest>)
     endif()
-    add_test(NAME JpegXLTest COMMAND JpegXLTest)
+    add_test(NAME JpegXLTest COMMAND JpegXLTest "${CMAKE_CURRENT_SOURCE_DIR}/jxl")
     set_tests_properties(JpegXLTest PROPERTIES TIMEOUT 60)
 endif()
 

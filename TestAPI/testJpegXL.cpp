@@ -22,8 +22,44 @@ static void Test(FREE_IMAGE_TYPE type,int bpp) {
     FIMEMORY *truncated=FreeImage_OpenMemory(bytes,size/2); Check(FreeImage_LoadFromMemory(FIF_JPEGXL,truncated)==NULL); FreeImage_CloseMemory(truncated);
     FreeImage_CloseMemory(memory); FreeImage_Unload(src);
 }
-int main() {
+// Lossy files from cjxl run VarDCT and the upsampling stages' SIMD row code,
+// which a lossless roundtrip never reaches. Issue #211 crashed in that
+// stage's AVX2 constructor on MinGW GCC (every decode builds an 8x upsampler).
+static void TestFixture(const char *dir,const char *name,FIBITMAP *reference,double max_error) {
+    char path[1024]; std::snprintf(path,sizeof(path),"%s/%s",dir,name);
+    Check(FreeImage_GetFileType(path,0)==FIF_JPEGXL);
+    FIBITMAP *decoded=FreeImage_Load(FIF_JPEGXL,path,0);
+    if(!decoded) { std::fprintf(stderr,"%s: load failed\n",name); std::exit(1); }
+    Check(FreeImage_GetWidth(decoded)==FreeImage_GetWidth(reference) && FreeImage_GetHeight(decoded)==FreeImage_GetHeight(reference) && FreeImage_GetBPP(decoded)==32);
+    // Lossy encoders may change the color under fully transparent pixels, so
+    // weight color error by the reference alpha.
+    double error=0;
+    for(unsigned y=0;y<FreeImage_GetHeight(reference);++y) {
+        const BYTE *a=FreeImage_GetScanLine(decoded,y), *b=FreeImage_GetScanLine(reference,y);
+        for(unsigned x=0;x<FreeImage_GetWidth(reference);++x,a+=4,b+=4) {
+            const double weight=b[FI_RGBA_ALPHA]/255.0;
+            error+=std::fabs(double(a[FI_RGBA_ALPHA])-double(b[FI_RGBA_ALPHA]));
+            for(int c=0;c<3;++c) error+=weight*std::fabs(double(a[c])-double(b[c]));
+        }
+    }
+    error/=double(FreeImage_GetWidth(reference))*FreeImage_GetHeight(reference)*4;
+    if(error>max_error) { std::fprintf(stderr,"%s: error %.2f exceeds %.2f\n",name,error,max_error); std::exit(1); }
+    FreeImage_Unload(decoded);
+}
+int main(int argc,char **argv) {
     FreeImage_Initialise(); Check(FreeImage_GetFIFFromFormat("JXL")==FIF_JPEGXL);
     Test(FIT_BITMAP,24); Test(FIT_BITMAP,32); Test(FIT_RGB16,48); Test(FIT_RGBF,96);
-    FreeImage_DeInitialise(); std::puts("JXL exact lossless RGB/RGBA/16-bit/float roundtrips, headers and truncation passed");
+    if(argc>1) {
+        char path[1024]; std::snprintf(path,sizeof(path),"%s/reference.png",argv[1]);
+        FIBITMAP *reference=FreeImage_Load(FIF_PNG,path,0); Check(reference && FreeImage_GetBPP(reference)==32);
+        // Decode each file repeatedly: a misaligned spill only faults when the
+        // stack frame happens to land off a 32-byte boundary.
+        for(int i=0;i<8;++i) {
+            TestFixture(argv[1],"lossy.jxl",reference,3); TestFixture(argv[1],"progressive.jxl",reference,3);
+            TestFixture(argv[1],"upsampled2x.jxl",reference,12); TestFixture(argv[1],"upsampled4x.jxl",reference,18);
+            TestFixture(argv[1],"alpha-upsampled.jxl",reference,9);
+        }
+        FreeImage_Unload(reference);
+    }
+    FreeImage_DeInitialise(); std::puts("JXL exact lossless RGB/RGBA/16-bit/float roundtrips, headers, truncation and lossy/upsampled decodes passed");
 }

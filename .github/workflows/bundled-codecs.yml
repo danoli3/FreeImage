@@ -78,6 +78,48 @@ jobs:
         run: cmake --build build-runtime --config ${{ matrix.config }}
       - name: Run tests
         run: ctest --test-dir build-runtime -C ${{ matrix.config }} --output-on-failure
+  windows-mingw-gcc:
+    # Issue #211: GCC targeting Windows cannot realign the stack for AVX
+    # spills, so libjxl's AVX2 decoder crashed under MinGW GCC while MSVC,
+    # clang and Linux GCC were fine. No job built bundled codecs with MinGW
+    # GCC before this. Debug matters: -O0 spills every vector
+    # temporary, which is where the reported crash came from.
+    name: Windows MinGW GCC bundled codecs (${{ matrix.msystem }}, ${{ matrix.config }}, static=${{ matrix.static }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { msystem: UCRT64, prefix: mingw-w64-ucrt-x86_64, config: Debug, static: "OFF" }
+          - { msystem: UCRT64, prefix: mingw-w64-ucrt-x86_64, config: Release, static: "OFF" }
+          - { msystem: MINGW64, prefix: mingw-w64-x86_64, config: Debug, static: "ON" }
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up MSYS2 (${{ matrix.msystem }})
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            ${{ matrix.prefix }}-toolchain
+            ${{ matrix.prefix }}-cmake
+            ${{ matrix.prefix }}-ninja
+            perl
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_CXX_STANDARD=17
+          -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=${{ matrix.static }}
+          -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
+          -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
+          -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
+      - name: Build
+        run: cmake --build build -j$(nproc)
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
   linux-x86:
     runs-on: ubuntu-24.04
     steps:
