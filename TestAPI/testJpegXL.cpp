@@ -3,6 +3,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#if defined(_WIN32)
+#include <malloc.h>
+#define JXL_TEST_ALLOCA _alloca
+#else
+#include <alloca.h>
+#define JXL_TEST_ALLOCA alloca
+#endif
 static void Check(bool v) { if(!v) { std::fprintf(stderr,"JXL regression failed\n"); std::exit(1); } }
 static void Test(FREE_IMAGE_TYPE type,int bpp) {
     FIBITMAP *src=FreeImage_AllocateT(type,17,9,bpp); Check(src!=NULL);
@@ -46,19 +53,23 @@ static void TestFixture(const char *dir,const char *name,FIBITMAP *reference,dou
     if(error>max_error) { std::fprintf(stderr,"%s: error %.2f exceeds %.2f\n",name,error,max_error); std::exit(1); }
     FreeImage_Unload(decoded);
 }
+// Stack alignment inside the decoder depends only on the caller's depth, so
+// repeating a call from the same frame repeats the same alignment. Offset the
+// stack by 16-byte steps to land every 32- and 64-byte alignment class.
+static void TestFixturesShifted(const char *dir,FIBITMAP *reference,unsigned shift) {
+    volatile char *pad=static_cast<volatile char *>(JXL_TEST_ALLOCA(16*shift+16)); pad[0]=0;
+    TestFixture(dir,"lossy.jxl",reference,3); TestFixture(dir,"progressive.jxl",reference,3);
+    TestFixture(dir,"upsampled2x.jxl",reference,12); TestFixture(dir,"upsampled4x.jxl",reference,18);
+    TestFixture(dir,"alpha-upsampled.jxl",reference,9);
+    pad[0]=1;
+}
 int main(int argc,char **argv) {
     FreeImage_Initialise(); Check(FreeImage_GetFIFFromFormat("JXL")==FIF_JPEGXL);
     Test(FIT_BITMAP,24); Test(FIT_BITMAP,32); Test(FIT_RGB16,48); Test(FIT_RGBF,96);
     if(argc>1) {
         char path[1024]; std::snprintf(path,sizeof(path),"%s/reference.png",argv[1]);
         FIBITMAP *reference=FreeImage_Load(FIF_PNG,path,0); Check(reference && FreeImage_GetBPP(reference)==32);
-        // Decode each file repeatedly: a misaligned spill only faults when the
-        // stack frame happens to land off a 32-byte boundary.
-        for(int i=0;i<8;++i) {
-            TestFixture(argv[1],"lossy.jxl",reference,3); TestFixture(argv[1],"progressive.jxl",reference,3);
-            TestFixture(argv[1],"upsampled2x.jxl",reference,12); TestFixture(argv[1],"upsampled4x.jxl",reference,18);
-            TestFixture(argv[1],"alpha-upsampled.jxl",reference,9);
-        }
+        for(unsigned shift=0;shift<4;++shift) TestFixturesShifted(argv[1],reference,shift);
         FreeImage_Unload(reference);
     }
     FreeImage_DeInitialise(); std::puts("JXL exact lossless RGB/RGBA/16-bit/float roundtrips, headers, truncation and lossy/upsampled decodes passed");
