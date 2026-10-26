@@ -78,6 +78,81 @@ jobs:
         run: cmake --build build-runtime --config ${{ matrix.config }}
       - name: Run tests
         run: ctest --test-dir build-runtime -C ${{ matrix.config }} --output-on-failure
+  windows-mingw-gcc:
+    # Issue #211: GCC targeting Windows cannot realign the stack for AVX
+    # spills, so libjxl's AVX2 decoder crashed under MinGW GCC while MSVC,
+    # clang and Linux GCC were fine. Debug matters: -O0 spills every vector
+    # temporary, which is where the reported crash came from.
+    # This must be an upstream GCC. MSYS2 patches its GCC to default to
+    # unaligned vector moves (0200-add-m-no-align-vector-insn-option-for-i386),
+    # so the windows-msys2-gcc job below cannot reproduce the bug. The
+    # runner's preinstalled C:\mingw64 is unpatched mingw-builds GCC, like
+    # the WinLibs/mingw-builds toolchains users download.
+    name: Windows MinGW GCC bundled codecs (${{ matrix.config }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      MINGW: C:/mingw64/bin
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show the upstream GCC in use
+        run: |
+          & "$env:MINGW/gcc.exe" --version
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$env:MINGW/gcc.exe" -Q --help=target | Select-String "align-vector"
+          "$env:MINGW" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          "CMAKE_BUILD_PARALLEL_LEVEL=$([Environment]::ProcessorCount)" >> $env:GITHUB_ENV
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build -G "MinGW Makefiles"
+          "-DCMAKE_C_COMPILER=$env:MINGW/gcc.exe" "-DCMAKE_CXX_COMPILER=$env:MINGW/g++.exe"
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_CXX_STANDARD=17
+          -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=OFF
+          -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
+          -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
+          -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --timeout 300
+  windows-msys2-gcc:
+    # Build coverage for MSYS2's own GCC with the bundled codecs. See the job
+    # above for why this one cannot catch #211.
+    name: Windows MSYS2 GCC bundled codecs (MINGW64, Debug, static)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up MSYS2 (MINGW64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            perl
+      - name: Configure bundled codecs
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=17
+          -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=ON
+          -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
+          -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
+          -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
+      - name: Build
+        run: cmake --build build -j$(nproc)
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --timeout 300
   linux-x86:
     runs-on: ubuntu-24.04
     steps:
