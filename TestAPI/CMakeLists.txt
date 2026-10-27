@@ -89,6 +89,7 @@ if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR
     add_test(NAME VendorCodecTest COMMAND VendorCodecTest)
 endif()
 
+
 if(BUILD_TESTS AND BUILD_LIBHEIF)
     add_executable(HeifCodecTest testHeif.cpp)
     target_link_libraries(HeifCodecTest PRIVATE FreeImage)
@@ -203,4 +204,18 @@ if(BUILD_TESTS)
                     $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:${target}> VERBATIM)
         endforeach()
     endif()
+endif()
+
+# Each executable needs its own DLL directory. Parallel vcpkg app-local steps
+# scan/copy dependencies while the commands above deploy FreeImage.dll; sharing
+# a directory lets one target overwrite the DLL another target is reading.
+if(WIN32 AND BUILD_TESTS)
+    get_property(test_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(test_target IN LISTS test_targets)
+        get_target_property(test_type ${test_target} TYPE)
+        if(test_type STREQUAL "EXECUTABLE")
+            set_target_properties(${test_target} PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${test_target}")
+        endif()
+    endforeach()
 endif()

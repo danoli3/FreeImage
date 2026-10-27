@@ -344,7 +344,7 @@ jobs:
           if (Test-Path "$prefix/lib/FreeImage.pdb") { throw "Release installation included a Debug PDB" }
       - name: Check OpenEXR Windows API imports
         run: |
-          $exe = "build-win32/TestAPI/${{ matrix.config }}/VendorCodecTest.exe"
+          $exe = "build-win32/TestAPI/VendorCodecTest/${{ matrix.config }}/VendorCodecTest.exe"
           $imports = & dumpbin /imports $exe
           if ($LASTEXITCODE -ne 0) { throw "Cannot inspect codec test imports" }
           if ($imports -match '\bCreateFile2\b') { throw "OpenEXR imports Windows 8-only CreateFile2" }
