@@ -5,7 +5,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 ## 3.19.27 — Unreleased
 
 - Preserve the HEIF primary image when an optional embedded thumbnail cannot be decoded; add corrupt-thumbnail regression tests. (#204, #206)
-- Update bundled libheif from 1.23.5 to 1.23.6 and recognize the `.hif` extension. (#199, #203)
+- Update bundled libheif from 1.23.5 to 1.23.7 and recognize the `.hif` extension. (#199, #203) 1.23.7 is an upstream security release (fourteen high-rated fixes, among them AV1/AVC coded-size check bypasses, a parallel grid-tile use-after-free, and CPU-exhaustion limits on derived images, hidden pictures and repeated transformations).
 - Install MSVC Debug symbols for both static libraries and DLLs, with CI covering the distinct compiler/linker PDB paths. (#203)
 - Allow bundled HEIF builds without AOM using `FREEIMAGE_BUNDLE_AOM=OFF`, retaining HEVC support while omitting AVIF and AOM's Perl requirement. (#195)
 - Detect logical CPU count for nested codec builds and honor `CMAKE_BUILD_PARALLEL_LEVEL`, with an optional `FREEIMAGE_CODEC_BUILD_JOBS` override. (#202)

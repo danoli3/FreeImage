@@ -35,7 +35,7 @@ The bundled libtiff is fully synced to 4.7.2, including its integer-overflow har
 | WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on | `BUILD_WEBP` |
 | Camera RAW (including CR3 and X3F) | [LibRaw](https://www.libraw.org/) | 0.22.3 | on | `BUILD_LIBRAWLITE` |
 | JPEG XR (JXR/WDP/HDP) | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | on for Windows; optional elsewhere | `BUILD_JXR` |
-| HEIF/HEIC/HIF and AVIF | [libheif](https://github.com/strukturag/libheif) | 1.23.6 | off | `BUILD_LIBHEIF` |
+| HEIF/HEIC/HIF and AVIF | [libheif](https://github.com/strukturag/libheif) | 1.23.7 | off | `BUILD_LIBHEIF` |
 | JPEG XL (JXL) | [libjxl](https://github.com/libjxl/libjxl) | 0.12.0 | off | `BUILD_LIBJXL` |
 
 The optional formats use bundled sources when enabled through CMake. HEIF/AVIF
@@ -189,7 +189,7 @@ ctest --test-dir cmake-build-debug -C Debug # Optionally --rerun-failed --output
 
 ### Optional HEIF/HEIC/HIF and AVIF
 
-Enable with `-DBUILD_LIBHEIF=ON` to build bundled libheif 1.23.6, libde265,
+Enable with `-DBUILD_LIBHEIF=ON` to build bundled libheif 1.23.7, libde265,
 Kvazaar and libaom. The option defaults to OFF. Source archives are included
 and SHA-256 verified; no external codec SDK or network download is needed.
 See [bundled codec build instructions](#build-heifavif-and-jpeg-xl-from-bundled-sources)

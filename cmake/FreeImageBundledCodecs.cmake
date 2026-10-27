@@ -127,8 +127,8 @@ function(freeimage_build_bundled_codec codec)
             set(aom_names "${pre}aom${ext}")
             set(aom_depends freeimage_aom)
         endif()
-        freeimage_bundled_project(heif libheif-1.23.6.tar.gz
-            4484346dc5995319dbc11e3a1c35d0a2ec46511ce370900869337fd2c7033125
+        freeimage_bundled_project(heif libheif-1.23.7.tar.gz
+            f7483e818503ea6224c8863e4a56ac02c7089021a98472c811c12aa19faf2475
             DEPENDS ${aom_depends} freeimage_de265 freeimage_kvazaar
             ARGS -DCMAKE_CXX_STANDARD=20 -DBUILD_DOCUMENTATION=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_EXAMPLES=OFF
                  -DWITH_GDK_PIXBUF=OFF -DWITH_FUZZERS=OFF -DENABLE_EXPERIMENTAL_FEATURES=OFF
