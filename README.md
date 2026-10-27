@@ -50,7 +50,7 @@ Supporting libraries are bundled alongside the format libraries:
 | OpenEXR | Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0 |
 | HEIF/HEIC/HIF | libde265 1.1.3 (HEVC decoding), Kvazaar 2.3.2 (HEVC encoding) |
 | AVIF | libaom 3.15.1 (AV1 decoding/encoding; enabled by default with bundled HEIF) |
-| JPEG XL | Highway 1.4.0, Brotli 1.2.0, Little CMS 2.19.1 |
+| JPEG XL | Highway 1.4.0, Brotli 1.2.1, Little CMS 2.19.1 |
 
 See [third-party versions](THIRD_PARTY_VERSIONS.md) for version sources and
 [optional codec bundles](Source/ThirdParty/README.md) for archive checksums,

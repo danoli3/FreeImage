@@ -64,7 +64,7 @@ retain installed-SDK discovery. These archives and license copies are under
 | libaom | 3.15.1 | AV1 decoding/encoding |
 | libjxl | 0.12.0 | JPEG XL |
 | Highway | 1.4.0 | JPEG XL SIMD |
-| Brotli | 1.2.0 | JPEG XL compression |
+| Brotli | 1.2.1 | JPEG XL compression |
 | Little CMS | 2.19.1 | JPEG XL color management |
 
 FreeImage's HEIF/AVIF plugin adapts FreeImageRe's FIPL/GPLv2-licensed decoder
