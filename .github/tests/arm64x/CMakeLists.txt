@@ -31,6 +31,16 @@ if(ARM64X_STAGE STREQUAL "Native" OR ARM64X_STAGE STREQUAL "Compatible" OR ARM64
     set(BUILD_OPENEXR ON CACHE BOOL "" FORCE)
     set(BUILD_LIBHEIF OFF CACHE BOOL "" FORCE)
     set(BUILD_LIBJXL OFF CACHE BOOL "" FORCE)
+    if(ARM64X_STAGE STREQUAL "Hybrid")
+        # Windows-MSVC.cmake initializes this flag to /machine:ARM64EC.
+        # MSBuild emits it after the target's /MACHINE:ARM64X option, so the
+        # last switch silently turns the merged link back into plain EC.
+        # Override only shared-library linking in this wrapper directory;
+        # the compiler and the control/consumer builds remain ARM64EC.
+        string(REGEX REPLACE
+            "[-/][mM][aA][cC][hH][iI][nN][eE]:[aA][rR][mM]64[eE][cC]"
+            "/MACHINE:ARM64X" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+    endif()
     add_subdirectory("${FREEIMAGE_SOURCE}" freeimage)
     if(ARM64X_STAGE STREQUAL "Native")
         target_link_options(FreeImage PRIVATE

@@ -58,9 +58,9 @@ Copy-Item (Join-Path $compatible "bin/$Configuration/ARM64XSmoke.exe") (Join-Pat
 
 # Reconfigure and relink the EC objects with the actual native ARM64 inputs.
 Configure $compatible ARM64EC Hybrid @("-DARM64X_NATIVE_RSP=$native/native.rsp")
-# Show which machine the generated project asks the linker for. The VS
-# generator maps -A ARM64EC to <TargetMachine>, which can win over the
-# /MACHINE:ARM64X link option.
+Copy-Item (Join-Path $native 'native.rsp') (Join-Path $OutputRoot 'native-link-inputs.rsp')
+# Log both the mapped TargetMachine and AdditionalOptions. CMake's default
+# /machine:ARM64EC must not override the hybrid link's /MACHINE:ARM64X.
 Write-Host '::group::Hybrid FreeImage.vcxproj link machine settings'
 Select-String -Path (Join-Path $compatible 'freeimage/FreeImage.vcxproj') -Pattern '<TargetMachine>|machine:' |
     ForEach-Object { $line = $_.Line.Trim(); if ($line.Length -gt 300) { $line = $line.Substring(0, 300) + '...' }; "$($_.LineNumber): $line" } |
@@ -76,6 +76,10 @@ $machineSwitches = @(Select-String -Path $hybridLog -Pattern '(?i)/machine:\S+' 
 "Hybrid link /MACHINE switches: $($machineSwitches -join ' ')" | Write-Host
 Select-String -Path $hybridLog -Pattern 'LNK\d{4}' | ForEach-Object { $_.Line.Trim() } | Write-Host
 if ($linkExit) { Get-Content $hybridLog -Tail 40 | Write-Host; throw "Hybrid link failed with exit code $linkExit" }
+$unexpectedMachines = @($machineSwitches | Where-Object { $_ -ine '/MACHINE:ARM64X' })
+if ($unexpectedMachines.Count -or $machineSwitches -notcontains '/MACHINE:ARM64X') {
+    throw "Hybrid link must use only /MACHINE:ARM64X; found: $($machineSwitches -join ' ')"
+}
 Stage $compatible hybrid
 
 Configure $consumer x64 Consumer
@@ -102,7 +106,6 @@ foreach ($kind in @('native', 'compatible', 'hybrid')) {
     & $dumpbin /exports $dll | Set-Content (Join-Path $OutputRoot "$kind-exports.txt")
     if ($LASTEXITCODE) { throw "Cannot inspect $kind exports" }
 }
-Copy-Item (Join-Path $native 'native.rsp') (Join-Path $OutputRoot 'native-link-inputs.rsp')
 Get-ChildItem $OutputRoot -Recurse -File | Where-Object { $_.Extension -in '.dll', '.exe' } | ForEach-Object {
     '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash, [IO.Path]::GetRelativePath($OutputRoot, $_.FullName)
 } | Set-Content (Join-Path $OutputRoot 'SHA256SUMS.txt')
