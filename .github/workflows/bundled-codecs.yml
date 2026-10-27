@@ -131,7 +131,22 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
+      # mirror.msys2.org sometimes stalls while syncing the package databases.
+      # Retry once instead of failing the whole job on a mirror timeout.
       - name: Set up MSYS2 (MINGW64)
+        id: msys2
+        continue-on-error: true
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            perl
+      - name: Set up MSYS2 (MINGW64) (retry)
+        if: steps.msys2.outcome == 'failure'
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
