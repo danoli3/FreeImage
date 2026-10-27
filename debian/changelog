@@ -5,6 +5,7 @@ freeimage-maintained (3.19.27-1) unstable; urgency=medium
   * Fix portable JPEG XR builds and add JP2/JXR diagnostic tests.
   * Improve MSVC PDB installation and bundled codec build configuration.
   * Refresh supported formats and bundled library documentation.
+  * Update bundled LibRaw to 0.22.3.
   * Prepare tagged Linux package builds for FreeImage 3.19.27.
 
  -- FreeImage Packaging Contributors <noreply@github.com>  Sun, 25 Oct 2026 00:00:00 +1100
