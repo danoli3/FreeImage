@@ -10,6 +10,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 - Allow bundled HEIF builds without AOM using `FREEIMAGE_BUNDLE_AOM=OFF`, retaining HEVC support while omitting AVIF and AOM's Perl requirement. (#195)
 - Detect logical CPU count for nested codec builds and honor `CMAKE_BUILD_PARALLEL_LEVEL`, with an optional `FREEIMAGE_CODEC_BUILD_JOBS` override. (#202)
 - Fix non-Windows JPEG XR builds by defining `__ANSI__` for bundled JXR sources and adding missing C declarations. Add JP2/JXR file, memory and display-preview diagnostics, synthetic regression tests and supplied-sample CI. Native high-bit-depth/HDR pixel types remain unchanged. (#198, #207)
+- Update bundled LibRaw from 0.22.2 to 0.22.3: 64-bit offsets and a clamped qParam index in the CRX decoder, 64-bit TIFF strip-size checks, size and offset checks in the X3F loader, a CIFF 32->64-bit conversion fix, a masked Sony YCbCr decode-cache index, a masked shift in the Panasonic 8 decoder, and X-Trans interpolation fixes.
 - Refresh the supported-format table, bundled library versions and optional-codec build instructions in the README.
 
 ## 3.19.26 — 22 Oct 2026

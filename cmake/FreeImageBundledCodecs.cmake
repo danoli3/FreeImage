@@ -153,8 +153,8 @@ function(freeimage_build_bundled_codec codec)
         freeimage_bundled_project(highway highway-1.4.0.tar.gz
             e72241ac9524bb653ae52ced768b508045d4438726a303f10181a38f764a453c
             ARGS -DHWY_ENABLE_TESTS=OFF -DHWY_ENABLE_EXAMPLES=OFF -DHWY_ENABLE_CONTRIB=OFF)
-        freeimage_bundled_project(brotli brotli-1.2.0.tar.gz
-            816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec
+        freeimage_bundled_project(brotli brotli-1.2.1.tar.gz
+            98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f
             ARGS -DBROTLI_DISABLE_TESTS=ON -DBROTLI_BUILD_TOOLS=OFF)
         freeimage_bundled_project(lcms2 lcms2-2.19.1.zip
             06d59795cb87a67f73daaa5b6f86bf77b256710aad5822e3fee7f89546a5f93f

@@ -170,7 +170,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      # mirror.msys2.org sometimes stalls while syncing the package databases.
+      # Retry once instead of failing the whole job on a mirror timeout.
       - name: Set up MSYS2 (${{ matrix.msystem }})
+        id: msys2
+        continue-on-error: true
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            ${{ matrix.prefix }}-toolchain
+            ${{ matrix.prefix }}-cmake
+            ${{ matrix.prefix }}-ninja
+      - name: Set up MSYS2 (${{ matrix.msystem }}) (retry)
+        if: steps.msys2.outcome == 'failure'
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
@@ -202,7 +216,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      # mirror.msys2.org sometimes stalls while syncing the package databases.
+      # Retry once instead of failing the whole job on a mirror timeout.
       - name: Set up 32-bit GCC
+        id: msys2
+        continue-on-error: true
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: true
+          install: >-
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+      - name: Set up 32-bit GCC (retry)
+        if: steps.msys2.outcome == 'failure'
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW32
