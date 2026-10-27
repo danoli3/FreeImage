@@ -1,7 +1,7 @@
 freeimage-maintained (3.19.27-1) unstable; urgency=medium
 
   * Preserve HEIF primary images when optional thumbnails fail to decode.
-  * Update bundled libheif to 1.23.6 and recognize HIF filenames.
+  * Update bundled libheif to 1.23.7 and recognize HIF filenames.
   * Fix portable JPEG XR builds and add JP2/JXR diagnostic tests.
   * Improve MSVC PDB installation and bundled codec build configuration.
   * Refresh supported formats and bundled library documentation.
