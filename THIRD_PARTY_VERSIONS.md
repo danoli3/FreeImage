@@ -24,23 +24,25 @@ these libraries has a newer stable upstream release.
 | LibJXR | `Source/LibJXR` | unversioned jxrlib snapshot | n/a — unmaintained (last active fork: [4creators/jxrlib](https://github.com/4creators/jxrlib)) | no upstream to track | `README` |
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
-OpenEXR, LibDeflate, and LibTIFF4 re-synced against their upstream release
-tags on 2026-10-02 for issue #137. All vendored version entries, including
-OpenEXR's auxiliary codecs below, were rechecked against their source headers
-on 2026-10-25 for FreeImage 3.19.27. The source-tree versions above and
-OpenEXR's auxiliary codecs are unchanged from 3.19.26. The optional libheif
-archive below was updated from 1.23.5 to 1.23.6 in #203 and to 1.23.7 on
-2026-10-27; all eight bundled
-on 2026-10-25 for FreeImage 3.19.27. LibRaw moved from 0.22.2 to 0.22.3 on
-2026-10-27; the other source-tree versions above and OpenEXR's auxiliary
-codecs are unchanged from 3.19.26. The optional libheif
-archive below was updated from 1.23.5 to 1.23.6 in #203; all eight bundled
-archive versions and SHA-256 digests were rechecked against `sources.json`.
-The existing vendored versions above are unchanged from 3.19.23. HEIF/AVIF and
-JPEG XL originally used optional system libraries; the optional bundled snapshots below were added for #177.
-The latest-upstream column retains the previous release review; this check
-verifies the bundled versions rather than asserting a fresh upstream-release
-audit.
+All vendored versions, including OpenEXR's auxiliary codecs below, were
+rechecked against source headers on 2026-10-28 for FreeImage 3.19.28. All eight
+optional codec archives were verified against the SHA-256 digests in
+`Source/ThirdParty/sources.json`; release/version files inside the archives
+were also reviewed. Little CMS 2.19.1 retains `LCMS_VERSION` 2190 in its public
+header; the bundled archive is the upstream 2.19.1 release artifact.
+
+Since 3.19.27, LibRaw moved from 0.22.2 to 0.22.3, libheif from 1.23.6 to
+1.23.7, and Brotli from 1.2.0 to 1.2.1. Other bundled versions are unchanged.
+OpenEXR, LibDeflate and LibTIFF4 were previously re-synced for #137; OpenEXR
+3.5.2 and libpng 1.6.59 followed in #148.
+
+The scheduled checker now covers 20 directly vendored and archive-bundled
+libraries, with separate tables for updates and current versions. OpenEXR's
+Zstandard/OpenJPH snapshots follow OpenEXR's releases; LibJXR remains an
+unversioned snapshot without a maintained upstream release feed. The
+latest-upstream column above retains the previous release review; the
+version/hash audit does not assert that every bundled dependency is the
+latest available upstream release.
 
 OpenEXR 3.5.2 also brings these upstream-vendored auxiliary codecs:
 
@@ -52,9 +54,6 @@ OpenEXR 3.5.2 also brings these upstream-vendored auxiliary codecs:
 These snapshots follow OpenEXR's release rather than being updated independently.
 See [vendor integration notes](scripts/vendor/NOTES.md) for source provenance,
 configuration choices, and local patches to preserve in the next update.
-
-OpenEXR 3.5.2 and libpng 1.6.59 re-synced on 2026-10-08 for issue #148.
-OpenEXR's auxiliary codec snapshots are unchanged from 3.5.1.
 
 Optional modern codecs (enabled with BUILD_LIBHEIF / BUILD_LIBJXL) now build
 pinned source archives by default. USE_SYSTEM_LIBHEIF / USE_SYSTEM_LIBJXL

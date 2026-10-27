@@ -2,15 +2,29 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
-## 3.19.27 — Unreleased
+## 3.19.28 — Unreleased
+
+Security hardening, dependency updates and Windows codec fixes.
+
+- Bound TARGA RLE packets by the image row count, preventing writes past the last row; avoid unaligned 16-/32-bit cache reads and initialize short cache refills. Addresses CVE-2024-28581. (#215)
+- Use overflow-checked pixel counts and size arithmetic in BMP RLE4 decoding, including an explicit bound for 32-bit targets. Addresses CVE-2023-47994. (#216, #221)
+- Prevent byte-count wraparound in memory-stream reads and writes. Read bounds use division so they also work with 32-bit `size_t`; oversized individual write requests are rejected. Hardens the CVE-2023-47992 bug class. (#217)
+- Fix lossy and upsampled JPEG XL decoding crashes with upstream MinGW GCC by avoiding aligned vector stack spills. Add lossy/progressive/upsampled fixtures and Debug/Release coverage. (#211, #212)
+- Update bundled libheif from 1.23.6 to 1.23.7, an upstream security and bug-fix release. (#223)
+- Update bundled Brotli from 1.2.0 to the 1.2.1 security release for optional JPEG XL builds. (#218, #219)
+- Update bundled LibRaw from 0.22.2 to 0.22.3, including CRX, TIFF, X3F, Sony and Panasonic decoding hardening and X-Trans interpolation fixes. (#222)
+- Isolate Windows test/tool runtime directories to prevent parallel FreeImage DLL deployment from racing with vcpkg dependency inspection. (#225)
+- Expand upstream-version checks to all eight optional codec archives and OpenEXR's Zstandard/OpenJPH snapshots: 20 dependencies in total. Show separate update/current tables in the issue and Actions summary, and report incomplete checks as failures. (#213, #220)
+- Retry MSYS2 setup once when package-mirror access times out. (#224)
+
+## 3.19.27 — 25 Oct 2026
 
 - Preserve the HEIF primary image when an optional embedded thumbnail cannot be decoded; add corrupt-thumbnail regression tests. (#204, #206)
-- Update bundled libheif from 1.23.5 to 1.23.7 and recognize the `.hif` extension. (#199, #203) 1.23.7 is an upstream security release (fourteen high-rated fixes, among them AV1/AVC coded-size check bypasses, a parallel grid-tile use-after-free, and CPU-exhaustion limits on derived images, hidden pictures and repeated transformations).
+- Update bundled libheif from 1.23.5 to 1.23.6 and recognize the `.hif` extension. (#199, #203)
 - Install MSVC Debug symbols for both static libraries and DLLs, with CI covering the distinct compiler/linker PDB paths. (#203)
 - Allow bundled HEIF builds without AOM using `FREEIMAGE_BUNDLE_AOM=OFF`, retaining HEVC support while omitting AVIF and AOM's Perl requirement. (#195)
 - Detect logical CPU count for nested codec builds and honor `CMAKE_BUILD_PARALLEL_LEVEL`, with an optional `FREEIMAGE_CODEC_BUILD_JOBS` override. (#202)
 - Fix non-Windows JPEG XR builds by defining `__ANSI__` for bundled JXR sources and adding missing C declarations. Add JP2/JXR file, memory and display-preview diagnostics, synthetic regression tests and supplied-sample CI. Native high-bit-depth/HDR pixel types remain unchanged. (#198, #207)
-- Update bundled LibRaw from 0.22.2 to 0.22.3: 64-bit offsets and a clamped qParam index in the CRX decoder, 64-bit TIFF strip-size checks, size and offset checks in the X3F loader, a CIFF 32->64-bit conversion fix, a masked Sony YCbCr decode-cache index, a masked shift in the Panasonic 8 decoder, and X-Trans interpolation fixes.
 - Refresh the supported-format table, bundled library versions and optional-codec build instructions in the README.
 
 ## 3.19.26 — 22 Oct 2026
