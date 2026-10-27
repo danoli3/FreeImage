@@ -70,8 +70,10 @@ foreach ($kind in @('native', 'compatible', 'hybrid')) {
     $headers = & $dumpbin /headers $dll
     if ($LASTEXITCODE) { throw "dumpbin failed for $kind" }
     $headers | Set-Content (Join-Path $OutputRoot "$kind-headers.txt")
+    $machine = @($headers | Select-String -SimpleMatch ' machine ' | ForEach-Object { $_.Line.Trim() })
+    "${kind}: $($machine -join ' | ')" | Write-Host
     if ($kind -eq 'hybrid' -and (($headers -join "`n") -notmatch 'AA64 machine \(ARM64\).*\(ARM64X\)')) {
-        throw 'The merged DLL does not identify as ARM64 + ARM64X'
+        throw "The merged DLL does not identify as ARM64 + ARM64X (dumpbin: $($machine -join ' | '))"
     }
     & $dumpbin /exports $dll | Set-Content (Join-Path $OutputRoot "$kind-exports.txt")
     if ($LASTEXITCODE) { throw "Cannot inspect $kind exports" }
