@@ -76,5 +76,5 @@ jobs:
       - name: Check supplied archive through file, memory and preview paths
         run: >-
           python scripts/tests/run-codec-samples.py
-          --tool build/TestAPI/Debug/CodecDiagnostics.exe
+          --tool build/TestAPI/CodecDiagnostics/Debug/CodecDiagnostics.exe
           --output sample-results --previews
