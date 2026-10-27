@@ -134,6 +134,17 @@ _MemoryWriteProc(void *buffer, unsigned size, unsigned count, fi_handle handle) 
 	}
 	const long required_bytes = (long)required_total;
 
+	// NB: long is only 32 bits on Windows (LLP64), so current_position +
+	// required_bytes below is signed overflow there once the stream has
+	// been seeked near INT_MAX (e.g. seek to INT_MAX - 7, write 16 bytes):
+	// the wrapped sum skips the growth loop and memcpy writes far past the
+	// buffer. Refuse any write whose end the int stream positions cannot
+	// represent before forming that sum. current_position is never negative
+	// (_MemorySeekProc keeps it in [0, INT_MAX]), so the subtraction is safe.
+	if (required_bytes > (long)(std::numeric_limits<int>::max() - mem_header->current_position)) {
+		return 0;
+	}
+
 	// double the data block size if we need to
 	while( (mem_header->current_position + required_bytes) >= mem_header->data_length ) {
 		long newdatalen = 0;

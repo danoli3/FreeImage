@@ -76,6 +76,17 @@ if (BUILD_TESTS)
     endif()
     add_test(NAME RasWordLoopTest COMMAND RasWordLoopTest)
     set_tests_properties(RasWordLoopTest PROPERTIES TIMEOUT 10)
+
+    add_executable(MemWritePositionTest testMemWritePosition.cpp)
+    target_link_libraries(MemWritePositionTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET MemWritePositionTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:MemWritePositionTest>
+            VERBATIM)
+    endif()
+    add_test(NAME MemWritePositionTest COMMAND MemWritePositionTest)
+    set_tests_properties(MemWritePositionTest PROPERTIES TIMEOUT 10)
 endif ()
 
 # These tests call vendored codec APIs directly to create inputs that exercise
