@@ -4,7 +4,10 @@ function(arm64x_read_native_inputs response objects libraries definition)
     if(NOT EXISTS "${response}")
         message(FATAL_ERROR "Build the ARM64 stage first; missing response file: ${response}")
     endif()
-    file(READ "${response}" contents)
+    # MSVC can emit UTF-16 response files. STRINGS recognizes Unicode BOMs
+    # and decodes the lines; READ leaves NUL bytes in the command string.
+    file(STRINGS "${response}" response_lines)
+    list(JOIN response_lines "\n" contents)
     separate_arguments(arguments WINDOWS_COMMAND "${contents}")
     set(native_objects)
     set(native_libraries)

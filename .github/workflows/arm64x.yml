@@ -35,6 +35,8 @@ jobs:
         config: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
+      - name: Check linker response encodings
+        run: python .github/tests/arm64x/test-read-native-inputs.py
       - name: Build the native, compatible and merged DLLs
         run: >-
           ./.github/tests/arm64x/build.ps1 -Configuration ${{ matrix.config }}
