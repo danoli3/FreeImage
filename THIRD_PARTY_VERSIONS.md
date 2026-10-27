@@ -18,7 +18,7 @@ these libraries has a newer stable upstream release.
 | LibJPEG (IJG) | `Source/LibJPEG` | 10.0 (25-Jan-2026) | 10.0 (25-Jan-2026) | up to date | `jversion.h` |
 | LibOpenJPEG | `Source/LibOpenJPEG` | 2.5.4 | 2.5.4 | up to date | `opj_config_private.h` |
 | LibPNG | `Source/LibPNG` | 1.6.59 | 1.6.59 (2026-09-28) | up to date | `png.h` |
-| LibRawLite | `Source/LibRawLite` | 0.22.2 | 0.22.2 (2026-07-16) | up to date | `libraw/libraw_version.h` |
+| LibRawLite | `Source/LibRawLite` | 0.22.3 | 0.22.3 (2026-10-24) | up to date | `libraw/libraw_version.h` |
 | LibTIFF4 | `Source/LibTIFF4` | 4.7.2 | 4.7.2 (2026-06-27) | up to date; full library sync | `tiffvers.h` |
 | LibWebP | `Source/LibWebP` | 1.6.0 (30-Jun-2025) | 1.6.0 | up to date | `NEWS` |
 | LibJXR | `Source/LibJXR` | unversioned jxrlib snapshot | n/a — unmaintained (last active fork: [4creators/jxrlib](https://github.com/4creators/jxrlib)) | no upstream to track | `README` |
@@ -27,8 +27,9 @@ these libraries has a newer stable upstream release.
 OpenEXR, LibDeflate, and LibTIFF4 re-synced against their upstream release
 tags on 2026-10-02 for issue #137. All vendored version entries, including
 OpenEXR's auxiliary codecs below, were rechecked against their source headers
-on 2026-10-25 for FreeImage 3.19.27. The source-tree versions above and
-OpenEXR's auxiliary codecs are unchanged from 3.19.26. The optional libheif
+on 2026-10-25 for FreeImage 3.19.27. LibRaw moved from 0.22.2 to 0.22.3 on
+2026-10-27; the other source-tree versions above and OpenEXR's auxiliary
+codecs are unchanged from 3.19.26. The optional libheif
 archive below was updated from 1.23.5 to 1.23.6 in #203; all eight bundled
 archive versions and SHA-256 digests were rechecked against `sources.json`.
 The existing vendored versions above are unchanged from 3.19.23. HEIF/AVIF and
