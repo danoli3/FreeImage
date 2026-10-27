@@ -58,7 +58,24 @@ Copy-Item (Join-Path $compatible "bin/$Configuration/ARM64XSmoke.exe") (Join-Pat
 
 # Reconfigure and relink the EC objects with the actual native ARM64 inputs.
 Configure $compatible ARM64EC Hybrid @("-DARM64X_NATIVE_RSP=$native/native.rsp")
-Build $compatible @('FreeImage')
+# Show which machine the generated project asks the linker for. The VS
+# generator maps -A ARM64EC to <TargetMachine>, which can win over the
+# /MACHINE:ARM64X link option.
+Write-Host '::group::Hybrid FreeImage.vcxproj link machine settings'
+Select-String -Path (Join-Path $compatible 'freeimage/FreeImage.vcxproj') -Pattern '<TargetMachine>|machine:' |
+    ForEach-Object { $line = $_.Line.Trim(); if ($line.Length -gt 300) { $line = $line.Substring(0, 300) + '...' }; "$($_.LineNumber): $line" } |
+    Write-Host
+Write-Host '::endgroup::'
+# Relink with normal MSBuild verbosity so the link command line is logged,
+# then print only its /MACHINE switches and any linker diagnostics.
+$hybridLog = Join-Path $OutputRoot 'hybrid-link.log'
+& cmake --build $compatible --config $Configuration --target FreeImage -- /v:n *>&1 | Set-Content $hybridLog
+$linkExit = $LASTEXITCODE
+$machineSwitches = @(Select-String -Path $hybridLog -Pattern '(?i)/machine:\S+' -AllMatches |
+    ForEach-Object { $_.Matches.Value } | Sort-Object -Unique)
+"Hybrid link /MACHINE switches: $($machineSwitches -join ' ')" | Write-Host
+Select-String -Path $hybridLog -Pattern 'LNK\d{4}' | ForEach-Object { $_.Line.Trim() } | Write-Host
+if ($linkExit) { Get-Content $hybridLog -Tail 40 | Write-Host; throw "Hybrid link failed with exit code $linkExit" }
 Stage $compatible hybrid
 
 Configure $consumer x64 Consumer
@@ -72,8 +89,15 @@ foreach ($kind in @('native', 'compatible', 'hybrid')) {
     $headers | Set-Content (Join-Path $OutputRoot "$kind-headers.txt")
     $machine = @($headers | Select-String -SimpleMatch ' machine ' | ForEach-Object { $_.Line.Trim() })
     "${kind}: $($machine -join ' | ')" | Write-Host
-    if ($kind -eq 'hybrid' -and (($headers -join "`n") -notmatch 'AA64 machine \(ARM64\).*\(ARM64X\)')) {
-        throw "The merged DLL does not identify as ARM64 + ARM64X (dumpbin: $($machine -join ' | '))"
+    & $dumpbin /loadconfig $dll | Set-Content (Join-Path $OutputRoot "$kind-loadconfig.txt")
+    if ($LASTEXITCODE) { throw "dumpbin /loadconfig failed for $kind" }
+    # dumpbin also prints "(ARM64X)" for plain ARM64EC images, so check for
+    # the ARM64X dynamic relocations that only a merged image carries.
+    & python (Join-Path $source 'check-arm64x.py') $dll
+    if ($LASTEXITCODE) { throw "check-arm64x.py failed for $kind" }
+    if ($kind -eq 'hybrid') {
+        & python (Join-Path $source 'check-arm64x.py') --require-arm64x $dll | Out-Null
+        if ($LASTEXITCODE) { throw 'The merged DLL has no ARM64X dynamic relocations, so it is not an ARM64X image' }
     }
     & $dumpbin /exports $dll | Set-Content (Join-Path $OutputRoot "$kind-exports.txt")
     if ($LASTEXITCODE) { throw "Cannot inspect $kind exports" }

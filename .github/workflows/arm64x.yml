@@ -51,6 +51,22 @@ jobs:
           retention-days: 7
           compression-level: 1
           if-no-files-found: error
+  checker:
+    # Positive control for check-arm64x.py: Windows on ARM ships its system
+    # DLLs as ARM64X, so the checker must find ARM64X relocations there.
+    name: Validate the ARM64X checker on system DLLs
+    runs-on: windows-11-arm
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require ARM64X relocations in kernel32.dll
+        run: |
+          python .github/tests/arm64x/check-arm64x.py "$env:SystemRoot/System32/user32.dll" "$env:SystemRoot/System32/ntdll.dll"
+          python .github/tests/arm64x/check-arm64x.py --require-arm64x "$env:SystemRoot/System32/kernel32.dll"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
   runtime:
     name: Load the merged DLL on ARM (${{ matrix.config }})
     needs: build
