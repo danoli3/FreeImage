@@ -65,7 +65,7 @@ retain installed-SDK discovery. These archives and license copies are under
 | libheif | 1.23.7 | HEIF/AVIF container |
 | libde265 | 1.1.3 | HEVC decoding |
 | Kvazaar | 2.3.2 | HEVC encoding |
-| libaom | 3.15.1 | AV1 decoding/encoding |
+| libaom | 3.15.2 | AV1 decoding/encoding |
 | libjxl | 0.12.0 | JPEG XL |
 | Highway | 1.4.0 | JPEG XL SIMD |
 | Brotli | 1.2.1 | JPEG XL compression |
