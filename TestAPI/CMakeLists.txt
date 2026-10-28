@@ -89,6 +89,19 @@ if (BUILD_TESTS)
     set_tests_properties(MemWritePositionTest PROPERTIES TIMEOUT 10)
 endif ()
 
+if(BUILD_TESTS AND BUILD_LIBOPENJPEG)
+    add_executable(J2KCallbacksTest testJ2KCallbacks.cpp)
+    target_link_libraries(J2KCallbacksTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET J2KCallbacksTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:J2KCallbacksTest>
+            VERBATIM)
+    endif()
+    add_test(NAME J2KCallbacksTest COMMAND J2KCallbacksTest)
+    set_tests_properties(J2KCallbacksTest PROPERTIES TIMEOUT 30)
+endif()
+
 # These tests call vendored codec APIs directly to create inputs that exercise
 # FreeImage's loaders. Those internal symbols are not part of its Windows DLL API.
 if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR
