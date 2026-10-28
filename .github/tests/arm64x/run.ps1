@@ -9,12 +9,17 @@ foreach ($line in Get-Content (Join-Path $Artifacts 'SHA256SUMS.txt')) {
     $path = Join-Path $Artifacts $relative
     if ((Get-FileHash $path -Algorithm SHA256).Hash -ne $hash) { throw "Artifact checksum mismatch: $relative" }
 }
+$script:probeFailures = @()
 function Run-Probe([string]$Architecture, [string]$Library, [switch]$Reject) {
     $exe = Join-Path $Artifacts "probes/$Architecture.exe"
     $dll = Join-Path $Artifacts "$Library/FreeImage.dll"
     Write-Host "::group::$Architecture -> $Library"
     if ($Reject) { & $exe $dll --expect-load-failure } else { & $exe $dll }
-    if ($LASTEXITCODE) { throw "$Architecture/$Library probe failed: $LASTEXITCODE" }
+    if ($LASTEXITCODE) {
+        $failure = "$Architecture/$Library probe failed: $LASTEXITCODE"
+        $script:probeFailures += $failure
+        Write-Host "::error::$failure"
+    }
     Write-Host '::endgroup::'
 }
 Run-Probe arm64 native
@@ -24,6 +29,7 @@ Run-Probe arm64ec native -Reject
 Run-Probe arm64 hybrid
 Run-Probe arm64ec hybrid
 Run-Probe x64 hybrid
+if ($script:probeFailures.Count) { throw ($script:probeFailures -join '; ') }
 $hash = (Get-FileHash (Join-Path $Artifacts 'hybrid/FreeImage.dll') -Algorithm SHA256).Hash
 @"
 ### ARM64X runtime validation

@@ -12,9 +12,14 @@ and x64 test programs dynamically load the exact same hybrid DLL. The programs
 exercise public exports, allocation, pixels and memory/custom-I/O round trips
 for PNG, TIFF, WebP, JP2, JXR and JPEG. Lossless formats must retain the source
 pixels; all formats must decode identically through the two input APIs.
+The custom reader follows `fread` semantics at EOF: it copies a partial final
+item while returning only the number of complete items. JXR needs those bytes
+when a packet read extends beyond the end of a small encoded image.
 Unmerged native/EC controls must work in matching consumers and fail to load
 in the incompatible consumer. SHA-256 checks ensure downloaded artifacts and
 the shared DLL are unchanged.
+Every consumer/DLL pairing runs even if an earlier probe fails; any failed
+pairing still fails the runtime job.
 
 The wrapper CMake project leaves the production FreeImage build unchanged.
 Default bundled libraries, including OpenEXR, LibRaw and JXR, are compiled.

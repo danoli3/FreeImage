@@ -47,11 +47,13 @@ struct Stream {
 static unsigned DLL_CALLCONV read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
     Stream &stream = *static_cast<Stream *>(handle);
     ++stream.reads;
-    if (size == 0 || stream.position > stream.length) return 0;
-    const size_t elements = std::min<size_t>(count, (stream.length - stream.position) / size);
-    std::memcpy(buffer, stream.data + stream.position, elements * size);
-    stream.position += elements * size;
-    return static_cast<unsigned>(elements);
+    if (size == 0 || count == 0 || stream.position >= stream.length) return 0;
+    // Match fread: copy a final partial item, but return only complete items.
+    // JXR reads large packets and still consumes the bytes from a short read.
+    const size_t bytes = std::min<size_t>(static_cast<size_t>(size) * count, stream.length - stream.position);
+    std::memcpy(buffer, stream.data + stream.position, bytes);
+    stream.position += bytes;
+    return static_cast<unsigned>(bytes / size);
 }
 
 static int DLL_CALLCONV seek(fi_handle handle, long offset, int origin) {
@@ -78,6 +80,7 @@ static bool equal(const RGBQUAD &a, const RGBQUAD &b) {
 }
 
 static void roundtrip(API &api, FIBITMAP *source, FREE_IMAGE_FORMAT fif, const char *name, int flags, bool lossless) {
+    std::printf("%s: testing memory/callback round trip\n", name);
     std::unique_ptr<FIMEMORY, decltype(api.CloseMemory)> memory(api.OpenMemory(NULL, 0), api.CloseMemory);
     require(memory != nullptr, "OpenMemory failed");
     require(api.SaveToMemory(fif, source, memory.get(), flags) != FALSE, "Memory encoding failed");
@@ -88,10 +91,11 @@ static void roundtrip(API &api, FIBITMAP *source, FREE_IMAGE_FORMAT fif, const c
     require(api.GetFileTypeFromMemory(memory.get(), 0) == fif, "Encoded signature has wrong format");
     require(api.SeekMemory(memory.get(), 0, SEEK_SET) != FALSE, "Memory rewind failed");
     std::unique_ptr<FIBITMAP, decltype(api.Unload)> decoded(api.LoadFromMemory(fif, memory.get(), 0), api.Unload);
+    require(decoded != nullptr, "Memory decoding failed");
     Stream stream{bytes, length};
     FreeImageIO io = {read, NULL, seek, tell};
     std::unique_ptr<FIBITMAP, decltype(api.Unload)> callbacks(api.LoadFromHandle(fif, &io, &stream, 0), api.Unload);
-    require(decoded && callbacks && stream.reads > 0, "Memory/callback decoding failed");
+    require(callbacks != nullptr && stream.reads > 0, "Callback decoding failed");
     const unsigned width = api.GetWidth(source), height = api.GetHeight(source);
     require(api.GetWidth(decoded.get()) == width && api.GetHeight(decoded.get()) == height &&
             api.GetWidth(callbacks.get()) == width && api.GetHeight(callbacks.get()) == height, "Decoded dimensions differ");
@@ -134,6 +138,7 @@ static void exercise(HMODULE module) {
 }
 
 int wmain(int argc, wchar_t **argv) {
+    std::setvbuf(stdout, NULL, _IONBF, 0);
     if (argc < 2 || argc > 3) return 2;
 #if defined(_M_ARM64EC)
     const char *architecture = "ARM64EC";
