@@ -219,10 +219,12 @@ def build(output, tag=DEFAULT_TAG):
                     member = tarfile.TarInfo(record["path"])
                     member.size = sum(len(data) for _, data in regions)
                     sparse = [(offset, len(data)) for offset, data in regions] + [(record["logical_size"], 0)]
-                    member.pax_headers = {"GNU.sparse.map": ",".join(str(n) for pair in sparse for n in pair),
-                                          "GNU.sparse.size": str(record["logical_size"]),
+                    # GNU tar allocates the map while decoding numblocks, so
+                    # numblocks must precede map in the ordered PAX headers.
+                    member.pax_headers = {"GNU.sparse.size": str(record["logical_size"]),
                                           "GNU.sparse.numblocks": str(len(sparse)),
-                                          "GNU.sparse.name": record["path"]}
+                                          "GNU.sparse.name": record["path"],
+                                          "GNU.sparse.map": ",".join(str(n) for pair in sparse for n in pair)}
                     archive.addfile(member, io.BytesIO(b"".join(data for _, data in regions)))
         payload = (output / name).read_bytes()
         record["asset"] = dict(name=name, sha256=hashlib.sha256(payload).hexdigest(), size=len(payload))
