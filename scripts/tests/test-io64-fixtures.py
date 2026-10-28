@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixture packaging tests; no FreeImage build or multi-gigabyte allocations."""
+"""Per-case packaging, sparse extraction and cleanup tests; no FreeImage build."""
 
 import hashlib
 import importlib.util
@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -24,51 +25,57 @@ class FixtureTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.assets = self.root / "assets"
         self.records = fixtures.build(self.assets)
-        self.archive = self.assets / fixtures.ARCHIVE
-        self.digest = hashlib.sha256(self.archive.read_bytes()).hexdigest()
 
-    def unpack(self):
-        destination = self.root / "unpacked"
-        records = fixtures.extract(self.archive, destination, self.digest)
-        self.assertEqual(records, self.records)
-        return destination
+    def unpack(self, record, destination=None):
+        destination = destination or self.root / "unpacked"
+        return fixtures.extract(self.assets / record["asset"]["name"], destination, record)
 
-    def test_deterministic_assets(self):
+    def test_deterministic_independent_assets(self):
         second = self.root / "second"
         fixtures.build(second)
         for asset in self.assets.iterdir():
             self.assertEqual(asset.read_bytes(), (second / asset.name).read_bytes())
-        self.assertLess(self.archive.stat().st_size, 128 * 1024)
+        names = [r["asset"]["name"] for r in self.records]
+        self.assertEqual(len(names), len(set(names)))
+        self.assertLess(sum(r["asset"]["size"] for r in self.records), 128 * 1024)
+        self.assertEqual(len(list(self.assets.glob("*.tar.gz"))), len(self.records))
+        for record in self.records:
+            with tarfile.open(self.assets / record["asset"]["name"]) as tar:
+                self.assertEqual(tar.getnames(), [record["path"]])
 
     def test_checksums(self):
         for line in (self.assets / "SHA256SUMS").read_text().splitlines():
             digest, name = line.split(maxsplit=1)
             self.assertEqual(digest, hashlib.sha256((self.assets / name).read_bytes()).hexdigest())
+        manifest = self.assets / "manifest.json"
+        self.assertEqual(fixtures.load_manifest(manifest, hashlib.sha256(manifest.read_bytes()).hexdigest()), self.records)
+        with self.assertRaisesRegex(ValueError, "Manifest SHA-256"):
+            fixtures.load_manifest(manifest, "0" * 64)
 
-    def test_round_trip_all_sparse_payloads_and_multilingual_names(self):
-        destination = self.unpack()
+    def test_round_trip_sparse_payloads_one_at_a_time(self):
         paths = [record["path"] for record in self.records]
         self.assertEqual(len(paths), len(set(paths)))
         self.assertGreaterEqual(len(paths), 80)
         self.assertEqual(sum(path.startswith("paths/") for path in paths), 60)
         self.assertIn("paths/emoji-\U0001f9ea/valid image.tif", paths)
         for record in self.records:
-            path = destination / record["path"]
-            self.assertEqual(path.stat().st_size, record["logical_size"])
-            if os.name != "nt":
-                self.assertLess(path.stat().st_blocks * 512, 1024 * 1024)
-            elif record["logical_size"] > 2**32:
-                import ctypes
-                from ctypes import wintypes
-                attributes = ctypes.windll.kernel32.GetFileAttributesW
-                attributes.argtypes = [wintypes.LPCWSTR]
-                attributes.restype = wintypes.DWORD
-                self.assertTrue(attributes(str(path)) & 0x200, "Windows file must be sparse")
+            with tempfile.TemporaryDirectory(dir=self.root) as case:
+                path = self.unpack(record, Path(case) / "input")
+                self.assertEqual(path.stat().st_size, record["logical_size"])
+                if os.name != "nt":
+                    self.assertLess(path.stat().st_blocks * 512, 1024 * 1024)
+                elif record["logical_size"] > 2**32:
+                    import ctypes
+                    from ctypes import wintypes
+                    attributes = ctypes.windll.kernel32.GetFileAttributesW
+                    attributes.argtypes = [wintypes.LPCWSTR]
+                    attributes.restype = wintypes.DWORD
+                    self.assertTrue(attributes(str(path)) & 0x200, "Windows file must be sparse")
+            self.assertFalse(path.exists())
 
     def test_sparse_holes_are_zero_and_last_byte_survives(self):
-        destination = self.unpack()
         record = next(r for r in self.records if r["path"] == "valid/bigtiff-strip-above-4g.tif")
-        with (destination / record["path"]).open("rb") as file:
+        with self.unpack(record).open("rb") as file:
             file.seek(0x80000000)
             self.assertEqual(file.read(32), bytes(32))
             file.seek(-3, 2)
@@ -78,7 +85,6 @@ class FixtureTests(unittest.TestCase):
         large = [r for r in self.records if r["logical_size"] > 2**32]
         self.assertTrue(any(r["expect"] == "decode" for r in large))
         self.assertTrue(any(r["expect"] == "reject" for r in large))
-        self.assertEqual({r["format"] for r in self.records}, {"TIFF", "PNG", "BMP"})
         for fmt in ("TIFF", "PNG", "BMP"):
             self.assertEqual({r["expect"] for r in self.records if r["format"] == fmt}, {"decode", "reject"})
         self.assertTrue(any("exif_user_comment" in r for r in self.records))
@@ -88,16 +94,22 @@ class FixtureTests(unittest.TestCase):
         self.assertTrue(all(r["expect"] == "reject" for r in known))
 
     def test_corruption_rejected_before_creating_files(self):
-        self.archive.write_bytes(self.archive.read_bytes() + b"corruption")
-        destination = self.root / "unpacked"
+        record = self.records[0]
+        archive = self.assets / record["asset"]["name"]
+        archive.write_bytes(archive.read_bytes() + b"corruption")
         with self.assertRaisesRegex(ValueError, "SHA-256"):
-            fixtures.extract(self.archive, destination, self.digest)
-        self.assertFalse(destination.exists())
+            self.unpack(record)
+        self.assertFalse((self.root / "unpacked").exists())
 
     def test_existing_output_is_never_overwritten(self):
-        destination = self.unpack()
+        self.unpack(self.records[0])
         with self.assertRaises(FileExistsError):
-            fixtures.extract(self.archive, destination, self.digest)
+            self.unpack(self.records[0])
+
+    def test_wrong_payload_rejected(self):
+        record = dict(self.records[0], path="different.tif")
+        with self.assertRaisesRegex(ValueError, "selected fixture"):
+            self.unpack(record)
 
     def test_rejects_software_release_tags(self):
         for tag in ["3.19.29", "v3.19.29", "test-fixtures-io64-v0", "../v1", "v1\n"]:
@@ -110,31 +122,88 @@ class FixtureTests(unittest.TestCase):
                 fixtures.safe_path(self.root, name)
 
     def test_rejects_links_in_archive(self):
-        archive = self.root / "link.tar.gz"
+        record = dict(self.records[0])
+        archive = self.root / record["asset"]["name"]
         with tarfile.open(archive, "w:gz") as tar:
-            member = tarfile.TarInfo("link"); member.type = tarfile.SYMTYPE; member.linkname = "../outside"
+            member = tarfile.TarInfo(record["path"])
+            member.type = tarfile.SYMTYPE
+            member.linkname = "../outside"
             tar.addfile(member)
+        record["asset"] = dict(record["asset"], sha256=hashlib.sha256(archive.read_bytes()).hexdigest())
         with self.assertRaisesRegex(ValueError, "Unsupported archive member"):
-            fixtures.extract(archive, self.root / "unsafe", hashlib.sha256(archive.read_bytes()).hexdigest())
+            fixtures.extract(archive, self.root / "unsafe", record)
 
-    def test_native_tar_compatibility(self):
+    def test_native_tar_compatibility_one_payload_at_a_time(self):
         if os.name == "nt":
             self.skipTest("Windows uses the extractor that explicitly marks files sparse")
         tar = shutil.which("tar")
         if not tar:
             self.skipTest("No system tar")
-        destination = self.root / "native"
-        destination.mkdir()
-        subprocess.run([tar, "-xzf", str(self.archive), "-C", str(destination)], check=True)
-        manifest = json.loads((destination / "manifest.json").read_text(encoding="utf-8"))
-        for record in manifest["fixtures"]:
-            path = destination / record["path"]
-            self.assertEqual(path.stat().st_size, record["logical_size"])
-            self.assertLess(path.stat().st_blocks * 512, 1024 * 1024)
-            with path.open("rb") as file:
-                for extent in record["extents"]:
-                    file.seek(extent["offset"])
-                    self.assertEqual(hashlib.sha256(file.read(extent["length"])).hexdigest(), extent["sha256"])
+        for record in self.records:
+            with tempfile.TemporaryDirectory(dir=self.root) as case:
+                subprocess.run([tar, "-xzf", str(self.assets / record["asset"]["name"]), "-C", case], check=True)
+                path = Path(case) / record["path"]
+                self.assertEqual(path.stat().st_size, record["logical_size"])
+                self.assertLess(path.stat().st_blocks * 512, 1024 * 1024)
+                with path.open("rb") as file:
+                    for extent in record["extents"]:
+                        file.seek(extent["offset"])
+                        self.assertEqual(hashlib.sha256(file.read(extent["length"])).hexdigest(), extent["sha256"])
+
+    def test_runner_cleans_each_case_and_continues_after_failure(self):
+        scratch = self.root / "scratch"
+        scratch.mkdir()
+        log = self.root / "cases.jsonl"
+        command = self.root / "decoder.py"
+        command.write_text(
+            "import json, pathlib, sys\n"
+            "path, root, log = map(pathlib.Path, sys.argv[1:4])\n"
+            "assert path.is_file()\n"
+            "assert len(list(root.iterdir())) == 1\n"
+            "with log.open('a', encoding='utf-8') as out: out.write(json.dumps(str(path)) + '\\n')\n"
+            "sys.exit(1 if sys.argv[4] == 'reject' else 0)\n", encoding="utf-8")
+        selected = [next(r for r in self.records if r["path"] == path) for path in
+                    ["valid/bigtiff-strip-above-4g.tif", "broken/empty.tif", "valid/small.png"]]
+        failed = fixtures.run_cases(selected, [sys.executable, str(command), "{path}", str(scratch), str(log), "{expect}"],
+                                    payload_dir=self.assets, temporary_root=scratch)
+        self.assertEqual(failed, 1)
+        self.assertEqual(list(scratch.iterdir()), [])
+        paths = [Path(json.loads(line)) for line in log.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(len(paths), 3)
+        self.assertTrue(all(not path.exists() for path in paths))
+
+    def test_runner_cleans_after_timeout(self):
+        scratch = self.root / "scratch"
+        scratch.mkdir()
+        failed = fixtures.run_cases(self.records[:1], [sys.executable, "-c", "import time; time.sleep(10)"],
+                                    payload_dir=self.assets, temporary_root=scratch, timeout=0.1)
+        self.assertEqual(failed, 1)
+        self.assertEqual(list(scratch.iterdir()), [])
+
+    def test_runner_downloads_only_the_current_payload(self):
+        from unittest import mock
+        import io
+        selected = self.records[:3]
+        downloads = []
+        previous = []
+        scratch = self.root / "downloads"
+        scratch.mkdir()
+
+        def download(url, timeout):
+            name = url.rsplit("/", 1)[1]
+            self.assertEqual(timeout, 60)
+            self.assertTrue(all(not path.exists() for path in previous))
+            self.assertEqual(len(list(scratch.iterdir())), 1)
+            previous.extend(scratch.iterdir())
+            downloads.append(name)
+            return io.BytesIO((self.assets / name).read_bytes())
+
+        with mock.patch.object(fixtures.urllib.request, "urlopen", side_effect=download):
+            failed = fixtures.run_cases(selected, [sys.executable, "-c", "pass"],
+                                        release_url="https://example.test/tag", temporary_root=scratch)
+        self.assertEqual(failed, 0)
+        self.assertEqual(downloads, [r["asset"]["name"] for r in selected])
+        self.assertEqual(list(scratch.iterdir()), [])
 
 
 if __name__ == "__main__":

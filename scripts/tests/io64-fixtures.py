@@ -10,47 +10,50 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import struct
+import subprocess
+import sys
+import tempfile
 import tarfile
+import urllib.parse
+import urllib.request
 import zlib
 
 DEFAULT_TAG = "test-fixtures-io64-v1"
-ARCHIVE = "freeimage-io64-fixtures.tar.gz"
 RGB = [0x12, 0x34, 0x56]
 MAX_LOGICAL_SIZE = 8 * 1024**3
-README = """# FreeImage large-file I/O test fixtures
+README = r"""# FreeImage large-file I/O test fixtures
 
 These are synthetic test inputs, not a FreeImage software release. All images
 are generated from scratch and may be redistributed under CC0-1.0.
 
-The manifest records the intended result of each fixture: decode a 1x1 RGB
-pixel (18, 52, 86), or reject malformed input. Large-file cases target the
-additive 64-bit input API in PR #197. They do not promise that the legacy
-loading API or every third-party viewer supports these offsets.
+Each fixture has its own sparse .tar.gz release asset. manifest.json records
+its filename, SHA-256, compressed size, logical size, intended decode/reject
+result and expected pixel color. Download only the payload being tested.
+Large TIFF files target the additive 64-bit input API in PR #197; the legacy
+loading API and other viewers may not support those offsets.
 
-The archive uses GNU sparse PAX metadata: files have logical lengths beyond
-2 GiB / 4 GiB but contain only a few bytes of image data. Do not copy them
-with tools that expand holes. GNU tar and macOS bsdtar can extract the archive;
-the repository's Python extractor also marks files sparse on Windows.
+The Python runner downloads/extracts one payload into a temporary directory,
+runs the decoder, and removes that directory before advancing to the next
+case. Failures and timeouts also trigger cleanup. Windows files are explicitly
+marked sparse. Logical lengths above 4 GiB do not consume that much disk.
 
-Verify the archive against SHA256SUMS before extraction. With the generator
-script from the tagged source checkout:
+Example (replace DECODER with the future loader test executable):
 
-    python scripts/tests/io64-fixtures.py extract freeimage-io64-fixtures.tar.gz \
-        --sha256-file SHA256SUMS --output-dir io64-fixtures
+    python scripts/tests/io64-fixtures.py run --manifest manifest.json \
+        --release-url https://github.com/danoli3/FreeImage/releases/download/TAG \
+        -- DECODER '{format}' '{expect}' '{path}'
 
-manifest.json describes each input, including file length, payload extents,
-expected dimensions/color and the boundary or malformed condition exercised.
-Checksums cover the archive and manifest; extent hashes verify sparse payloads
-without reading gigabytes of zeroes. No external images or private data are used.
+Pin the manifest SHA-256 with --manifest-sha256 in CI. To extract a single
+previously downloaded asset, use the extract subcommand with --manifest and
+--output-dir. GNU tar and macOS bsdtar also understand these sparse archives.
+Avoid tools that expand sparse holes when copying the extracted images.
 
-This bundle only provides test data. The separate loader PR wires it into codec
-regression tests. Filenames include spaces, Cyrillic, Greek, Arabic, Hindi,
-Chinese, Japanese, Korean, combining characters and emoji, in nested paths.
-
-Four malformed strip/offset cases currently return a bitmap on the unmodified
-PR #197 head (6c964f35ab21b69fbfae4265e81c3f3df3bf8fd5). Their intended
-result remains reject; known_behavior in the manifest records this baseline.
-The corpus exposes these cases without including loader fixes.
+Paths include spaces, Cyrillic, Greek, Arabic, Hindi, Chinese, Japanese,
+Korean, combining characters and emoji, with valid and broken images in each.
+Four malformed strip/offset cases return a bitmap on PR #197 head
+6c964f35ab21b69fbfae4265e81c3f3df3bf8fd5. Their intended result remains
+reject; known_behavior records the baseline. This corpus exposes those
+failures without including loader fixes. No external/private images are used.
 """
 
 
@@ -189,11 +192,16 @@ def fixtures():
     return cases
 
 
+def asset_name(path):
+    label = re.sub(r"[^a-z0-9]+", "-", path.lower()).strip("-")[:80]
+    return label + "-" + hashlib.sha256(path.encode("utf-8")).hexdigest()[:16] + ".tar.gz"
+
+
 def build(output, tag=DEFAULT_TAG):
     if not re.fullmatch(r"test-fixtures-io64-v[1-9][0-9]*", tag):
         raise ValueError("Use a fixture tag such as test-fixtures-io64-v1, not a software version")
     output = Path(output)
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=False)
     cases = sorted(fixtures(), key=lambda case: case[0]["path"])
     records = []
     for record, regions in cases:
@@ -204,27 +212,28 @@ def build(output, tag=DEFAULT_TAG):
             end = offset + len(data)
         record["extents"] = [dict(offset=o, length=len(b), sha256=hashlib.sha256(b).hexdigest())
                              for o, b in regions]
+        name = asset_name(record["path"])
+        with (output / name).open("wb") as raw:
+            with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0) as compressed:
+                with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
+                    member = tarfile.TarInfo(record["path"])
+                    member.size = sum(len(data) for _, data in regions)
+                    sparse = [(offset, len(data)) for offset, data in regions] + [(record["logical_size"], 0)]
+                    member.pax_headers = {"GNU.sparse.map": ",".join(str(n) for pair in sparse for n in pair),
+                                          "GNU.sparse.size": str(record["logical_size"]),
+                                          "GNU.sparse.numblocks": str(len(sparse)),
+                                          "GNU.sparse.name": record["path"]}
+                    archive.addfile(member, io.BytesIO(b"".join(data for _, data in regions)))
+        payload = (output / name).read_bytes()
+        record["asset"] = dict(name=name, sha256=hashlib.sha256(payload).hexdigest(), size=len(payload))
         records.append(record)
     manifest = (json.dumps(dict(schema=1, tag=tag, license="CC0-1.0", fixtures=records),
                            ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     (output / "manifest.json").write_bytes(manifest)
     (output / "README.md").write_text(README, encoding="utf-8", newline="\n")
-    with (output / ARCHIVE).open("wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0) as compressed:
-        with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
-            for name, data in [("manifest.json", manifest), ("README.md", README.encode("utf-8"))]:
-                member = tarfile.TarInfo(name); member.size = len(data)
-                archive.addfile(member, io.BytesIO(data))
-            for record, regions in cases:
-                member = tarfile.TarInfo(record["path"])
-                member.size = sum(len(data) for _, data in regions)
-                sparse = [(offset, len(data)) for offset, data in regions] + [(record["logical_size"], 0)]
-                member.pax_headers = {"GNU.sparse.map": ",".join(str(n) for pair in sparse for n in pair),
-                                      "GNU.sparse.size": str(record["logical_size"]),
-                                      "GNU.sparse.numblocks": str(len(sparse)),
-                                      "GNU.sparse.name": record["path"]}
-                archive.addfile(member, io.BytesIO(b"".join(data for _, data in regions)))
+    names = sorted(record["asset"]["name"] for record in records) + ["manifest.json", "README.md"]
     sums = "".join(hashlib.sha256((output / name).read_bytes()).hexdigest() + "  " + name + "\n"
-                   for name in [ARCHIVE, "manifest.json", "README.md"])
+                   for name in names)
     (output / "SHA256SUMS").write_text(sums, encoding="ascii", newline="\n")
     return records
 
@@ -253,17 +262,31 @@ def safe_path(root, name):
     return result
 
 
-def extract(archive_path, output, expected_sha256):
+def load_manifest(path, expected_sha256=None):
+    payload = Path(path).read_bytes()
+    if expected_sha256 and hashlib.sha256(payload).hexdigest() != expected_sha256:
+        raise ValueError("Manifest SHA-256 mismatch")
+    manifest = json.loads(payload)
+    if manifest["schema"] != 1:
+        raise ValueError("Unsupported manifest schema")
+    return manifest["fixtures"]
+
+
+def extract(archive_path, output, record):
     archive_path, output = Path(archive_path), Path(output)
-    if hashlib.sha256(archive_path.read_bytes()).hexdigest() != expected_sha256:
-        raise ValueError("Archive SHA-256 mismatch")
+    if hashlib.sha256(archive_path.read_bytes()).hexdigest() != record["asset"]["sha256"]:
+        raise ValueError("Payload SHA-256 mismatch")
     # A fresh directory prevents collisions, symlink traversal and stale fixtures.
     output.mkdir(parents=True, exist_ok=False)
+    members = 0
     with tarfile.open(archive_path, "r:gz") as archive:
         for member in archive:
+            members += 1
             destination = safe_path(output, member.name)
             if not member.isfile() or member.size > MAX_LOGICAL_SIZE:
                 raise ValueError("Unsupported archive member: " + member.name)
+            if members != 1 or member.name != record["path"] or member.size != record["logical_size"]:
+                raise ValueError("Payload does not match the selected fixture")
             regions = member.sparse if member.sparse is not None else [(0, member.size)]
             if sum(length for _, length in regions) > 1024**2:
                 raise ValueError("Fixture payload exceeds 1 MiB")
@@ -280,19 +303,57 @@ def extract(archive_path, output, expected_sha256):
                     data = source.read(length)
                     if len(data) != length:
                         raise ValueError("Truncated sparse extent")
-                    target.seek(offset); target.write(data)
+                    target.seek(offset)
+                    target.write(data)
                 target.truncate(member.size)
-    records = json.loads((output / "manifest.json").read_text(encoding="utf-8"))["fixtures"]
+    if members != 1:
+        raise ValueError("Missing fixture payload")
+    path = safe_path(output, record["path"])
+    with path.open("rb") as file:
+        for extent in record["extents"]:
+            file.seek(extent["offset"])
+            if hashlib.sha256(file.read(extent["length"])).hexdigest() != extent["sha256"]:
+                raise ValueError("Fixture payload mismatch: " + record["path"])
+    return path
+
+
+def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, temporary_root=None):
+    if not command or bool(payload_dir) == bool(release_url):
+        raise ValueError("Provide a decoder command and exactly one payload source")
+    failed = 0
+    # The download and extraction both live inside this per-case scope. Keep
+    # no payload cache: even failed decoders leave no images for the next case.
     for record in records:
-        path = safe_path(output, record["path"])
-        if path.stat().st_size != record["logical_size"]:
-            raise ValueError("Fixture size mismatch: " + record["path"])
-        with path.open("rb") as file:
-            for extent in record["extents"]:
-                file.seek(extent["offset"])
-                if hashlib.sha256(file.read(extent["length"])).hexdigest() != extent["sha256"]:
-                    raise ValueError("Fixture payload mismatch: " + record["path"])
-    return records
+        try:
+            with tempfile.TemporaryDirectory(prefix="io64-case-", dir=temporary_root) as temporary:
+                root = Path(temporary)
+                name = record["asset"]["name"]
+                if Path(name).name != name or not name.endswith(".tar.gz") or ":" in name or "\\" in name:
+                    raise ValueError("Unsafe asset filename")
+                if release_url:
+                    archive = root / name
+                    url = release_url.rstrip("/") + "/" + urllib.parse.quote(name)
+                    with urllib.request.urlopen(url, timeout=60) as response:
+                        payload = response.read(1024**2 + 1)
+                    if len(payload) > 1024**2:
+                        raise ValueError("Downloaded payload exceeds 1 MiB")
+                    archive.write_bytes(payload)
+                else:
+                    archive = Path(payload_dir) / name
+                path = extract(archive, root / "input", record)
+                arguments = []
+                for part in command:
+                    for key, value in {"path": str(path), "format": record["format"],
+                                       "expect": record["expect"]}.items():
+                        part = part.replace("{" + key + "}", value)
+                    arguments.append(part)
+                print("Testing " + record["path"], flush=True)
+                subprocess.run(arguments, check=True, timeout=timeout)
+        except (OSError, ValueError, tarfile.TarError, subprocess.SubprocessError) as error:
+            failed += 1
+            print("FAIL " + record["path"] + ": " + str(error), file=sys.stderr, flush=True)
+    print(f"{len(records) - failed}/{len(records)} fixtures passed; all temporary payloads removed", flush=True)
+    return failed
 
 
 def main():
@@ -304,15 +365,34 @@ def main():
     unpack = commands.add_parser("extract")
     unpack.add_argument("archive", type=Path)
     unpack.add_argument("--output-dir", type=Path, required=True)
-    unpack.add_argument("--sha256-file", type=Path, required=True)
+    run = commands.add_parser("run")
+    source = run.add_mutually_exclusive_group(required=True)
+    source.add_argument("--payload-dir", type=Path)
+    source.add_argument("--release-url")
+    run.add_argument("--timeout", type=float, default=30)
+    run.add_argument("--case", action="append", help="Select a manifest path; repeat for multiple cases")
+    run.add_argument("decoder", nargs=argparse.REMAINDER)
+    for command in (unpack, run):
+        command.add_argument("--manifest", type=Path, required=True)
+        command.add_argument("--manifest-sha256", help="Pin the reviewed manifest checksum in CI")
     args = parser.parse_args()
     if args.command == "build":
         records = build(args.output_dir, args.tag)
-    else:
-        sums = dict(line.split(maxsplit=1)[::-1] for line in args.sha256_file.read_text(encoding="ascii").splitlines())
-        records = extract(args.archive, args.output_dir, sums[args.archive.name])
-    print(f"{len(records)} fixtures; {sum(r['logical_size'] for r in records):,} logical bytes")
+        print(f"{len(records)} independent payloads; {sum(r['logical_size'] for r in records):,} logical bytes")
+        return 0
+    records = load_manifest(args.manifest, args.manifest_sha256)
+    if args.command == "extract":
+        record = next(r for r in records if r["asset"]["name"] == args.archive.name)
+        print(extract(args.archive, args.output_dir, record))
+        return 0
+    if args.case:
+        requested = set(args.case)
+        records = [r for r in records if r["path"] in requested]
+        if {r["path"] for r in records} != requested:
+            raise ValueError("Unknown fixture selected")
+    decoder = args.decoder[1:] if args.decoder[:1] == ["--"] else args.decoder
+    return 1 if run_cases(records, decoder, args.payload_dir, args.release_url, args.timeout) else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
