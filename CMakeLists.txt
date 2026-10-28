@@ -1471,6 +1471,9 @@ elseif(WIN32)
     # objects are built dllimport and the link fails (issue #127).
     target_compile_definitions(${PROJECT_NAME} PRIVATE FREEIMAGE_EXPORTS)
 endif()
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _FILE_OFFSET_BITS=64)
+endif()
 
 
 # Apple-specific settings

@@ -2,7 +2,9 @@
 """Per-case packaging, sparse extraction and cleanup tests; no FreeImage build."""
 
 import hashlib
+import http.client
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -12,6 +14,8 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
+import urllib.error
 
 spec = importlib.util.spec_from_file_location("fixtures", Path(__file__).with_name("io64-fixtures.py"))
 fixtures = importlib.util.module_from_spec(spec)
@@ -204,6 +208,108 @@ class FixtureTests(unittest.TestCase):
         self.assertEqual(failed, 0)
         self.assertEqual(downloads, [r["asset"]["name"] for r in selected])
         self.assertEqual(list(scratch.iterdir()), [])
+
+    def test_known_failures_require_opt_in_and_manifest_entry(self):
+        import contextlib
+        import io
+        known = next(r for r in self.records if "known_behavior" in r)
+        ordinary = next(r for r in self.records if "known_behavior" not in r)
+        command = [sys.executable, "-c", "raise SystemExit(3)"]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+            self.assertEqual(fixtures.run_cases([known], command, payload_dir=self.assets), 1)
+            self.assertEqual(fixtures.run_cases([known], command, payload_dir=self.assets,
+                                                allow_known_failures=True), 0)
+            self.assertEqual(fixtures.run_cases([ordinary], command, payload_dir=self.assets,
+                                                allow_known_failures=True), 1)
+        self.assertIn("XFAIL " + known["path"], output.getvalue())
+        self.assertIn("0 passed; 1 known failures; 0 unexpected failures", output.getvalue())
+
+    def test_download_recovers_from_transient_errors(self):
+        record = self.records[0]
+        payload = (self.assets / record["asset"]["name"]).read_bytes()
+        for error in [urllib.error.HTTPError("https://example.test", code, "temporary", {}, None)
+                      for code in (408, 429, 500, 502, 503, 504)] + [
+                          urllib.error.URLError("connection reset"), TimeoutError("read timed out")]:
+            with self.subTest(error=error), \
+                    mock.patch.object(fixtures.urllib.request, "urlopen",
+                                      side_effect=[error, io.BytesIO(payload)]) as request, \
+                    mock.patch.object(fixtures.time, "sleep") as sleep:
+                self.assertEqual(fixtures.download("https://example.test/fixture"), payload)
+                self.assertEqual(request.call_count, 2)
+                sleep.assert_called_once_with(1)
+
+    def test_download_restarts_after_interrupted_read(self):
+        for error in [ConnectionResetError("interrupted"), http.client.IncompleteRead(b"partial", 10)]:
+            response = mock.MagicMock()
+            response.__enter__.return_value.read.side_effect = error
+            with self.subTest(error=error), \
+                    mock.patch.object(fixtures.urllib.request, "urlopen",
+                                      side_effect=[response, io.BytesIO(b"complete")]), \
+                    mock.patch.object(fixtures.time, "sleep"):
+                self.assertEqual(fixtures.download("https://example.test/fixture"), b"complete")
+            response.__exit__.assert_called_once()
+
+    def test_runner_decodes_after_http_500_and_cleans_up(self):
+        record = self.records[0]
+        payload = (self.assets / record["asset"]["name"]).read_bytes()
+        scratch = self.root / "recovered-download"
+        scratch.mkdir()
+        error = urllib.error.HTTPError("https://example.test", 500, "temporary", {}, None)
+        with mock.patch.object(fixtures.urllib.request, "urlopen",
+                               side_effect=[error, io.BytesIO(payload)]) as request, \
+                mock.patch.object(fixtures.time, "sleep"), \
+                mock.patch.object(fixtures.subprocess, "run") as decoder:
+            self.assertEqual(fixtures.run_cases([record], ["decoder", "{path}"],
+                                                release_url="https://example.test/tag",
+                                                temporary_root=scratch), 0)
+        self.assertEqual(request.call_count, 2)
+        decoder.assert_called_once()
+        self.assertEqual(list(scratch.iterdir()), [])
+
+    def test_download_does_not_retry_oversized_response(self):
+        with mock.patch.object(fixtures.urllib.request, "urlopen",
+                               return_value=io.BytesIO(bytes(1024**2 + 1))) as request, \
+                mock.patch.object(fixtures.time, "sleep") as sleep:
+            with self.assertRaisesRegex(ValueError, "exceeds 1 MiB"):
+                fixtures.download("https://example.test/fixture")
+        request.assert_called_once()
+        sleep.assert_not_called()
+
+    def test_runner_cleans_after_download_retries_exhausted(self):
+        scratch = self.root / "failed-download"
+        scratch.mkdir()
+        error = urllib.error.HTTPError("https://example.test", 500, "temporary", {}, None)
+        with mock.patch.object(fixtures.urllib.request, "urlopen", side_effect=error) as request, \
+                mock.patch.object(fixtures.time, "sleep") as sleep, \
+                mock.patch.object(fixtures.subprocess, "run") as decoder:
+            self.assertEqual(fixtures.run_cases(self.records[:1], ["decoder"],
+                                                release_url="https://example.test/tag",
+                                                temporary_root=scratch), 1)
+        self.assertEqual(request.call_count, 4)
+        self.assertEqual(sleep.call_args_list, [mock.call(1), mock.call(2), mock.call(4)])
+        decoder.assert_not_called()
+        self.assertEqual(list(scratch.iterdir()), [])
+
+    def test_download_does_not_retry_permanent_http_errors(self):
+        for code in (401, 403, 404):
+            error = urllib.error.HTTPError("https://example.test", code, "permanent", {}, None)
+            with self.subTest(code=code), \
+                    mock.patch.object(fixtures.urllib.request, "urlopen", side_effect=error) as request, \
+                    mock.patch.object(fixtures.time, "sleep") as sleep:
+                with self.assertRaises(urllib.error.HTTPError):
+                    fixtures.download("https://example.test/fixture")
+                request.assert_called_once()
+                sleep.assert_not_called()
+
+    def test_runner_does_not_retry_corrupt_downloads(self):
+        with mock.patch.object(fixtures.urllib.request, "urlopen",
+                               return_value=io.BytesIO(b"corrupt archive")) as request, \
+                mock.patch.object(fixtures.subprocess, "run") as decoder:
+            self.assertEqual(fixtures.run_cases(self.records[:1], ["decoder"],
+                                                release_url="https://example.test/tag"), 1)
+        request.assert_called_once()
+        decoder.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -44,6 +44,7 @@
 #include "../Metadata/FreeImageTag.h"
 #include <string>
 #include <vector>
+#include <memory>
 #ifdef _WIN32
 #include <fcntl.h>
 #else
@@ -409,6 +410,30 @@ FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handl
 	}
 
 	return NULL;
+}
+
+FIBITMAP * DLL_CALLCONV
+FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags) {
+	if (!s_plugins || s_plugin_reference_count <= 0 || fif != FIF_TIFF || !io || !handle ||
+		!io->read_proc || !io->seek_proc || !io->tell_proc) {
+		return NULL;
+	}
+	PluginNode *node = s_plugins->FindNodeFromFIF(fif);
+	if (!node || !node->m_enabled || !node->m_plugin->load_proc) {
+		return NULL;
+	}
+	return LoadTIFFFromHandle64(io, handle, flags);
+}
+
+FIBITMAP * DLL_CALLCONV
+FreeImage_Load64(FREE_IMAGE_FORMAT fif, const char *filename, int flags) {
+	if (!filename) {
+		return NULL;
+	}
+	FreeImageIO64 io;
+	SetDefaultIO64(&io);
+	std::unique_ptr<FILE, int (*)(FILE *)> handle(fopen(filename, "rb"), fclose);
+	return handle ? FreeImage_LoadFromHandle64(fif, &io, (fi_handle)handle.get(), flags) : NULL;
 }
 
 FIBITMAP * DLL_CALLCONV

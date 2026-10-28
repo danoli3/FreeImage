@@ -433,8 +433,16 @@ jobs:
     # that only show up when FreeImage is actually linked into a consuming
     # application rather than exercised through FreeImage's own TestAPI.
     name: openFrameworks image format tests (macOS)
-    runs-on: macos-latest
+    # Match oF master while its prebuilt curl requires the macOS 27 SDK's
+    # pipe2 symbol. Revisit when curl's older-SDK compatibility fix lands.
+    runs-on: xcode-27
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
     steps:
+      - name: Show selected Xcode and macOS SDK
+        run: |
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
       - name: Checkout FreeImage
         uses: actions/checkout@v4
         with:
@@ -497,10 +505,10 @@ jobs:
           "-DCMAKE_C_FLAGS=-fsanitize=address -g"
           "-DCMAKE_CXX_FLAGS=-fsanitize=address -g"
           -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address
-      - name: Build codec and PBM RLE regression tests
-        run: cmake --build build-simd --target VendorCodecTest IffPbmRleTest -j2
+      - name: Build codec, PBM RLE and large-file regression tests
+        run: cmake --build build-simd --target VendorCodecTest IffPbmRleTest LargeFileTIFFTest -j2
       - name: Verify runtime dispatch and codec round trips
-        run: ctest --test-dir build-simd -R 'VendorCodecTest|IffPbmRleTest' --output-on-failure --verbose
+        run: ctest --test-dir build-simd -R 'VendorCodecTest|IffPbmRleTest|LargeFileTIFFTest' --output-on-failure --verbose
 
   android-api25:
     name: Android API 25 (${{ matrix.abi }})

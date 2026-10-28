@@ -25,6 +25,10 @@ before starting the next case. Cleanup also runs after failures/timeouts. The
 extractor preserves holes and explicitly marks files sparse on Windows. There
 is no persistent payload cache. Local runs can use `--payload-dir` to reuse
 previously downloaded archives; only the current image is extracted.
+Transient HTTP errors (408, 429, 500, 502, 503, 504) and interrupted connections
+are retried up to four total attempts, with 1, 2 and 4 second delays. Exhausted
+downloads, checksum errors and decoder errors still fail the case; downloaded
+payloads remain limited to 1 MiB and are verified before extraction.
 
 After publication, download the small manifest and run cases sequentially:
 
@@ -44,6 +48,21 @@ Select individual inputs with repeatable `--case valid/bigtiff-strip-above-4g.ti
 options before `--`. A decoder that fails is reported, cleaned up, and testing
 continues; the runner returns nonzero if any case fails. The default per-case
 timeout is 30 seconds, configurable with `--timeout`.
+
+PR #197's `Published large-file image tests` workflow runs this corpus on Linux
+with ASan, macOS C++11, MSVC x64 DLL and MSVC Win32 builds. Its decoder checks
+filename and stream loading, native pixels, high-offset Exif/thumbnails and
+TIFF header-only loading. Windows opens multilingual filenames as UTF-16 and
+passes the file through the handle API; #197 does not add a Unicode filename
+entry point. PNG/BMP use the existing loaders because #197's wide API is TIFF-only.
+
+The optional `{known}` placeholder passes the recorded behavior to a decoder.
+With `--allow-known-failures`, exit code 3 is reported as `XFAIL` only when the
+manifest lists a known behavior for that input. Other errors still fail, and
+successful rejection of a previously accepted malformed file passes normally.
+The summary separates passing cases, known failures and unexpected failures;
+the flag is off by default. This preserves visibility of the four baseline
+acceptance bugs while allowing unrelated regressions to block CI.
 
 For Actions, add `--manifest-sha256 REVIEWED_HASH` to pin the reviewed manifest.
 Each payload is checked against its individual hash before extraction. GNU tar
