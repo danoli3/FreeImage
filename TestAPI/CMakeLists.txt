@@ -61,6 +61,8 @@ if (BUILD_TESTS)
     # The Python release-fixture runner supplies one downloaded input at a time.
     add_executable(IO64FixtureDecoder testIO64FixtureDecoder.cpp)
     target_link_libraries(IO64FixtureDecoder PRIVATE FreeImage)
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/io64-decoder-$<CONFIG>.txt"
+        CONTENT "$<TARGET_FILE:IO64FixtureDecoder>\n")
     if(UNIX AND NOT APPLE)
         target_compile_definitions(IO64FixtureDecoder PRIVATE _FILE_OFFSET_BITS=64)
     endif()

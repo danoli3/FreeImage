@@ -89,7 +89,8 @@ jobs:
           python -c "import os, urllib.request; urllib.request.urlretrieve(os.environ['FIXTURE_URL'] + '/manifest.json', 'io64-manifest.json')"
       - name: Download, test and remove each image separately
         run: |
-          $decoder = if ($IsWindows) { 'build/TestAPI/Debug/IO64FixtureDecoder.exe' } else { 'build/TestAPI/IO64FixtureDecoder' }
+          $decoder = (Get-Content -Raw build/TestAPI/io64-decoder-Debug.txt).Trim()
+          if (!(Test-Path -LiteralPath $decoder -PathType Leaf)) { throw "Decoder not found: $decoder" }
           python scripts/tests/io64-fixtures.py run --manifest io64-manifest.json `
             --manifest-sha256 $env:FIXTURE_MANIFEST_SHA256 --release-url $env:FIXTURE_URL `
             --allow-known-failures -- $decoder '{format}' '{expect}' '{path}' '{known}'
