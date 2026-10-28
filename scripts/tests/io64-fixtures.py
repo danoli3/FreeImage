@@ -4,6 +4,7 @@
 import argparse
 import gzip
 import hashlib
+import http.client
 import io
 import json
 import os
@@ -14,6 +15,8 @@ import subprocess
 import sys
 import tempfile
 import tarfile
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import zlib
@@ -341,6 +344,29 @@ def extract(archive_path, output, record):
     return path
 
 
+def download(url):
+    """Retry transient transport failures, keeping each response size bounded."""
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(url, timeout=60) as response:
+                payload = response.read(1024**2 + 1)
+            if len(payload) > 1024**2:
+                raise ValueError("Downloaded payload exceeds 1 MiB")
+            return payload
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.IncompleteRead) as error:
+            if isinstance(error, urllib.error.HTTPError):
+                retry = error.code in (408, 429, 500, 502, 503, 504)
+                error.close()
+                if not retry:
+                    raise
+            if attempt == 3:
+                raise
+            delay = 2**attempt
+            print(f"Retrying download {url} in {delay}s (attempt {attempt + 2}/4): {error}",
+                  file=sys.stderr, flush=True)
+            time.sleep(delay)
+
+
 def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, temporary_root=None,
               allow_known_failures=False):
     if not command or bool(payload_dir) == bool(release_url):
@@ -359,11 +385,7 @@ def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, 
                 if release_url:
                     archive = root / name
                     url = release_url.rstrip("/") + "/" + urllib.parse.quote(name)
-                    with urllib.request.urlopen(url, timeout=60) as response:
-                        payload = response.read(1024**2 + 1)
-                    if len(payload) > 1024**2:
-                        raise ValueError("Downloaded payload exceeds 1 MiB")
-                    archive.write_bytes(payload)
+                    archive.write_bytes(download(url))
                 else:
                     archive = Path(payload_dir) / name
                 path = extract(archive, root / "input", record)
@@ -383,7 +405,7 @@ def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, 
                         print("XFAIL " + record["path"] + ": documented malformed-input acceptance", flush=True)
                     else:
                         raise
-        except (OSError, ValueError, tarfile.TarError, subprocess.SubprocessError) as error:
+        except (OSError, ValueError, http.client.IncompleteRead, tarfile.TarError, subprocess.SubprocessError) as error:
             failed += 1
             print("FAIL " + record["path"] + ": " + str(error), file=sys.stderr, flush=True)
     print(f"{len(records) - failed - known_failed} passed; {known_failed} known failures; "

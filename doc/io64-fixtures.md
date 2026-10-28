@@ -25,6 +25,10 @@ before starting the next case. Cleanup also runs after failures/timeouts. The
 extractor preserves holes and explicitly marks files sparse on Windows. There
 is no persistent payload cache. Local runs can use `--payload-dir` to reuse
 previously downloaded archives; only the current image is extracted.
+Transient HTTP errors (408, 429, 500, 502, 503, 504) and interrupted connections
+are retried up to four total attempts, with 1, 2 and 4 second delays. Exhausted
+downloads, checksum errors and decoder errors still fail the case; downloaded
+payloads remain limited to 1 MiB and are verified before extraction.
 
 After publication, download the small manifest and run cases sequentially:
 
