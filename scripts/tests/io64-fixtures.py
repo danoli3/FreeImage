@@ -197,6 +197,27 @@ def asset_name(path):
     return label + "-" + hashlib.sha256(path.encode("utf-8")).hexdigest()[:16] + ".tar.gz"
 
 
+def sparse_blocks(regions, size):
+    # GNU tar consumes complete 512-byte records between sparse extents.
+    # Pad/merge the stored extents, leaving the logical file bytes unchanged.
+    blocks = []
+    for offset, data in regions:
+        start = offset // 512 * 512
+        end = min((offset + len(data) + 511) // 512 * 512, size)
+        if blocks and start <= blocks[-1][1]:
+            blocks[-1] = (blocks[-1][0], max(blocks[-1][1], end))
+        else:
+            blocks.append((start, end))
+    stored = []
+    for start, end in blocks:
+        block = bytearray(end - start)
+        for offset, data in regions:
+            if start <= offset < end:
+                block[offset - start:offset - start + len(data)] = data
+        stored.append((start, bytes(block)))
+    return stored
+
+
 def build(output, tag=DEFAULT_TAG):
     if not re.fullmatch(r"test-fixtures-io64-v[1-9][0-9]*", tag):
         raise ValueError("Use a fixture tag such as test-fixtures-io64-v1, not a software version")
@@ -212,20 +233,21 @@ def build(output, tag=DEFAULT_TAG):
             end = offset + len(data)
         record["extents"] = [dict(offset=o, length=len(b), sha256=hashlib.sha256(b).hexdigest())
                              for o, b in regions]
+        stored = sparse_blocks(regions, record["logical_size"])
         name = asset_name(record["path"])
         with (output / name).open("wb") as raw:
             with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0) as compressed:
                 with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
                     member = tarfile.TarInfo(record["path"])
-                    member.size = sum(len(data) for _, data in regions)
-                    sparse = [(offset, len(data)) for offset, data in regions] + [(record["logical_size"], 0)]
+                    member.size = sum(len(data) for _, data in stored)
+                    sparse = [(offset, len(data)) for offset, data in stored] + [(record["logical_size"], 0)]
                     # GNU tar allocates the map while decoding numblocks, so
                     # numblocks must precede map in the ordered PAX headers.
                     member.pax_headers = {"GNU.sparse.size": str(record["logical_size"]),
                                           "GNU.sparse.numblocks": str(len(sparse)),
                                           "GNU.sparse.name": record["path"],
                                           "GNU.sparse.map": ",".join(str(n) for pair in sparse for n in pair)}
-                    archive.addfile(member, io.BytesIO(b"".join(data for _, data in regions)))
+                    archive.addfile(member, io.BytesIO(b"".join(data for _, data in stored)))
         payload = (output / name).read_bytes()
         record["asset"] = dict(name=name, sha256=hashlib.sha256(payload).hexdigest(), size=len(payload))
         records.append(record)
