@@ -341,10 +341,12 @@ def extract(archive_path, output, record):
     return path
 
 
-def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, temporary_root=None):
+def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, temporary_root=None,
+              allow_known_failures=False):
     if not command or bool(payload_dir) == bool(release_url):
         raise ValueError("Provide a decoder command and exactly one payload source")
     failed = 0
+    known_failed = 0
     # The download and extraction both live inside this per-case scope. Keep
     # no payload cache: even failed decoders leave no images for the next case.
     for record in records:
@@ -368,15 +370,24 @@ def run_cases(records, command, payload_dir=None, release_url=None, timeout=30, 
                 arguments = []
                 for part in command:
                     for key, value in {"path": str(path), "format": record["format"],
-                                       "expect": record["expect"]}.items():
+                                       "expect": record["expect"],
+                                       "known": record.get("known_behavior", {}).get("result", "none")}.items():
                         part = part.replace("{" + key + "}", value)
                     arguments.append(part)
                 print("Testing " + record["path"], flush=True)
-                subprocess.run(arguments, check=True, timeout=timeout)
+                try:
+                    subprocess.run(arguments, check=True, timeout=timeout)
+                except subprocess.CalledProcessError as error:
+                    if allow_known_failures and error.returncode == 3 and "known_behavior" in record:
+                        known_failed += 1
+                        print("XFAIL " + record["path"] + ": documented malformed-input acceptance", flush=True)
+                    else:
+                        raise
         except (OSError, ValueError, tarfile.TarError, subprocess.SubprocessError) as error:
             failed += 1
             print("FAIL " + record["path"] + ": " + str(error), file=sys.stderr, flush=True)
-    print(f"{len(records) - failed}/{len(records)} fixtures passed; all temporary payloads removed", flush=True)
+    print(f"{len(records) - failed - known_failed} passed; {known_failed} known failures; "
+          f"{failed} unexpected failures; all temporary payloads removed", flush=True)
     return failed
 
 
@@ -394,6 +405,8 @@ def main():
     source.add_argument("--payload-dir", type=Path)
     source.add_argument("--release-url")
     run.add_argument("--timeout", type=float, default=30)
+    run.add_argument("--allow-known-failures", action="store_true",
+                     help="Report exit code 3 as XFAIL only for manifest-listed known behaviors")
     run.add_argument("--case", action="append", help="Select a manifest path; repeat for multiple cases")
     run.add_argument("decoder", nargs=argparse.REMAINDER)
     for command in (unpack, run):
@@ -415,7 +428,8 @@ def main():
         if {r["path"] for r in records} != requested:
             raise ValueError("Unknown fixture selected")
     decoder = args.decoder[1:] if args.decoder[:1] == ["--"] else args.decoder
-    return 1 if run_cases(records, decoder, args.payload_dir, args.release_url, args.timeout) else 0
+    return 1 if run_cases(records, decoder, args.payload_dir, args.release_url, args.timeout,
+                         allow_known_failures=args.allow_known_failures) else 0
 
 
 if __name__ == "__main__":

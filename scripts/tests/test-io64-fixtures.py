@@ -205,6 +205,22 @@ class FixtureTests(unittest.TestCase):
         self.assertEqual(downloads, [r["asset"]["name"] for r in selected])
         self.assertEqual(list(scratch.iterdir()), [])
 
+    def test_known_failures_require_opt_in_and_manifest_entry(self):
+        import contextlib
+        import io
+        known = next(r for r in self.records if "known_behavior" in r)
+        ordinary = next(r for r in self.records if "known_behavior" not in r)
+        command = [sys.executable, "-c", "raise SystemExit(3)"]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+            self.assertEqual(fixtures.run_cases([known], command, payload_dir=self.assets), 1)
+            self.assertEqual(fixtures.run_cases([known], command, payload_dir=self.assets,
+                                                allow_known_failures=True), 0)
+            self.assertEqual(fixtures.run_cases([ordinary], command, payload_dir=self.assets,
+                                                allow_known_failures=True), 1)
+        self.assertIn("XFAIL " + known["path"], output.getvalue())
+        self.assertIn("0 passed; 1 known failures; 0 unexpected failures", output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
