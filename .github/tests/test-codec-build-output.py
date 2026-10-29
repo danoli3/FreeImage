@@ -41,6 +41,7 @@ with tempfile.TemporaryDirectory(prefix="freeimage codec output ") as temporary:
 project(CodecOutputProbe LANGUAGES CXX)
 include("${CMAKE_CURRENT_SOURCE_DIR}/check-environment.cmake")
 add_executable(CodecOutputProbe main.cpp other.cpp)
+target_compile_options(CodecOutputProbe PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/W3>")
 add_custom_target(check_environment ALL
     COMMAND "${CMAKE_COMMAND}" "-DEXPECTED_VSLANG=${EXPECTED_VSLANG}"
         "-DEXPECTED_DOTNET=${EXPECTED_DOTNET}"
