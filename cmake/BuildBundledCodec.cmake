@@ -20,6 +20,12 @@ if(NOT jobs MATCHES "^[1-9][0-9]*$")
     message(FATAL_ERROR "${source} must be a positive integer")
 endif()
 message(STATUS "Bundled codec build: ${jobs} parallel jobs (${source})")
+if(FREEIMAGE_CODEC_ENGLISH_MESSAGES)
+    # This script runs in its own process, so these overrides only reach
+    # the nested build and its compiler/linker children (#236).
+    set(ENV{VSLANG} 1033)
+    set(ENV{DOTNET_CLI_UI_LANGUAGE} en-US)
+endif()
 execute_process(COMMAND "${CMAKE_COMMAND}" --build "${FREEIMAGE_CODEC_BINARY_DIR}"
     --config "${FREEIMAGE_CODEC_CONFIG}" --parallel "${jobs}"
     RESULT_VARIABLE result)

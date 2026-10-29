@@ -307,6 +307,14 @@ cmake -S . -B build -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
 cmake --build build --config Release --parallel
 ```
 
+Nested MSVC dependency builds use English compiler and MSBuild messages by
+default to avoid garbled localized output when build tools pipe their logs
+([issue #236](https://github.com/danoli3/FreeImage/issues/236)). This applies
+to both dependency configuration and compilation, including Ninja builds.
+The language overrides are confined to those child processes. To retain
+localized dependency messages, configure with
+`-DFREEIMAGE_CODEC_ENGLISH_MESSAGES=OFF`.
+
 Independent bundled dependencies can build concurrently when the top-level
 build uses `--parallel`. Libheif starts after libde265, Kvazaar and (when
 enabled) libaom have been installed; JPEG XL similarly waits for its own

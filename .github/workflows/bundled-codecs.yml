@@ -7,6 +7,21 @@ on:
 permissions:
   contents: read
 jobs:
+  windows-build-output:
+    name: Windows nested build messages (${{ matrix.generator }})
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        generator: ['Visual Studio 17 2022', Ninja]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Check nested builds with Chinese language settings
+        run: python .github/tests/test-codec-build-output.py --generator "${{ matrix.generator }}"
   native:
     strategy:
       fail-fast: false

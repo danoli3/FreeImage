@@ -7,6 +7,8 @@ endif()
 include(ExternalProject)
 include(GNUInstallDirs)
 
+option(FREEIMAGE_CODEC_ENGLISH_MESSAGES "Use English diagnostics for nested MSVC codec builds" ON)
+
 # Empty selects automatic parallelism at build time: honor the standard
 # CMAKE_BUILD_PARALLEL_LEVEL environment variable, then detect host CPUs.
 set(FREEIMAGE_CODEC_BUILD_JOBS "" CACHE STRING "Parallel jobs per bundled codec (empty uses environment or CPU count)")
@@ -60,18 +62,47 @@ function(freeimage_bundled_project name archive hash)
         set(patch_args PATCH_COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=<SOURCE_DIR>
             -P "${PROJECT_SOURCE_DIR}/cmake/patches/libjxl-no-pkg-config.cmake")
     endif()
+    set(configure_args)
+    set(english_messages OFF)
+    if(MSVC AND FREEIMAGE_CODEC_ENGLISH_MESSAGES)
+        set(english_messages ON)
+        # MSBuild 17.14 can emit localized UTF-8 text into a pipe whose
+        # reader expects a legacy code page (#236). Use English only in
+        # these child processes; do not change the developer's console.
+        # Configure with the same language as the build so Ninja detects
+        # the correct /showIncludes prefix during compiler identification.
+        # Use a separate compiler cache when adopting this language setting.
+        # Existing Ninja trees may have cached a localized /showIncludes prefix.
+        set(configure_args
+            BINARY_DIR "${PROJECT_BINARY_DIR}/codec-build/${name}/build-msvc-en"
+            CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
+            VSLANG=1033 DOTNET_CLI_UI_LANGUAGE=en-US
+            ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
+            -G "${CMAKE_GENERATOR}" ${common} ${CODEC_ARGS})
+        if(CMAKE_GENERATOR_PLATFORM)
+            list(APPEND configure_args -A "${CMAKE_GENERATOR_PLATFORM}")
+        endif()
+        if(CMAKE_GENERATOR_TOOLSET)
+            list(APPEND configure_args -T "${CMAKE_GENERATOR_TOOLSET}")
+        endif()
+        if(CMAKE_GENERATOR_INSTANCE)
+            list(APPEND configure_args "-DCMAKE_GENERATOR_INSTANCE:INTERNAL=${CMAKE_GENERATOR_INSTANCE}")
+        endif()
+    endif()
     ExternalProject_Add(freeimage_${name}
         URL "${PROJECT_SOURCE_DIR}/Source/ThirdParty/${archive}"
         URL_HASH "SHA256=${hash}"
         PREFIX "${PROJECT_BINARY_DIR}/codec-build/${name}"
         INSTALL_DIR "${PROJECT_BINARY_DIR}/codec-install"
         ${patch_args}
+        ${configure_args}
         CMAKE_ARGS ${common} ${CODEC_ARGS}
         LIST_SEPARATOR |
         BUILD_COMMAND ${CMAKE_COMMAND}
             "-DFREEIMAGE_CODEC_BINARY_DIR:PATH=<BINARY_DIR>"
             "-DFREEIMAGE_CODEC_CONFIG:STRING=$<CONFIG>"
             "-DFREEIMAGE_CODEC_BUILD_JOBS:STRING=${FREEIMAGE_CODEC_BUILD_JOBS}"
+            "-DFREEIMAGE_CODEC_ENGLISH_MESSAGES:BOOL=${english_messages}"
             -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BuildBundledCodec.cmake"
         INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --config $<CONFIG>
         DEPENDS ${CODEC_DEPENDS}
