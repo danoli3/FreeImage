@@ -5,9 +5,13 @@ import hashlib
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tarfile
 import tempfile
 
+# The test also displays the opt-out's Chinese output. Python otherwise uses
+# the runner's legacy code page when its stdout is redirected to the CI log.
+sys.stdout.reconfigure(encoding="utf-8")
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--generator")
@@ -55,7 +59,13 @@ message(STATUS "Child language: $ENV{VSLANG}/$ENV{DOTNET_CLI_UI_LANGUAGE}")
 int other();
 int main() { std::printf("Probe value: %d\\n", PROBE_VALUE); return other(); }
 ''', encoding="utf-8")
-    (source / "other.cpp").write_text("int other() { return 0; }\n", encoding="utf-8")
+    other_source = '''#ifdef _MSC_VER
+__declspec(deprecated)
+#endif
+int old_function() { return 0; }
+int other() { return old_function(); }
+'''
+    (source / "other.cpp").write_text(other_source, encoding="utf-8")
     archive = root / "Source" / "ThirdParty" / "probe.tar.gz"
     archive.parent.mkdir(parents=True)
     with tarfile.open(archive, "w:gz") as output:
@@ -89,6 +99,8 @@ freeimage_bundled_project(output_probe probe.tar.gz {digest}
         marker = f"Child language: {expected[0]}/{expected[1]}".encode()
         if marker not in output:
             raise RuntimeError("Nested build diagnostics were not forwarded")
+        if os.name == "nt" and english and b"was declared deprecated" not in output:
+            raise RuntimeError("The nested MSVC compiler did not emit an English warning")
         executable = build / "installed" / "bin" / ("CodecOutputProbe.exe" if os.name == "nt" else "CodecOutputProbe")
         if b"Probe value: 42" not in run([str(executable)]):
             raise RuntimeError("Initial build produced the wrong executable")
@@ -111,6 +123,6 @@ freeimage_bundled_project(output_probe probe.tar.gz {digest}
         if b"FREEIMAGE_CODEC_EXPECTED_FAILURE" not in run(wrapper, success=False):
             raise RuntimeError("Compiler errors were not forwarded")
         # Restore the fixture for the next configure/build of the same tree.
-        (extracted / "other.cpp").write_text("int other() { return 0; }\n", encoding="utf-8")
+        (extracted / "other.cpp").write_text(other_source, encoding="utf-8")
         (extracted / "value.h").write_text("#define PROBE_VALUE 42\n", encoding="utf-8")
         print(f"English messages {'ON' if english else 'OFF'}: configure, build, header rebuild and failure propagation passed")
