@@ -8,7 +8,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import time
 
 # The test also displays the opt-out's Chinese output. Python otherwise uses
 # the runner's legacy code page when its stdout is redirected to the CI log.
@@ -34,7 +33,9 @@ def run(command, *, success=True):
     return result.stdout
 
 
-with tempfile.TemporaryDirectory(prefix="freeimage codec output ") as temporary:
+# MSBuild excludes TEMP/AppData from tracked dependencies. Keep the fixture in
+# the workspace so its header rebuild check exercises normal project tracking.
+with tempfile.TemporaryDirectory(prefix="freeimage codec output ", dir=repo) as temporary:
     root = Path(temporary)
     source = root / "fixture"
     source.mkdir()
@@ -108,9 +109,6 @@ freeimage_bundled_project(output_probe probe.tar.gz {digest}
             raise RuntimeError("Initial build produced the wrong executable")
         # Ninja must still recognize /showIncludes after language normalization.
         extracted = build / "codec-build" / "output_probe" / "src" / "freeimage_output_probe"
-        # MSBuild's tracked timestamps can have coarser resolution than NTFS.
-        if os.name == "nt":
-            time.sleep(1.1)
         (extracted / "value.h").write_text("#define PROBE_VALUE 43\n", encoding="utf-8")
         binary_dir = (build / "codec-build" / "output_probe" / "build-msvc-en"
                       if english and use_msvc else Path(f"{extracted}-build"))
@@ -123,14 +121,7 @@ freeimage_bundled_project(output_probe probe.tar.gz {digest}
         if os.name == "nt" and args.generator == "Ninja":
             compiled = binary_dir / "CodecOutputProbe.exe"
         if b"Probe value: 43" not in run([str(compiled)]):
-            for path in (extracted / "value.h", compiled):
-                print(f"{path}: mtime={path.stat().st_mtime_ns}")
-            for path in binary_dir.rglob("CL.read.1.tlog"):
-                tracking = path.read_text(encoding="utf-16", errors="replace")
-                print(f"{path}: tracks value.h={'VALUE.H' in tracking.upper()}")
             raise RuntimeError("Header dependency was lost after changing the diagnostic language")
-        if os.name == "nt":
-            time.sleep(1.1)
         (extracted / "other.cpp").write_text("#error FREEIMAGE_CODEC_EXPECTED_FAILURE\n", encoding="utf-8")
         if b"FREEIMAGE_CODEC_EXPECTED_FAILURE" not in run(wrapper, success=False):
             raise RuntimeError("Compiler errors were not forwarded")
