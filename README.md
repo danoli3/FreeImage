@@ -150,6 +150,32 @@ cmake --preset vs2022   # or: cmake --preset vs2026
 ```
 Generates a solution under `build-vs2022/` (or `build-vs2026/`). Open `FreeImage.sln` from there. Both presets are Windows-only and turn `BUILD_TESTS` on. `vs2026` needs CMake 4.2 or newer.
 
+For a single architecture, use a separate build directory for each platform:
+
+```powershell
+# 32-bit x86 only
+cmake --preset vs2026 -A Win32 -B build-vs2026-win32
+cmake --build build-vs2026-win32 --config Release
+
+# 64-bit x86 only
+cmake --preset vs2026 -A x64 -B build-vs2026-x64
+cmake --build build-vs2026-x64 --config Release
+
+# Native ARM64 only
+cmake --preset vs2026 -A ARM64 -B build-vs2026-arm64
+cmake --build build-vs2026-arm64 --config Release
+
+# ARM64EC only
+cmake --preset vs2026 -A ARM64EC -B build-vs2026-arm64ec
+cmake --build build-vs2026-arm64ec --config Release
+```
+
+Open `FreeImage.sln` in the selected build directory. Each directory has a fixed
+architecture and its own CMake cache. Use `--config Debug` for Debug builds.
+For Visual Studio 2022, use `--preset vs2022` and corresponding `build-vs2022-*`
+directory names. ARM64 and ARM64EC need the matching Visual Studio C++ toolsets;
+those executables run on Windows ARM64.
+
 For one solution with an architecture dropdown, use:
 
 ```powershell
