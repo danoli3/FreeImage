@@ -25,6 +25,7 @@ if(FREEIMAGE_CODEC_ENGLISH_MESSAGES)
     # the nested build and its compiler/linker children (#236).
     set(ENV{VSLANG} 1033)
     set(ENV{DOTNET_CLI_UI_LANGUAGE} en-US)
+    message(STATUS "Bundled codec diagnostics: English (FREEIMAGE_CODEC_ENGLISH_MESSAGES=ON)")
 endif()
 execute_process(COMMAND "${CMAKE_COMMAND}" --build "${FREEIMAGE_CODEC_BINARY_DIR}"
     --config "${FREEIMAGE_CODEC_CONFIG}" --parallel "${jobs}"
