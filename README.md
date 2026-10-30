@@ -150,6 +150,36 @@ cmake --preset vs2022   # or: cmake --preset vs2026
 ```
 Generates a solution under `build-vs2022/` (or `build-vs2026/`). Open `FreeImage.sln` from there. Both presets are Windows-only and turn `BUILD_TESTS` on. `vs2026` needs CMake 4.2 or newer.
 
+For one solution with an architecture dropdown, use:
+
+```powershell
+cmake --preset vs2026-all   # or: cmake --preset vs2022-all
+```
+
+Open `build-vs2026-all/visualstudio/FreeImage.sln` (or the corresponding
+`vs2022-all` directory). Select **Win32**, **x64**, **ARM64**, **ARM64EC**, or
+**All Platforms**, then build Debug or Release. Each architecture has its own
+project; All Platforms enables all four projects. The existing
+`FREEIMAGE_STATIC` and codec options apply to every architecture.
+
+These are CMake-backed Visual Studio Makefile projects. Building in the IDE
+runs CMake with the selected architecture. CMake must be on `PATH`, and the
+selected Visual Studio installation needs the matching x86/x64 and ARM64/ARM64EC
+C++ toolsets. Outputs are separated under
+`visualstudio/artifacts/<architecture>/<configuration>/`.
+
+The IDE solution, source references, and include paths are relative to the
+source tree. You can move/share the whole source tree, including this solution,
+while keeping their relative placement. After a move, the first build creates
+fresh architecture caches automatically. CMake's internal generated projects
+remain in `visualstudio/cache/`; those caches are specific to their location.
+The regular `vs2022`/`vs2026` solutions remain ordinary CMake build trees.
+
+The combined solution supports bundled dependencies and native MSVC toolchains.
+For external SDK toolchains or system codec libraries, configure a separate
+build tree per architecture. Add `-DFREEIMAGE_VS_ALL_PLATFORMS=ON` to an explicit
+Visual Studio configure command to generate the same front end without a preset.
+
 `cmake --preset ninja-msvc` builds with `cl.exe` and Ninja under `build-ninja-msvc/`. Run it from a Developer Command Prompt, or after `vcvarsall.bat`, so `cl.exe` is on `PATH`. See `CMakePresets.json`.
 
 ### Build and install Debug and Release configuration

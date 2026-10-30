@@ -138,6 +138,7 @@ else()
 endif()
 option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
+option(FREEIMAGE_VS_ALL_PLATFORMS "Generate a portable Visual Studio solution for all Windows architectures" OFF)
 option(FREEIMAGE_OPENJPH_SIMD "Enable runtime-dispatched x86 SIMD in bundled OpenJPH" ON)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
@@ -1586,3 +1587,22 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     COMPONENT Development
 )
+
+if(FREEIMAGE_VS_ALL_PLATFORMS)
+    if(CMAKE_VERSION VERSION_LESS 3.21 OR
+       NOT CMAKE_GENERATOR MATCHES "^Visual Studio (17|18) " OR
+       NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        message(FATAL_ERROR "FREEIMAGE_VS_ALL_PLATFORMS requires CMake 3.21+ and Visual Studio 2022/2026 with MSVC")
+    endif()
+    if(CMAKE_TOOLCHAIN_FILE)
+        message(FATAL_ERROR "The portable Visual Studio solution requires native MSVC toolchains; configure external SDK toolchains separately per architecture")
+    endif()
+    get_cmake_property(_freeimage_cache_variables CACHE_VARIABLES)
+    foreach(_freeimage_variable IN LISTS _freeimage_cache_variables)
+        if(_freeimage_variable MATCHES "^USE_SYSTEM_" AND ${_freeimage_variable})
+            message(FATAL_ERROR "The portable Visual Studio solution requires bundled dependencies (${_freeimage_variable} is ON)")
+        endif()
+    endforeach()
+    include(cmake/VisualStudioSolution.cmake)
+    freeimage_generate_visual_studio_solution("${PROJECT_BINARY_DIR}/visualstudio" "${CMAKE_GENERATOR}")
+endif()
