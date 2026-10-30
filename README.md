@@ -92,10 +92,13 @@ cmake --build build -- -j$(nproc)   # macOS: -j$(sysctl -n hw.ncpu)
 ```
 
 **Windows (MSVC, Visual Studio toolchain)**
-```bash
-cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=17
-cmake --build build --config Debug
+```powershell
+cmake --preset vs2022 -A x64 -B build-vs2022-x64
+cmake --build build-vs2022-x64 --config Debug
+ctest --test-dir build-vs2022-x64 -C Debug --output-on-failure
 ```
+See the [Visual Studio and CMake build guide](doc/visual-studio.md) for tool
+installation, Win32/ARM64 builds, a combined platform dropdown, DLLs and installation.
 See [Generate Visual Studio project files](#generate-visual-studio-project-files) below for opening the solution directly in the IDE.
 
 To select the MSVC C runtime, pass `-DFREEIMAGE_MSVC_RUNTIME=MD` for the
@@ -144,6 +147,9 @@ make -j$(nproc)
 ```
 
 ### Generate Visual Studio project files
+
+The [complete Visual Studio build guide](doc/visual-studio.md) covers setup,
+IDE and command-line builds, output paths, testing and installation.
 
 ```bash
 cmake --preset vs2022   # or: cmake --preset vs2026
