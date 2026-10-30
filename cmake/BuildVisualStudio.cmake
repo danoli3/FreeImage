@@ -11,9 +11,10 @@ endif()
 get_filename_component(source_dir "${CMAKE_CURRENT_LIST_DIR}/.." REALPATH)
 get_filename_component(project_dir "${FREEIMAGE_VS_PROJECT_DIR}" REALPATH)
 include("${project_dir}/FreeImageOptions.cmake")
-# A moved/shared source tree receives a fresh CMake cache automatically. The
-# normal CMake projects are never treated as relocatable or rewritten in place.
-string(SHA256 location "${source_dir};${project_dir}")
+# A moved/shared source tree receives a fresh cache for its location and host.
+# This also separates caches when a network path is identical on two machines.
+cmake_host_system_information(RESULT host QUERY HOSTNAME)
+string(SHA256 location "${source_dir};${project_dir};${host}")
 string(SUBSTRING "${location}" 0 12 location)
 set(build_dir "${project_dir}/cache/${FREEIMAGE_VS_PLATFORM}/${location}")
 set(output_dir "${project_dir}/artifacts/${FREEIMAGE_VS_PLATFORM}")
