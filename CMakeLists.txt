@@ -1606,7 +1606,7 @@ if(FREEIMAGE_VS_ALL_PLATFORMS)
     include(cmake/VisualStudioSolution.cmake)
     freeimage_generate_visual_studio_solution("${PROJECT_BINARY_DIR}/visualstudio" "${CMAKE_GENERATOR}")
     add_custom_target(FreeImageAllPlatforms
-        COMMAND "${CMAKE_MAKE_PROGRAM}" "${PROJECT_BINARY_DIR}/visualstudio/FreeImage.sln"
+        COMMAND "${CMAKE_VS_MSBUILD_COMMAND}" "${PROJECT_BINARY_DIR}/visualstudio/FreeImage.sln"
             "/p:Configuration=$<CONFIG>" "/p:Platform=All Platforms" /m:1
         USES_TERMINAL VERBATIM)
 endif()
