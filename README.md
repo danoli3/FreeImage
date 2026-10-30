@@ -194,6 +194,11 @@ To build all four architectures directly from CMake:
 cmake --build build-vs2026-all --config Release --target FreeImageAllPlatforms
 ```
 
+The combined frontend currently supports **Visual Studio 2022 and 2026**.
+VS 2019 is not enabled or validated for this mode. A VS 2019 variant could
+cover Win32, x64 and ARM64 with `v142`, but ARM64EC requires
+[VS 2022 17.3 or later](https://learn.microsoft.com/en-us/windows/arm/arm64ec-build).
+
 These are CMake-backed Visual Studio Makefile projects. Building in the IDE
 runs CMake with the selected architecture. CMake must be on `PATH`, and the
 selected Visual Studio installation needs the matching x86/x64 and ARM64/ARM64EC
