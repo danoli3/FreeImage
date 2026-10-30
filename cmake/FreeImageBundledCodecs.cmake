@@ -8,6 +8,13 @@ include(ExternalProject)
 include(GNUInstallDirs)
 
 option(FREEIMAGE_CODEC_ENGLISH_MESSAGES "Use English diagnostics for nested MSVC codec builds" ON)
+if(MSVC)
+    if(FREEIMAGE_CODEC_ENGLISH_MESSAGES)
+        message(STATUS "Bundled MSVC codec diagnostics: English (FREEIMAGE_CODEC_ENGLISH_MESSAGES=ON)")
+    else()
+        message(STATUS "Bundled MSVC codec diagnostics: inherited language (FREEIMAGE_CODEC_ENGLISH_MESSAGES=OFF)")
+    endif()
+endif()
 
 # Empty selects automatic parallelism at build time: honor the standard
 # CMAKE_BUILD_PARALLEL_LEVEL environment variable, then detect host CPUs.
