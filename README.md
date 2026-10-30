@@ -92,10 +92,13 @@ cmake --build build -- -j$(nproc)   # macOS: -j$(sysctl -n hw.ncpu)
 ```
 
 **Windows (MSVC, Visual Studio toolchain)**
-```bash
-cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_STANDARD=17
-cmake --build build --config Debug
+```powershell
+cmake --preset vs2022 -A x64 -B build-vs2022-x64
+cmake --build build-vs2022-x64 --config Debug
+ctest --test-dir build-vs2022-x64 -C Debug --output-on-failure
 ```
+See the [Visual Studio and CMake build guide](doc/visual-studio.md) for tool
+installation, Win32/ARM64 builds, a combined platform dropdown, DLLs and installation.
 See [Generate Visual Studio project files](#generate-visual-studio-project-files) below for opening the solution directly in the IDE.
 
 To select the MSVC C runtime, pass `-DFREEIMAGE_MSVC_RUNTIME=MD` for the
@@ -145,10 +148,80 @@ make -j$(nproc)
 
 ### Generate Visual Studio project files
 
+The [complete Visual Studio build guide](doc/visual-studio.md) covers setup,
+IDE and command-line builds, output paths, testing and installation.
+
 ```bash
 cmake --preset vs2022   # or: cmake --preset vs2026
 ```
 Generates a solution under `build-vs2022/` (or `build-vs2026/`). Open `FreeImage.sln` from there. Both presets are Windows-only and turn `BUILD_TESTS` on. `vs2026` needs CMake 4.2 or newer.
+
+For a single architecture, use a separate build directory for each platform:
+
+```powershell
+# 32-bit x86 only
+cmake --preset vs2026 -A Win32 -B build-vs2026-win32
+cmake --build build-vs2026-win32 --config Release
+
+# 64-bit x86 only
+cmake --preset vs2026 -A x64 -B build-vs2026-x64
+cmake --build build-vs2026-x64 --config Release
+
+# Native ARM64 only
+cmake --preset vs2026 -A ARM64 -B build-vs2026-arm64
+cmake --build build-vs2026-arm64 --config Release
+
+# ARM64EC only
+cmake --preset vs2026 -A ARM64EC -B build-vs2026-arm64ec
+cmake --build build-vs2026-arm64ec --config Release
+```
+
+Open `FreeImage.sln` in the selected build directory. Each directory has a fixed
+architecture and its own CMake cache. Use `--config Debug` for Debug builds.
+For Visual Studio 2022, use `--preset vs2022` and corresponding `build-vs2022-*`
+directory names. ARM64 and ARM64EC need the matching Visual Studio C++ toolsets;
+those executables run on Windows ARM64.
+
+For one solution with an architecture dropdown, use:
+
+```powershell
+cmake --preset vs2026-all   # or: cmake --preset vs2022-all
+```
+
+Open `build-vs2026-all/visualstudio/FreeImage.sln` (or the corresponding
+`vs2022-all` directory). Select **Win32**, **x64**, **ARM64**, **ARM64EC**, or
+**All Platforms**, then build Debug or Release. Each architecture has its own
+project; All Platforms enables all four projects. The existing
+`FREEIMAGE_STATIC` and codec options apply to every architecture.
+
+To build all four architectures directly from CMake:
+
+```powershell
+cmake --build build-vs2026-all --config Release --target FreeImageAllPlatforms
+```
+
+The combined frontend currently supports **Visual Studio 2022 and 2026**.
+VS 2019 is not enabled or validated for this mode. A VS 2019 variant could
+cover Win32, x64 and ARM64 with `v142`, but ARM64EC requires
+[VS 2022 17.3 or later](https://learn.microsoft.com/en-us/windows/arm/arm64ec-build).
+
+These are CMake-backed Visual Studio Makefile projects. Building in the IDE
+runs CMake with the selected architecture. CMake must be on `PATH`, and the
+selected Visual Studio installation needs the matching x86/x64 and ARM64/ARM64EC
+C++ toolsets. Outputs are separated under
+`visualstudio/artifacts/<architecture>/<configuration>/`.
+
+The IDE solution, source references, and include paths are relative to the
+source tree. You can move/share the whole source tree, including this solution,
+while keeping their relative placement. After a move, the first build creates
+fresh architecture caches automatically. CMake's internal generated projects
+remain in `visualstudio/cache/`; those caches are specific to their location.
+The regular `vs2022`/`vs2026` solutions remain ordinary CMake build trees.
+
+The combined solution supports bundled dependencies and native MSVC toolchains.
+For external SDK toolchains or system codec libraries, configure a separate
+build tree per architecture. Add `-DFREEIMAGE_VS_ALL_PLATFORMS=ON` to an explicit
+Visual Studio configure command to generate the same front end without a preset.
 
 `cmake --preset ninja-msvc` builds with `cl.exe` and Ninja under `build-ninja-msvc/`. Run it from a Developer Command Prompt, or after `vcvarsall.bat`, so `cl.exe` is on `PATH`. See `CMakePresets.json`.
 
