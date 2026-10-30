@@ -77,7 +77,7 @@ jobs:
       - name: Generate the combined solution
         run: cmake --preset vs2026-all -DCMAKE_CXX_STANDARD=17
       - name: Build through the All Platforms solution configuration
-        run: MSBuild.exe build-vs2026-all/visualstudio/FreeImage.sln /p:Configuration=Release '/p:Platform=All Platforms' /m:1
+        run: cmake --build build-vs2026-all --config Release --target FreeImageAllPlatforms
       - name: Verify the four library architectures
         run: |
           $machines = @{Win32='machine \(x86\)'; x64='machine \(x64\)'; ARM64='machine \(ARM64\)'; ARM64EC='machine \(ARM64EC\)'}

@@ -162,6 +162,12 @@ Open `build-vs2026-all/visualstudio/FreeImage.sln` (or the corresponding
 project; All Platforms enables all four projects. The existing
 `FREEIMAGE_STATIC` and codec options apply to every architecture.
 
+To build all four architectures directly from CMake:
+
+```powershell
+cmake --build build-vs2026-all --config Release --target FreeImageAllPlatforms
+```
+
 These are CMake-backed Visual Studio Makefile projects. Building in the IDE
 runs CMake with the selected architecture. CMake must be on `PATH`, and the
 selected Visual Studio installation needs the matching x86/x64 and ARM64/ARM64EC
