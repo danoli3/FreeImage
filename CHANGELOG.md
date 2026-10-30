@@ -2,7 +2,22 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
-## 3.19.28 — Unreleased
+## 3.19.29 — Unreleased
+
+Large-file TIFF input, stream hardening and Windows build improvements.
+
+- Add `FreeImage_Load64` and `FreeImage_LoadFromHandle64` with a separate `FreeImageIO64` callback table for single-image TIFF/BigTIFF input beyond 2 GiB and 4 GiB, including header-only loading, Exif metadata and thumbnails. Preserve the existing `FreeImageIO` and external `Plugin` layouts. The new entry points currently support TIFF input only; saving, multipage operations and memory-stream limits are unchanged. (#197, #205)
+- Bound memory-stream write end positions before addition, preventing signed overflow and out-of-bounds writes after seeking near `INT_MAX`, especially on Windows. Add a regression test for writes near the position limit. (#228)
+- Reject invalid JP2/J2K input stream length probes before decoding, including failed seek/tell callbacks and empty or backwards lengths; retain support for initially empty output streams. (#232)
+- Update bundled libaom from 3.15.1 to 3.15.2 for optional HEIF/AVIF builds. (#227)
+- Fix Windows resource copyright text across host code pages and add the fork's GitHub URL to resource and runtime copyright information. (#231)
+- Reduce warnings from bundled third-party sources under MSVC and avoid redefining LibRaw's `NO_LCMS` macro. (#229)
+- Use English diagnostics by default for nested MSVC codec configuration and builds, with `FREEIMAGE_CODEC_ENGLISH_MESSAGES=OFF` to retain localized messages. Add Chinese-language control tests and incremental MSBuild dependency checks. (#236, #237, #241)
+- Add optional `vs2022-all` and `vs2026-all` presets that generate a portable CMake-backed Visual Studio solution with Win32, x64, ARM64, ARM64EC and All Platforms selections. Relative source/include paths support moving the whole tree; internal architecture caches are regenerated for the new location. The existing single-architecture presets remain location-specific. Add a Visual Studio build guide and relocation/build CI. (#235, #238, #240)
+- Add an experimental Windows ARM64X build and native ARM64 codec smoke tests, including checks for the merged DLL's hybrid relocations. (#210)
+- Publish sparse large-file TIFF/BigTIFF fixtures and exercise the new input APIs in cross-platform CI, including malformed callback and truncation cases. Update the openFrameworks integration job to Xcode 27.1. (#197, #233)
+
+## 3.19.28 — 28 Oct 2026
 
 Security hardening, dependency updates and Windows codec fixes.
 
