@@ -52,7 +52,8 @@ Security hardening, dependency updates and Windows codec fixes.
 
 - Bundle pinned, SHA-256-verified HEIF/AVIF and JPEG XL codec sources and dependencies for offline CMake builds, while retaining optional system-library selection, cross-compilation and static/shared builds. Add license documentation and cross-platform CI. (#179)
 - Add `FreeImage_GetChannelsNumber` to report channel counts for bitmap and typed image formats, including two-channel complex images. (#180)
-- Clip GIF playback frames and disposal clears to the logical screen, preventing out-of-bounds writes from malformed frame rectangles. Add crafted regression tests. (#183)
+- **CVE-2026-118753.** Clip GIF playback frames and disposal clears to the logical screen, preventing heap out-of-bounds writes from malformed frame rectangles during `GIF_PLAYBACK` compositing. Add crafted regression tests. Reported by Tristan Madani (Talence Security). (#183)
+- Add a regression test for the RAS row overflow. The fix itself shipped in 3.19.14 (CVE-2024-28578 and CVE-2024-28580); 3.19.25 does not change the RAS decoder. (#183)
 
 ## 3.19.24 — 16 Oct 2026
 
@@ -80,7 +81,7 @@ Optional modern codecs, safer file saving, image-analysis APIs and Python/NumPy 
 
 PBM decoder security fixes, 32-bit compatibility, and installable Linux packages.
 
-- Fix a heap buffer overflow in IFF PBM RLE decoding by bounding literal and repeat writes to the scanline. See [#156](https://github.com/danoli3/FreeImage/issues/156) and [#161](https://github.com/danoli3/FreeImage/pull/161).
+- **CVE-2026-118752.** Fix a heap buffer overflow in IFF PBM RLE decoding by bounding literal and repeat writes to the scanline. Reported by areofyl. See [#156](https://github.com/danoli3/FreeImage/issues/156) and [#161](https://github.com/danoli3/FreeImage/pull/161).
 - Reject truncated PBM RLE commands and payloads, and bound decoding to the declared BODY chunk. ByteRun1 no-op packets can no longer spin indefinitely after EOF. Add ten malformed-input regressions and two byte-for-byte valid-image checks to CTest and GCC ASan CI. These robustness/DoS fixes follow the heap overflow fix; no new CVE identifier is assigned here. See [#162](https://github.com/danoli3/FreeImage/pull/162).
 - Fix OpenJPH SSE kernels using SSE2 integer intrinsics when compiling for 32-bit GCC. Add MinGW i686 static/shared CI, an SSE-without-SSE2 compile check, and copy the Windows DLL beside the test executable. See [#155](https://github.com/danoli3/FreeImage/pull/155).
 - Use portable fixed-width integer types with MSVC 2013 and newer, resolving public-header type redefinition conflicts. See [#159](https://github.com/danoli3/FreeImage/pull/159).
