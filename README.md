@@ -327,7 +327,8 @@ Set `-DFREEIMAGE_HEIF_EXPORT=OFF` for read-only HEIF/AVIF. The save
 functions are not compiled, so `FreeImage_FIFSupportsWriting` returns FALSE
 for both formats and saving fails. Bundled builds also skip Kvazaar and build
 libaom without its AV1 encoder. With a system SDK only the plugin changes.
-`FREEIMAGE_HEIF_EXPORT` defaults to ON.
+`FREEIMAGE_HEIF_EXPORT` defaults to ON. `-DFREEIMAGE_CODEC_EXPORT=OFF` turns
+off saving for HEIF/AVIF and JPEG XL together.
 
 Use `FIF_HEIF` for HEIF/HEIC/HIF and `FIF_AVIF` for AVIF, or detect the format
 with `FreeImage_GetFileType`. The decoder loads the primary still image as
@@ -366,6 +367,12 @@ Animations are rejected. EXIF/XMP and thumbnails are not imported initially.
 Pass JXL_LOSSLESS for exact lossless encoding; otherwise quality flags 1..100
 map to distance (100-quality)/10, with 90 as the default.
 The classic make build registers an unsupported stub; enable with CMake.
+Set `-DFREEIMAGE_JXL_EXPORT=OFF` for read-only JPEG XL, or
+`-DFREEIMAGE_CODEC_EXPORT=OFF` for read-only HEIF/AVIF and JPEG XL. The save
+function is not compiled, so `FreeImage_FIFSupportsWriting(FIF_JPEGXL)`
+returns FALSE and saving fails. libjxl is still built in full, but nothing
+references its encoder, so the linker leaves it out of FreeImage.
+`FREEIMAGE_JXL_EXPORT` defaults to ON.
 
 ### Windows HEIF/AVIF and JPEG XL SDKs
 

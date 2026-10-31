@@ -5,6 +5,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 ## Unreleased
 
 - Add `FREEIMAGE_HEIF_EXPORT` (default ON). Turning it off builds HEIF/AVIF as read-only: the save functions are not compiled, and bundled builds skip Kvazaar and libaom's AV1 encoder.
+- Add `FREEIMAGE_JXL_EXPORT` (default ON) for read-only JPEG XL, and `FREEIMAGE_CODEC_EXPORT` (default ON) to turn off HEIF/AVIF and JPEG XL saving together. With both codecs bundled, a read-only shared library is about a third smaller.
 
 ## 3.19.29 — Unreleased
 
