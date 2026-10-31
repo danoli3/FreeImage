@@ -19,6 +19,7 @@
 // Adaptation: classic plugin API, optional system linkage, checked stream
 // callbacks, RGB/BGR conversion, and header-only loading. Encoding is omitted.
 #include "FreeImage.h"
+#include "../Metadata/MetadataStrip.h"
 #include "Utilities.h"
 #include <cstring>
 
@@ -128,7 +129,7 @@ static FIBITMAP *DecodeImage(heif_image_handle *handle, int flags, long length) 
             }
         }
         const size_t profile_size = heif_image_handle_get_raw_color_profile_size(handle);
-        if(profile_size && profile_size <= static_cast<size_t>(LONG_MAX) && profile_size <= static_cast<size_t>(length)) {
+        if(!FreeImageInternal::IsStrippingMetadata() && profile_size && profile_size <= static_cast<size_t>(LONG_MAX) && profile_size <= static_cast<size_t>(length)) {
             std::vector<BYTE> profile(profile_size);
             Check(heif_image_handle_get_raw_color_profile(handle, profile.data()));
             FIICCPROFILE *icc = FreeImage_CreateICCProfile(dib.get(), profile.data(), static_cast<long>(profile_size));

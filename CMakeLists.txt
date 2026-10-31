@@ -296,7 +296,7 @@ set(FreeImage_SOURCES
     ./Source/FreeImageToolkit/Resize.cpp
     ./Source/CacheFile.h ./Source/FreeImage ./Source/FreeImage.h
     ./Source/FreeImageIO.h ./Source/MapIntrospector.h
-    ./Source/Metadata/FIRational.h ./Source/Metadata/FreeImageTag.h ./Source/Plugin.h
+    ./Source/Metadata/FIRational.h ./Source/Metadata/FreeImageTag.h ./Source/Metadata/MetadataStrip.h ./Source/Plugin.h
     ./Source/Quantizers.h ./Source/ToneMapping.h ./Source/Utilities.h ./TestAPI/TestSuite.h
 )
 

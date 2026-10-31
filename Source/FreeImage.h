@@ -723,6 +723,8 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 // HEIF/AVIF saving: quality 1..100 (0 defaults to 90); optional lossless.
 #define HEIF_LOSSLESS 0x100
 #define JXL_LOSSLESS 0x100
+// Common load/save flag. The sign bit avoids JPEG's positive scaled-load size field.
+#define FREEIMAGE_STRIP (-2147483647 - 1) //! discard auxiliary metadata, ICC profile and thumbnail; preserve animation controls
 #define FIF_LOAD_NOPIXELS 0x8000	//! loading: load the image header only (not supported by all plugins, default to full loading)
 
 #define BMP_DEFAULT         0
@@ -1160,6 +1162,7 @@ DLL_API BOOL DLL_CALLCONV FreeImage_SetMetadataKeyValue(FREE_IMAGE_MDMODEL model
 // helpers
 DLL_API unsigned DLL_CALLCONV FreeImage_GetMetadataCount(FREE_IMAGE_MDMODEL model, FIBITMAP *dib);
 DLL_API BOOL DLL_CALLCONV FreeImage_CloneMetadata(FIBITMAP *dst, FIBITMAP *src);
+DLL_API BOOL DLL_CALLCONV FreeImage_StripMetadata(FIBITMAP *dib);
 
 // tag to C string conversion
 DLL_API const char* DLL_CALLCONV FreeImage_TagToString(FREE_IMAGE_MDMODEL model, FITAG *tag, char *Make FI_DEFAULT(NULL));
