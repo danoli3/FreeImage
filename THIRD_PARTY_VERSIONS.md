@@ -25,14 +25,14 @@ these libraries has a newer stable upstream release.
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
 All vendored versions, including OpenEXR's auxiliary codecs below, were
-rechecked against source headers on 2026-10-28 for FreeImage 3.19.28. All eight
+rechecked against source headers on 2026-10-31 for FreeImage 3.19.29. All eight
 optional codec archives were verified against the SHA-256 digests in
 `Source/ThirdParty/sources.json`; release/version files inside the archives
 were also reviewed. Little CMS 2.19.1 retains `LCMS_VERSION` 2190 in its public
 header; the bundled archive is the upstream 2.19.1 release artifact.
 
-Since 3.19.27, LibRaw moved from 0.22.2 to 0.22.3, libheif from 1.23.6 to
-1.23.7, and Brotli from 1.2.0 to 1.2.1. Other bundled versions are unchanged.
+Since 3.19.28, libaom moved from 3.15.1 to 3.15.2. Other bundled versions
+are unchanged.
 OpenEXR, LibDeflate and LibTIFF4 were previously re-synced for #137; OpenEXR
 3.5.2 and libpng 1.6.59 followed in #148.
 
