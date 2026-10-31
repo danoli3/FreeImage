@@ -392,16 +392,18 @@ FreeImage_Close(PluginNode *node, FreeImageIO *io, fi_handle handle, void *data)
 // Plugin System Load/Save Functions
 // =====================================================================
 
+#if FREEIMAGE_METADATA_STRIP
 namespace FreeImageInternal {
 namespace { thread_local bool strip_metadata = false; }
 bool IsStrippingMetadata() { return strip_metadata; }
 MetadataStripScope::MetadataStripScope(bool strip) : previous_(strip_metadata) { strip_metadata = strip; }
 MetadataStripScope::~MetadataStripScope() { strip_metadata = previous_; }
 }
+#endif
 
 FIBITMAP * DLL_CALLCONV
 FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags) {
-    const bool strip = (flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata();
+    const bool strip = FreeImageInternal::WantsMetadataStrip(flags);
     FreeImageInternal::MetadataStripScope metadata_scope(strip);
     flags &= ~FREEIMAGE_STRIP;
 	if ((fif >= 0) && (fif < FreeImage_GetFIFCount())) {
@@ -426,7 +428,7 @@ FreeImage_LoadFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handl
 
 FIBITMAP * DLL_CALLCONV
 FreeImage_LoadFromHandle64(FREE_IMAGE_FORMAT fif, FreeImageIO64 *io, fi_handle handle, int flags) {
-    const bool strip = (flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata();
+    const bool strip = FreeImageInternal::WantsMetadataStrip(flags);
     FreeImageInternal::MetadataStripScope metadata_scope(strip);
     flags &= ~FREEIMAGE_STRIP;
 	if (!s_plugins || s_plugin_reference_count <= 0 || fif != FIF_TIFF || !io || !handle ||
@@ -495,7 +497,7 @@ FreeImage_LoadU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, int flags) {
 
 BOOL DLL_CALLCONV
 FreeImage_SaveToHandle(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, FreeImageIO *io, fi_handle handle, int flags) {
-    const bool strip = (flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata();
+    const bool strip = FreeImageInternal::WantsMetadataStrip(flags);
     FreeImageInternal::MetadataStripScope metadata_scope(strip);
     flags &= ~FREEIMAGE_STRIP;
 	// cannot save "header only" formats
