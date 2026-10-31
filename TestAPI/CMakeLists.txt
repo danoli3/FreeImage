@@ -261,7 +261,7 @@ if(BUILD_TESTS)
     endif()
 endif()
 
-if(BUILD_TESTS)
+if(BUILD_TESTS AND FREEIMAGE_METADATA_STRIP)
     find_package(Threads REQUIRED)
     add_executable(MetadataStripTest testMetadataStrip.cpp)
     target_link_libraries(MetadataStripTest PRIVATE FreeImage Threads::Threads)

@@ -140,6 +140,7 @@ option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
 option(FREEIMAGE_VS_ALL_PLATFORMS "Generate a portable Visual Studio solution for all Windows architectures" OFF)
 option(FREEIMAGE_OPENJPH_SIMD "Enable runtime-dispatched x86 SIMD in bundled OpenJPH" ON)
+option(FREEIMAGE_METADATA_STRIP "Build FREEIMAGE_STRIP and FreeImage_StripMetadata support" ON)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
 option(BUILD_LIBTIFF "Build libTIFF from source or link" ON)
@@ -1474,6 +1475,10 @@ elseif(WIN32)
 endif()
 if(UNIX AND NOT APPLE)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _FILE_OFFSET_BITS=64)
+endif()
+# MetadataStrip.h defaults this to 1 for builds that do not run CMake.
+if(NOT FREEIMAGE_METADATA_STRIP)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FREEIMAGE_METADATA_STRIP=0)
 endif()
 
 

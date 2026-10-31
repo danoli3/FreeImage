@@ -322,6 +322,11 @@ still parse container structures needed to decode images. Explicit EXIF
 rotation requires parsing orientation metadata. Removing an ICC profile does
 not convert pixel colors; color-managed display may therefore change.
 
+Configure with `-DFREEIMAGE_METADATA_STRIP=OFF` (or compile with
+`-DFREEIMAGE_METADATA_STRIP=0` outside CMake) to build without stripping.
+`FREEIMAGE_STRIP` is then ignored and `FreeImage_StripMetadata()` returns
+FALSE; both stay declared, so the ABI does not change.
+
 ### Saving files safely
 
 FreeImage_Save and FreeImage_SaveU stage encoder output beside the destination.

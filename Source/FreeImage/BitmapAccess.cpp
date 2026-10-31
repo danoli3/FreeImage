@@ -1377,6 +1377,10 @@ FreeImage_CloneMetadata(FIBITMAP *dst, FIBITMAP *src) {
 
 BOOL DLL_CALLCONV
 FreeImage_StripMetadata(FIBITMAP *dib) {
+#if !FREEIMAGE_METADATA_STRIP
+    (void)dib;
+    return FALSE;
+#else
     if(!dib) return FALSE;
     FreeImage_DestroyICCProfile(dib); // preserves the structural CMYK flag
     FreeImage_SetThumbnail(dib, NULL);
@@ -1392,8 +1396,10 @@ FreeImage_StripMetadata(FIBITMAP *dib) {
         metadata->erase(model++);
     }
     return TRUE;
+#endif
 }
 
+#if FREEIMAGE_METADATA_STRIP
 FIBITMAP *FreeImageInternal::CreateStrippedView(FIBITMAP *source) {
     if(!source || !FreeImage_HasPixels(source)) return NULL;
     FIBITMAP *view = FreeImage_AllocateHeaderForBits(FreeImage_GetBits(source), FreeImage_GetPitch(source),
@@ -1432,6 +1438,7 @@ FIBITMAP *FreeImageInternal::CreateStrippedView(FIBITMAP *source) {
     }
     return view;
 }
+#endif
 
 BOOL DLL_CALLCONV 
 FreeImage_SetMetadata(FREE_IMAGE_MDMODEL model, FIBITMAP *dib, const char *key, FITAG *tag) {

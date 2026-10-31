@@ -222,7 +222,7 @@ FreeImage_InternalGetPageCount(FIMULTIBITMAP *bitmap) {
 		if (((MULTIBITMAPHEADER *)bitmap->data)->handle) {
 			MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
             FreeImageInternal::MetadataStripScope metadata_scope(
-                (header->load_flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata());
+                FreeImageInternal::WantsMetadataStrip(header->load_flags));
 			
 			header->io.seek_proc(header->handle, 0, SEEK_SET);
 			
@@ -396,7 +396,7 @@ FreeImage_OpenMultiBitmapFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_h
 
 BOOL DLL_CALLCONV
 FreeImage_SaveMultiBitmapToHandle(FREE_IMAGE_FORMAT fif, FIMULTIBITMAP *bitmap, FreeImageIO *io, fi_handle handle, int flags) {
-    const bool save_strip = (flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata();
+    const bool save_strip = FreeImageInternal::WantsMetadataStrip(flags);
     flags &= ~FREEIMAGE_STRIP;
 	if(!bitmap || !bitmap->data || !io || !handle) {
 		return FALSE;
@@ -413,7 +413,7 @@ FreeImage_SaveMultiBitmapToHandle(FREE_IMAGE_FORMAT fif, FIMULTIBITMAP *bitmap, 
 		if(node) {
 			MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
 			
-            const bool strip = save_strip || (header->load_flags & FREEIMAGE_STRIP) != 0;
+            const bool strip = save_strip || FreeImageInternal::WantsMetadataStrip(header->load_flags);
             FreeImageInternal::MetadataStripScope metadata_scope(strip);
 			// dst data
 			void *data = FreeImage_Open(node, io, handle, FALSE);
@@ -717,7 +717,7 @@ FIBITMAP * DLL_CALLCONV
 FreeImage_LockPage(FIMULTIBITMAP *bitmap, int page) {
 	if (bitmap) {
 		MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
-        const bool strip = (header->load_flags & FREEIMAGE_STRIP) != 0 || FreeImageInternal::IsStrippingMetadata();
+        const bool strip = FreeImageInternal::WantsMetadataStrip(header->load_flags);
         FreeImageInternal::MetadataStripScope metadata_scope(strip);
 
 		// only lock if the page wasn't locked before...
