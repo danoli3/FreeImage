@@ -148,6 +148,8 @@ endif()
 if(BUILD_TESTS AND BUILD_LIBHEIF)
     add_executable(HeifCodecTest testHeif.cpp)
     target_link_libraries(HeifCodecTest PRIVATE FreeImage)
+    target_compile_definitions(HeifCodecTest PRIVATE
+        FREEIMAGE_TEST_HEIF_EXPORT=$<BOOL:${FREEIMAGE_HEIF_EXPORT}>)
     if(NOT USE_SYSTEM_LIBHEIF)
         target_compile_definitions(HeifCodecTest PRIVATE FREEIMAGE_TEST_BUNDLED_HEIF)
         if(FREEIMAGE_BUNDLE_AOM)

@@ -22,6 +22,12 @@
 #include "Utilities.h"
 #include <cstring>
 
+// Build with FREEIMAGE_HEIF_EXPORT=0 to compile HEIF/AVIF saving out.
+// The plugins then register as read-only.
+#ifndef FREEIMAGE_HEIF_EXPORT
+#define FREEIMAGE_HEIF_EXPORT 1
+#endif
+
 static const char * DLL_CALLCONV HeifFormat() { return "HEIF"; }
 static const char * DLL_CALLCONV AvifFormat() { return "AVIF"; }
 static const char * DLL_CALLCONV HeifDescription() { return "HEIF image"; }
@@ -197,6 +203,7 @@ static FIBITMAP * DLL_CALLCONV Load(FreeImageIO *io, fi_handle handle, int, int 
         return NULL;
     }
 }
+#if FREEIMAGE_HEIF_EXPORT
 static heif_error WriteEncoded(heif_context *, const void *bytes, size_t size, void *opaque) {
     Reader &stream = *static_cast<Reader *>(opaque);
     const BYTE *p = static_cast<const BYTE *>(bytes);
@@ -279,6 +286,7 @@ static BOOL DLL_CALLCONV Save(FreeImageIO *io, FIBITMAP *dib, fi_handle output, 
         return TRUE;
     } catch(const std::exception &error) { FreeImage_OutputMessageProc(Format, "%s", error.what()); return FALSE; }
 }
+#endif // FREEIMAGE_HEIF_EXPORT
 
 #endif
 
@@ -291,11 +299,13 @@ static void Init(Plugin *plugin, bool avif) {
 #ifdef FREEIMAGE_LIBHEIF
     plugin->validate_proc = avif ? ValidateAVIF : ValidateHEIF;
     plugin->load_proc = avif ? Load<FIF_AVIF> : Load<FIF_HEIF>;
+#if FREEIMAGE_HEIF_EXPORT
     // Registration can run from FreeImage's shared-library initializer before
     // the bundled libheif C++ globals. Query encoders only from runtime calls.
     plugin->save_proc = avif ? Save<heif_compression_AV1, FIF_AVIF> : Save<heif_compression_HEVC, FIF_HEIF>;
     plugin->supports_export_bpp_proc = avif ? SupportsDepth<heif_compression_AV1> : SupportsDepth<heif_compression_HEVC>;
     plugin->supports_export_type_proc = avif ? SupportsType<heif_compression_AV1> : SupportsType<heif_compression_HEVC>;
+#endif
     plugin->supports_no_pixels_proc = SupportsNoPixels;
     plugin->supports_icc_profiles_proc = SupportsICC;
 #endif
