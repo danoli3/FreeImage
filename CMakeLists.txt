@@ -185,9 +185,18 @@ option(USE_SYSTEM_JXR "Link against system jxrlib instead of the bundled copy" $
 # Modern codecs remain optional; enabled codecs use bundled source archives
 # unless their system-library switch (or the master switch) selects an SDK.
 option(BUILD_LIBHEIF "Enable HEIF/AVIF support" OFF)
-# OFF builds HEIF/AVIF as read-only: no save functions, and bundled builds
-# skip the kvazaar HEVC encoder and build libaom without its AV1 encoder.
+# Read-only modern codecs. FREEIMAGE_CODEC_EXPORT=OFF turns off saving for
+# both HEIF/AVIF and JPEG XL; the per-codec options turn off one of them.
+# HEIF OFF also skips the bundled kvazaar HEVC encoder and builds libaom
+# without its AV1 encoder. JPEG XL OFF leaves libjxl's encoder unreferenced,
+# so the linker drops it.
+option(FREEIMAGE_CODEC_EXPORT "Build HEIF/AVIF and JPEG XL saving" ON)
 option(FREEIMAGE_HEIF_EXPORT "Build HEIF/AVIF saving" ON)
+option(FREEIMAGE_JXL_EXPORT "Build JPEG XL saving" ON)
+if(NOT FREEIMAGE_CODEC_EXPORT)
+    set(FREEIMAGE_HEIF_EXPORT OFF)
+    set(FREEIMAGE_JXL_EXPORT OFF)
+endif()
 option(BUILD_LIBJXL "Enable JPEG XL support" OFF)
 option(FREEIMAGE_BUNDLE_AOM "Build bundled libaom for AV1 support in bundled libheif" ON)
 option(USE_SYSTEM_LIBHEIF "Use an installed libheif SDK" ${FREEIMAGE_SYSTEM_DEFAULT})
@@ -211,8 +220,8 @@ foreach(codec HEIF JXL)
         endif()
         list(APPEND FreeImage_LIBS FreeImageCodec::${codec})
         add_compile_definitions(FREEIMAGE_LIB${codec})
-        if(codec STREQUAL "HEIF" AND NOT FREEIMAGE_HEIF_EXPORT)
-            add_compile_definitions(FREEIMAGE_HEIF_EXPORT=0)
+        if(NOT FREEIMAGE_${codec}_EXPORT)
+            add_compile_definitions(FREEIMAGE_${codec}_EXPORT=0)
         endif()
     endif()
 endforeach()

@@ -202,6 +202,8 @@ endif()
 if(BUILD_TESTS AND BUILD_LIBJXL)
     add_executable(JpegXLTest testJpegXL.cpp)
     target_link_libraries(JpegXLTest PRIVATE FreeImage)
+    target_compile_definitions(JpegXLTest PRIVATE
+        FREEIMAGE_TEST_JXL_EXPORT=$<BOOL:${FREEIMAGE_JXL_EXPORT}>)
     if(WIN32 AND NOT FREEIMAGE_STATIC)
         add_custom_command(TARGET JpegXLTest POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:JpegXLTest>)
