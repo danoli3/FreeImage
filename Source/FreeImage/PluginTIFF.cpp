@@ -38,6 +38,7 @@
 #endif
 
 #include "FreeImage.h"
+#include "../Metadata/MetadataStrip.h"
 #include "Utilities.h"
 #include <tiffio.h>
 #include <memory>
@@ -848,11 +849,16 @@ tiff_read_iptc_profile(TIFF *tiff, FIBITMAP *dib) {
 	uint32_t profile_size = 0;
 
     if(TIFFGetField(tiff,TIFFTAG_RICHTIFFIPTC, &profile_size, &profile) == 1) {
-		if (TIFFIsByteSwapped(tiff) != 0) {
-			TIFFSwabArrayOfLong((uint32_t *) profile, (unsigned long)profile_size);
-		}
-
-		return read_iptc_profile(dib, profile, 4 * profile_size);
+        // Current libtiff exposes this UNDEFINED field as a byte count,
+        // including when an on-disk legacy LONG field was converted.
+        const TIFFField *field = TIFFFieldWithTag(tiff, TIFFTAG_RICHTIFFIPTC);
+        if(field && TIFFFieldDataType(field) == TIFF_LONG) {
+            if(profile_size > UINT_MAX / 4) return FALSE;
+            if(TIFFIsByteSwapped(tiff))
+                TIFFSwabArrayOfLong((uint32_t *)profile, profile_size);
+            profile_size *= 4;
+        }
+        return read_iptc_profile(dib, profile, profile_size);
 	}
 
 	return FALSE;
@@ -931,6 +937,7 @@ Read TIFF special profiles
 */
 static void
 ReadMetadata(fi_TIFFIO *fio, TIFF *tiff, FIBITMAP *dib) {
+    if(FreeImageInternal::IsStrippingMetadata()) return;
 
 	// IPTC/NAA
 	tiff_read_iptc_profile(tiff, dib);
@@ -957,6 +964,12 @@ tiff_write_iptc_profile(TIFF *tiff, FIBITMAP *dib) {
 		uint32_t profile_size = 0;
 		// create a binary profile
 		if(write_iptc_profile(dib, &profile, &profile_size)) {
+            const TIFFField *field = TIFFFieldWithTag(tiff, TIFFTAG_RICHTIFFIPTC);
+            if(!field || TIFFFieldDataType(field) != TIFF_LONG) {
+                const BOOL result = TIFFSetField(tiff, TIFFTAG_RICHTIFFIPTC, profile_size, profile);
+                free(profile);
+                return result;
+            }
 			uint32_t iptc_size = profile_size;
 			iptc_size += (4-(iptc_size & 0x03)); // Round up for long word alignment
 			BYTE *iptc_profile = (BYTE*)malloc(iptc_size);
