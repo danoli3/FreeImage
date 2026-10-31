@@ -28,6 +28,12 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-latest, windows-latest]
         static: ["ON", "OFF"]
+        heif_export: ["ON"]
+        # Read-only HEIF/AVIF: no save functions, Kvazaar or AV1 encoder.
+        # heif_export is a matrix key, so these add jobs rather than extend one.
+        include:
+          - {os: ubuntu-24.04, static: "ON", heif_export: "OFF"}
+          - {os: windows-latest, static: "OFF", heif_export: "OFF"}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -44,6 +50,7 @@ jobs:
           -DBUILD_TESTS=ON -DFREEIMAGE_STATIC=${{ matrix.static }}
           -DBUILD_LIBHEIF=ON -DBUILD_LIBJXL=ON
           -DUSE_SYSTEM_LIBHEIF=OFF -DUSE_SYSTEM_LIBJXL=OFF
+          -DFREEIMAGE_HEIF_EXPORT=${{ matrix.heif_export }}
           -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
       - name: Build from bundled archives
         run: cmake --build build --config Release

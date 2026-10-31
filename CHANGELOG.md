@@ -2,6 +2,10 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
+## Unreleased
+
+- Add `FREEIMAGE_HEIF_EXPORT` (default ON). Turning it off builds HEIF/AVIF as read-only: the save functions are not compiled, and bundled builds skip Kvazaar and libaom's AV1 encoder.
+
 ## 3.19.29 — Unreleased
 
 Large-file TIFF input, stream hardening and Windows build improvements.

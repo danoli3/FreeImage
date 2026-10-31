@@ -46,6 +46,16 @@ static void Test(const char *filename, FREE_IMAGE_FORMAT format, bool alpha) {
         Require(without_exif && !FreeImage_GetMetadata(FIMD_EXIF_RAW,without_exif,"ExifRaw",&tag),"invalid EXIF offset ignored");
         FreeImage_Unload(without_exif); FreeImage_CloseMemory(malformed);
     }
+#if !FREEIMAGE_TEST_HEIF_EXPORT
+    if(encode) {
+        // Built with FREEIMAGE_HEIF_EXPORT=OFF: the plugin must be read-only.
+        Require(!FreeImage_FIFSupportsWriting(format), "read-only build reports no writer");
+        Require(!FreeImage_FIFSupportsExportBPP(format, alpha ? 32 : 24), "read-only build exports no depth");
+        FIMEMORY *encoded = FreeImage_OpenMemory();
+        Require(!FreeImage_SaveToMemory(format, dib, encoded, 0), "read-only build rejects save");
+        FreeImage_CloseMemory(encoded);
+    }
+#else
     if(encode && FreeImage_FIFSupportsWriting(format)) {
         const BYTE exif[] = {'E','x','i','f',0,0,'I','I',42,0,8,0,0,0,1,0,0x12,1,3,0,1,0,0,0,1,0,0,0,0,0,0,0};
         FITAG *tag = FreeImage_CreateTag();
@@ -83,6 +93,7 @@ static void Test(const char *filename, FREE_IMAGE_FORMAT format, bool alpha) {
         FreeImage_Unload(roundtrip); FreeImage_CloseMemory(encoded);
         }
     }
+#endif
     FreeImage_Unload(dib);
     FreeImage_SeekMemory(memory, 0, SEEK_SET);
     dib = FreeImage_LoadFromMemory(format, memory, FIF_LOAD_NOPIXELS);

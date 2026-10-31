@@ -323,6 +323,12 @@ For an external SDK, also select `-DUSE_SYSTEM_LIBHEIF=ON` and install
 `brew install libheif pkg-config`. Available decoders and encoders depend on
 the SDK's backends. The legacy make build registers unsupported format stubs.
 
+Set `-DFREEIMAGE_HEIF_EXPORT=OFF` for read-only HEIF/AVIF. The save
+functions are not compiled, so `FreeImage_FIFSupportsWriting` returns FALSE
+for both formats and saving fails. Bundled builds also skip Kvazaar and build
+libaom without its AV1 encoder. With a system SDK only the plugin changes.
+`FREEIMAGE_HEIF_EXPORT` defaults to ON.
+
 Use `FIF_HEIF` for HEIF/HEIC/HIF and `FIF_AVIF` for AVIF, or detect the format
 with `FreeImage_GetFileType`. The decoder loads the primary still image as
 8-bit RGB or RGBA, including alpha and ICC profiles, and supports
