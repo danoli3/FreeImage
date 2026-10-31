@@ -2,6 +2,7 @@
 // agruzdev/FreeImageRe (b51d3945bfe785ad382a0969f1376aee344af8c6), FIPL/GPLv2.
 // Uses the classic plugin API and system libjxl, without Plugin2/yato.
 #include "FreeImage.h"
+#include "../Metadata/MetadataStrip.h"
 #include "Utilities.h"
 #include <cstring>
 static const char * DLL_CALLCONV Format() { return "JXL"; }
@@ -72,7 +73,7 @@ static FIBITMAP * DLL_CALLCONV Load(FreeImageIO *io, fi_handle h, int, int flags
 #else
                 const JxlDecoderStatus profile_status=JxlDecoderGetICCProfileSize(decoder.get(),JXL_COLOR_PROFILE_TARGET_DATA,&size);
 #endif
-                if(profile_status==JXL_DEC_SUCCESS && size) {
+                if(!FreeImageInternal::IsStrippingMetadata() && profile_status==JXL_DEC_SUCCESS && size) {
                     Require(size<=LONG_MAX); std::vector<BYTE> profile(size);
 #if JPEGXL_NUMERIC_VERSION < JPEGXL_COMPUTE_NUMERIC_VERSION(0,9,0)
                     Require(JxlDecoderGetColorAsICCProfile(decoder.get(),&format,JXL_COLOR_PROFILE_TARGET_DATA,profile.data(),size)==JXL_DEC_SUCCESS);

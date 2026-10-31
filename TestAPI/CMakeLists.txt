@@ -261,6 +261,19 @@ if(BUILD_TESTS)
     endif()
 endif()
 
+if(BUILD_TESTS)
+    find_package(Threads REQUIRED)
+    add_executable(MetadataStripTest testMetadataStrip.cpp)
+    target_link_libraries(MetadataStripTest PRIVATE FreeImage Threads::Threads)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET MetadataStripTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:MetadataStripTest> VERBATIM)
+    endif()
+    add_test(NAME MetadataStripTest COMMAND MetadataStripTest)
+    set_tests_properties(MetadataStripTest PROPERTIES TIMEOUT 60)
+endif()
+
 # Each executable needs its own DLL directory. Parallel vcpkg app-local steps
 # scan/copy dependencies while the commands above deploy FreeImage.dll; sharing
 # a directory lets one target overwrite the DLL another target is reading.

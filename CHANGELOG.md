@@ -2,6 +2,11 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
+## Unreleased
+
+- Add `FREEIMAGE_STRIP` for load/save and `FreeImage_StripMetadata()` for existing bitmaps, discarding auxiliary metadata while preserving animation controls and save-source metadata. (#239)
+- Correct TIFF IPTC profile lengths for libtiff fields exposed as byte counts, preventing an out-of-bounds metadata read.
+
 ## 3.19.28 — Unreleased
 
 Security hardening, dependency updates and Windows codec fixes.

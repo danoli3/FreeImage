@@ -293,6 +293,35 @@ The decoder is adapted from [FreeImageRe's PluginHEIF.cpp](https://github.com/ag
 under its FIPL/GPLv2 licensing. libheif and libde265 are LGPL-3.0-or-later;
 other backends have their own licenses. See the bundled license notices.
 
+### Strip auxiliary metadata
+
+Pass `FREEIMAGE_STRIP` together with the usual format flags to discard ICC
+profiles, EXIF, XMP, IPTC, comments, custom metadata and embedded thumbnails:
+
+```cpp
+FIBITMAP *image = FreeImage_Load(FIF_JPEG, "input.jpg", FREEIMAGE_STRIP);
+if (image) {
+    FreeImage_Save(FIF_PNG, image, "output.png", FREEIMAGE_STRIP);
+    FreeImage_Unload(image);
+}
+```
+
+The flag also works with memory, handle, 64-bit TIFF and multipage load/save
+entry points. Saving leaves the source bitmap and its metadata unchanged.
+Call `FreeImage_StripMetadata(image)` to remove metadata from an existing
+bitmap in place. Pixel storage, palettes, transparency, resolution and the
+CMYK interpretation flag are preserved. Animation timing, looping and disposal
+metadata are retained so animated images keep their playback behavior.
+
+Use the named constant: its sign bit avoids the upper-bit field used by JPEG
+scaled loading. Combining it with `JPEG_EXIFROTATE` applies EXIF orientation
+before discarding the metadata.
+
+Stripping skips optional metadata readers where supported, but codec libraries
+still parse container structures needed to decode images. Explicit EXIF
+rotation requires parsing orientation metadata. Removing an ICC profile does
+not convert pixel colors; color-managed display may therefore change.
+
 ### Saving files safely
 
 FreeImage_Save and FreeImage_SaveU stage encoder output beside the destination.
