@@ -170,8 +170,8 @@ function(freeimage_build_bundled_codec codec)
             # libaom's RTCD generator requires Perl even for the generic CPU
             # target. Keep AV1 enabled by default, but allow HEIF-only builds
             # on toolchains where Perl is unavailable.
-            freeimage_bundled_project(aom libaom-3.15.2.tar.gz
-                67bb54b245f33ed98600e08269e6139986e48114e14042474ddd8885801dfddc
+            freeimage_bundled_project(aom libaom-3.15.3.tar.gz
+                12c01dc731ed7b5a999e28120b45bf58a002ba3435a4ba2cfbc1e084a27c9c04
                 ARGS -DAOM_TARGET_CPU=generic -DENABLE_NASM=OFF -DCONFIG_RUNTIME_CPU_DETECT=0
                      -DCONFIG_AV1_ENCODER=${aom_config_encoder}
                      -DENABLE_APPS=OFF -DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF
