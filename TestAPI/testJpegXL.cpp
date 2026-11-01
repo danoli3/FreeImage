@@ -11,6 +11,7 @@
 #define JXL_TEST_ALLOCA alloca
 #endif
 static void Check(bool v) { if(!v) { std::fprintf(stderr,"JXL regression failed\n"); std::exit(1); } }
+#if FREEIMAGE_TEST_JXL_EXPORT
 static void Test(FREE_IMAGE_TYPE type,int bpp) {
     FIBITMAP *src=FreeImage_AllocateT(type,17,9,bpp); Check(src!=NULL);
     for(unsigned y=0;y<9;++y) {
@@ -29,6 +30,7 @@ static void Test(FREE_IMAGE_TYPE type,int bpp) {
     FIMEMORY *truncated=FreeImage_OpenMemory(bytes,size/2); Check(FreeImage_LoadFromMemory(FIF_JPEGXL,truncated)==NULL); FreeImage_CloseMemory(truncated);
     FreeImage_CloseMemory(memory); FreeImage_Unload(src);
 }
+#endif
 // Lossy files from cjxl run VarDCT and the upsampling stages' SIMD row code,
 // which a lossless roundtrip never reaches. Issue #211 crashed in that
 // stage's AVX2 constructor on MinGW GCC (every decode builds an 8x upsampler).
@@ -63,9 +65,29 @@ static void TestFixturesShifted(const char *dir,FIBITMAP *reference,unsigned shi
     TestFixture(dir,"alpha-upsampled.jxl",reference,9);
     pad[0]=1;
 }
+#if !FREEIMAGE_TEST_JXL_EXPORT
+// Built with FREEIMAGE_JXL_EXPORT=OFF: the plugin must be read-only, and
+// header-only and truncated loads are checked on a fixture instead.
+static void TestReadOnly(const char *dir) {
+    Check(!FreeImage_FIFSupportsWriting(FIF_JPEGXL) && !FreeImage_FIFSupportsExportBPP(FIF_JPEGXL,24));
+    FIBITMAP *src=FreeImage_Allocate(17,9,24); Check(src!=NULL);
+    FIMEMORY *memory=FreeImage_OpenMemory(); Check(!FreeImage_SaveToMemory(FIF_JPEGXL,src,memory,JXL_LOSSLESS));
+    FreeImage_CloseMemory(memory); FreeImage_Unload(src);
+    if(!dir) return;
+    char path[1024]; std::snprintf(path,sizeof(path),"%s/lossy.jxl",dir);
+    FIBITMAP *header=FreeImage_Load(FIF_JPEGXL,path,FIF_LOAD_NOPIXELS); Check(header && !FreeImage_HasPixels(header)); FreeImage_Unload(header);
+    FILE *file=std::fopen(path,"rb"); Check(file!=NULL);
+    BYTE bytes[65536]; const size_t size=std::fread(bytes,1,sizeof(bytes),file); std::fclose(file); Check(size>16 && size<sizeof(bytes));
+    FIMEMORY *truncated=FreeImage_OpenMemory(bytes,static_cast<DWORD>(size/2)); Check(FreeImage_LoadFromMemory(FIF_JPEGXL,truncated)==NULL); FreeImage_CloseMemory(truncated);
+}
+#endif
 int main(int argc,char **argv) {
     FreeImage_Initialise(); Check(FreeImage_GetFIFFromFormat("JXL")==FIF_JPEGXL);
+#if FREEIMAGE_TEST_JXL_EXPORT
     Test(FIT_BITMAP,24); Test(FIT_BITMAP,32); Test(FIT_RGB16,48); Test(FIT_RGBF,96);
+#else
+    TestReadOnly(argc>1 ? argv[1] : NULL);
+#endif
     if(argc>1) {
         char path[1024]; std::snprintf(path,sizeof(path),"%s/reference.png",argv[1]);
         FIBITMAP *reference=FreeImage_Load(FIF_PNG,path,0); Check(reference && FreeImage_GetBPP(reference)==32);

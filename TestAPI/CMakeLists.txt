@@ -148,6 +148,8 @@ endif()
 if(BUILD_TESTS AND BUILD_LIBHEIF)
     add_executable(HeifCodecTest testHeif.cpp)
     target_link_libraries(HeifCodecTest PRIVATE FreeImage)
+    target_compile_definitions(HeifCodecTest PRIVATE
+        FREEIMAGE_TEST_HEIF_EXPORT=$<BOOL:${FREEIMAGE_HEIF_EXPORT}>)
     if(NOT USE_SYSTEM_LIBHEIF)
         target_compile_definitions(HeifCodecTest PRIVATE FREEIMAGE_TEST_BUNDLED_HEIF)
         if(FREEIMAGE_BUNDLE_AOM)
@@ -200,6 +202,8 @@ endif()
 if(BUILD_TESTS AND BUILD_LIBJXL)
     add_executable(JpegXLTest testJpegXL.cpp)
     target_link_libraries(JpegXLTest PRIVATE FreeImage)
+    target_compile_definitions(JpegXLTest PRIVATE
+        FREEIMAGE_TEST_JXL_EXPORT=$<BOOL:${FREEIMAGE_JXL_EXPORT}>)
     if(WIN32 AND NOT FREEIMAGE_STATIC)
         add_custom_command(TARGET JpegXLTest POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:JpegXLTest>)

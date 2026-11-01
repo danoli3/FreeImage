@@ -142,22 +142,41 @@ function(freeimage_build_bundled_codec codec)
             554228bd17788c99a7e63b37ab5634722190e6e2bf60c1dcb01cef328e133905
             ARGS -DENABLE_DECODER=OFF -DENABLE_ENCODER=OFF -DENABLE_SDL=OFF
                  -DENABLE_SIMD=OFF -DENABLE_AVX2=OFF -DENABLE_AVX512=OFF)
-        freeimage_bundled_project(kvazaar kvazaar-2.3.2.tar.gz
-            ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951
-            ARGS -DBUILD_TESTS=OFF -DBUILD_KVAZAAR_BINARY=OFF -DUSE_CRYPTO=OFF -DGIT_SUBMODULE=OFF)
+        # kvazaar is an HEVC encoder only; read-only builds leave it out.
+        set(kvazaar_args -DWITH_KVAZAAR=OFF)
+        set(kvazaar_names)
+        set(kvazaar_depends)
+        if(FREEIMAGE_HEIF_EXPORT)
+            freeimage_bundled_project(kvazaar kvazaar-2.3.2.tar.gz
+                ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951
+                ARGS -DBUILD_TESTS=OFF -DBUILD_KVAZAAR_BINARY=OFF -DUSE_CRYPTO=OFF -DGIT_SUBMODULE=OFF)
+            set(kvazaar_args -DWITH_KVAZAAR=ON
+                -DKVAZAAR_INCLUDE_DIR:PATH=${_codec_prefix}/include
+                -DKVAZAAR_LIBRARY:FILEPATH=${lib}/${kvazaar})
+            set(kvazaar_names "${kvazaar}")
+            set(kvazaar_depends freeimage_kvazaar)
+        endif()
         set(aom_args -DWITH_AOM_DECODER=OFF -DWITH_AOM_ENCODER=OFF)
         set(aom_names)
         set(aom_depends)
         if(FREEIMAGE_BUNDLE_AOM)
+            if(FREEIMAGE_HEIF_EXPORT)
+                set(aom_encoder ON)
+                set(aom_config_encoder 1)
+            else()
+                set(aom_encoder OFF)
+                set(aom_config_encoder 0)
+            endif()
             # libaom's RTCD generator requires Perl even for the generic CPU
             # target. Keep AV1 enabled by default, but allow HEIF-only builds
             # on toolchains where Perl is unavailable.
             freeimage_bundled_project(aom libaom-3.15.2.tar.gz
                 67bb54b245f33ed98600e08269e6139986e48114e14042474ddd8885801dfddc
                 ARGS -DAOM_TARGET_CPU=generic -DENABLE_NASM=OFF -DCONFIG_RUNTIME_CPU_DETECT=0
+                     -DCONFIG_AV1_ENCODER=${aom_config_encoder}
                      -DENABLE_APPS=OFF -DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF
                      -DENABLE_TESTDATA=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF)
-            set(aom_args -DWITH_AOM_DECODER=ON -DWITH_AOM_ENCODER=ON
+            set(aom_args -DWITH_AOM_DECODER=ON -DWITH_AOM_ENCODER=${aom_encoder}
                 -DAOM_INCLUDE_DIR:PATH=${_codec_prefix}/include
                 -DAOM_LIBRARY:FILEPATH=${lib}/${pre}aom${ext}
                 -DCMAKE_DISABLE_FIND_PACKAGE_AOM=FALSE -DAOM_DIR:PATH=${lib}/cmake/AOM
@@ -167,7 +186,7 @@ function(freeimage_build_bundled_codec codec)
         endif()
         freeimage_bundled_project(heif libheif-1.23.7.tar.gz
             f7483e818503ea6224c8863e4a56ac02c7089021a98472c811c12aa19faf2475
-            DEPENDS ${aom_depends} freeimage_de265 freeimage_kvazaar
+            DEPENDS ${aom_depends} freeimage_de265 ${kvazaar_depends}
             ARGS -DCMAKE_CXX_STANDARD=20 -DBUILD_DOCUMENTATION=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_EXAMPLES=OFF
                  -DWITH_GDK_PIXBUF=OFF -DWITH_FUZZERS=OFF -DENABLE_EXPERIMENTAL_FEATURES=OFF
                  -DWITH_HEADER_COMPRESSION=OFF -DWITH_UNCOMPRESSED_CODEC=OFF
@@ -178,13 +197,11 @@ function(freeimage_build_bundled_codec codec)
                  -DWITH_OpenJPEG_DECODER=OFF -DWITH_OpenJPEG_ENCODER=OFF
                  -DWITH_OPENJPH_ENCODER=OFF -DWITH_FFMPEG_DECODER=OFF
                  -DWITH_LIBSHARPYUV=OFF
-                 -DWITH_LIBDE265=ON -DWITH_KVAZAAR=ON ${aom_args}
+                 -DWITH_LIBDE265=ON ${kvazaar_args} ${aom_args}
                  -DLIBDE265_INCLUDE_DIR:PATH=${_codec_prefix}/include
                  -DLIBDE265_LIBRARY:FILEPATH=${lib}/${de265}
-                 -DKVAZAAR_INCLUDE_DIR:PATH=${_codec_prefix}/include
-                 -DKVAZAAR_LIBRARY:FILEPATH=${lib}/${kvazaar}
                  "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -DLIBDE265_STATIC_BUILD=1 -DKVZ_STATIC_LIB=1")
-        set(names "${pre}heif${ext}" "${de265}" "${kvazaar}" ${aom_names})
+        set(names "${pre}heif${ext}" "${de265}" ${kvazaar_names} ${aom_names})
         set(project heif)
         set(defines LIBHEIF_STATIC_BUILD)
     elseif(codec STREQUAL "JXL")
