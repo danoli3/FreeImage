@@ -12,7 +12,7 @@ these libraries has a newer stable upstream release.
 
 | Library | Path | Vendored | Latest upstream | Status | Version source |
 |---|---|---|---|---|---|
-| OpenEXR | `Source/OpenEXR` | 3.5.2 | 3.5.2 (2026-10-02) | up to date; includes upstream ARM64EC guards | `OpenEXRConfig.h` |
+| OpenEXR | `Source/OpenEXR` | 3.5.3 | 3.5.3 (2026-10-31) | up to date; includes upstream ARM64EC guards | `OpenEXRConfig.h` |
 | Imath | `Source/Imath` | 3.2.3 | 3.2.3 (2026-08-20) | up to date | `ImathConfig.h` |
 | LibDeflate | `Source/LibDeflate` | 1.26 | 1.26 (2026-08-22) | up to date; requires C11 | `libdeflate.h` |
 | LibJPEG (IJG) | `Source/LibJPEG` | 10.0 (25-Jan-2026) | 10.0 (25-Jan-2026) | up to date | `jversion.h` |
@@ -31,8 +31,9 @@ optional codec archives were verified against the SHA-256 digests in
 were also reviewed. Little CMS 2.19.1 retains `LCMS_VERSION` 2190 in its public
 header; the bundled archive is the upstream 2.19.1 release artifact.
 
-Since 3.19.28, libaom moved from 3.15.1 to 3.15.2. Other bundled versions
-are unchanged.
+Since 3.19.29, OpenEXR moved from 3.5.2 to 3.5.3, Little CMS from 2.19.1 to
+2.20 (`LCMS_VERSION` 2200), and libaom from 3.15.2 to 3.15.3. Other bundled
+versions are unchanged.
 OpenEXR, LibDeflate and LibTIFF4 were previously re-synced for #137; OpenEXR
 3.5.2 and libpng 1.6.59 followed in #148.
 
@@ -44,7 +45,7 @@ latest-upstream column above retains the previous release review; the
 version/hash audit does not assert that every bundled dependency is the
 latest available upstream release.
 
-OpenEXR 3.5.2 also brings these upstream-vendored auxiliary codecs:
+OpenEXR 3.5.3 also brings these upstream-vendored auxiliary codecs:
 
 | Library | Path | Vendored | Version source |
 |---|---|---|---|

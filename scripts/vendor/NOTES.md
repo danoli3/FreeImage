@@ -6,7 +6,7 @@ Current vendored releases (issue #137, updated for issue #148):
 |---|---|---|---|
 | libdeflate | `v1.26` | `92e6a0db9fa848d742f9eb286c92afc60f2c3dda` | `common_defs.h`, `libdeflate.h`, `lib/` |
 | libtiff | `v4.7.2` | `d01a94be176f5f6a87f7ee1c0b32e65416aa2b4d` | `libtiff/`, plus `port/libport.h` |
-| OpenEXR | `v3.5.2` | `69b2604fc76e370615438bdc8d2cd95b9349c12e` | `src/lib/{Iex,IlmThread,OpenEXR,OpenEXRCore}` |
+| OpenEXR | `v3.5.3` | `3950290530c4fd4776667d0dc4d65a9d003eb936` | `src/lib/{Iex,IlmThread,OpenEXR,OpenEXRCore}` |
 
 OpenEXR's `OpenEXR` library directory maps to `Source/OpenEXR/IlmImf`.
 Its installed-style `Imath/` include prefixes are removed because this fork
@@ -77,11 +77,15 @@ compatibility fallback for files written by 3.5.0/3.5.1 without the tables.
 Regenerate those older lossy LJ2K files for best results, per upstream notes.
 The Zstandard and OpenJPH snapshots are unchanged; retain all local patches above.
 
-OpenEXRCore's Windows file backend uses CreateFileW unconditionally, following
-the proposed [OpenEXR #2712](https://github.com/AcademySoftwareFoundation/openexr/pull/2712)
-fix for #2701. Preserve this local patch until upstream includes it; selecting
-CreateFile2 for newer build targets introduces an unnecessary Windows 8 API
-dependency in binaries intended to retain Windows 7 compatibility.
+OpenEXRCore's Windows file backend uses CreateFileW unconditionally. This was
+a local patch until upstream merged [OpenEXR #2712](https://github.com/AcademySoftwareFoundation/openexr/pull/2712)
+in 3.5.3, which now ships the same code, so it no longer needs preserving.
+
+OpenEXR 3.5.3 adds its own posix_memalign fallback in OpenEXRCore ZSTD for
+macOS deployment targets below 10.15. It sits beside the Android fallback
+above; keep both. The 3.5.3 update was applied as the upstream
+v3.5.2..v3.5.3 diff of the four library directories, with no new or removed
+source files. The Zstandard and OpenJPH snapshots are again unchanged.
 
 OpenJPH's SSE memory-clear kernel uses _mm_setzero_ps/_mm_storeu_ps, rather
 than SSE2 integer intrinsics. Preserve this local fix for GCC i686 builds:
