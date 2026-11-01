@@ -8,6 +8,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 - Add `FREEIMAGE_JXL_EXPORT` (default ON) for read-only JPEG XL, and `FREEIMAGE_CODEC_EXPORT` (default ON) to turn off HEIF/AVIF and JPEG XL saving together. With both codecs bundled, a read-only shared library is about a third smaller.
 - Add `FREEIMAGE_STRIP` for load/save and `FreeImage_StripMetadata()` for existing bitmaps, discarding auxiliary metadata while preserving animation controls and save-source metadata. (#239)
 - Correct TIFF IPTC profile lengths for libtiff fields exposed as byte counts, preventing an out-of-bounds metadata read.
+- Update bundled OpenEXR to 3.5.3, Little CMS to 2.20 and libaom to 3.15.3. OpenEXR 3.5.3 fixes several malformed-file bugs: an integer overflow in scanline size accumulation, a null read in the DWA decoder, unchecked ZSTD deep sample counts and a tile area overflow in deep tiled output. Little CMS fixes a possible crash on malformed profiles; libaom fixes an encoder integer overflow (oss-fuzz:572842743).
 
 ## 3.19.29 — Unreleased
 

@@ -170,8 +170,8 @@ function(freeimage_build_bundled_codec codec)
             # libaom's RTCD generator requires Perl even for the generic CPU
             # target. Keep AV1 enabled by default, but allow HEIF-only builds
             # on toolchains where Perl is unavailable.
-            freeimage_bundled_project(aom libaom-3.15.2.tar.gz
-                67bb54b245f33ed98600e08269e6139986e48114e14042474ddd8885801dfddc
+            freeimage_bundled_project(aom libaom-3.15.3.tar.gz
+                12c01dc731ed7b5a999e28120b45bf58a002ba3435a4ba2cfbc1e084a27c9c04
                 ARGS -DAOM_TARGET_CPU=generic -DENABLE_NASM=OFF -DCONFIG_RUNTIME_CPU_DETECT=0
                      -DCONFIG_AV1_ENCODER=${aom_config_encoder}
                      -DENABLE_APPS=OFF -DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF
@@ -211,8 +211,8 @@ function(freeimage_build_bundled_codec codec)
         freeimage_bundled_project(brotli brotli-1.2.1.tar.gz
             98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f
             ARGS -DBROTLI_DISABLE_TESTS=ON -DBROTLI_BUILD_TOOLS=OFF)
-        freeimage_bundled_project(lcms2 lcms2-2.19.1.zip
-            06d59795cb87a67f73daaa5b6f86bf77b256710aad5822e3fee7f89546a5f93f
+        freeimage_bundled_project(lcms2 lcms2-2.20.zip
+            5f8a1385cc05157575e249ae893f893889c3f6ea77e553245d6867a1fe658918
             ARGS -DLCMS2_BUILD_SHARED=OFF -DLCMS2_BUILD_STATIC=ON -DLCMS2_BUILD_TESTS=OFF
                  -DLCMS2_BUILD_TOOLS=OFF -DLCMS2_WITH_JPEG=OFF -DLCMS2_WITH_TIFF=OFF -DLCMS2_WITH_ZLIB=OFF)
         set(lcms "${pre}lcms2${ext}")

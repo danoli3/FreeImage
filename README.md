@@ -31,7 +31,7 @@ The bundled libtiff is fully synced to 4.7.2, including its integer-overflow har
 | JPEG | [libjpeg (IJG)](http://ijg.org/) | 10 (25 Jan 2026) | on | `BUILD_LIBJPEG` |
 | TIFF | [libtiff](http://www.libtiff.org/) | 4.7.2 | on | `BUILD_LIBTIFF` |
 | JPEG 2000 (J2K/JP2) | [OpenJPEG](https://github.com/uclouvain/openjpeg) | 2.5.4 | on | `BUILD_LIBOPENJPEG` |
-| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) | 3.5.2 | on for C++17+ | `BUILD_OPENEXR` |
+| OpenEXR (HDR) | [OpenEXR](https://openexr.com/) | 3.5.3 | on for C++17+ | `BUILD_OPENEXR` |
 | WebP | [libwebp](https://developers.google.com/speed/webp) | 1.6.0 | on | `BUILD_WEBP` |
 | Camera RAW (including CR3 and X3F) | [LibRaw](https://www.libraw.org/) | 0.22.3 | on | `BUILD_LIBRAWLITE` |
 | JPEG XR (JXR/WDP/HDP) | [jxrlib](https://github.com/4creators/jxrlib) | unversioned snapshot | on for Windows; optional elsewhere | `BUILD_JXR` |
@@ -49,8 +49,8 @@ Supporting libraries are bundled alongside the format libraries:
 | PNG, TIFF and other compressed formats | zlib 1.3.2 |
 | OpenEXR | Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0 |
 | HEIF/HEIC/HIF | libde265 1.1.3 (HEVC decoding), Kvazaar 2.3.2 (HEVC encoding) |
-| AVIF | libaom 3.15.2 (AV1 decoding/encoding; enabled by default with bundled HEIF) |
-| JPEG XL | Highway 1.4.0, Brotli 1.2.1, Little CMS 2.19.1 |
+| AVIF | libaom 3.15.3 (AV1 decoding/encoding; enabled by default with bundled HEIF) |
+| JPEG XL | Highway 1.4.0, Brotli 1.2.1, Little CMS 2.20 |
 
 See [third-party versions](THIRD_PARTY_VERSIONS.md) for version sources and
 [optional codec bundles](Source/ThirdParty/README.md) for archive checksums,
