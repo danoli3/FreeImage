@@ -1,9 +1,9 @@
 [
   {
-    "archive": "lcms2-2.19.1.zip",
-    "sha256": "06d59795cb87a67f73daaa5b6f86bf77b256710aad5822e3fee7f89546a5f93f",
+    "archive": "lcms2-2.20.zip",
+    "sha256": "5f8a1385cc05157575e249ae893f893889c3f6ea77e553245d6867a1fe658918",
     "name": "lcms2",
-    "url": "https://github.com/mm2/Little-CMS/releases/download/lcms2.19.1/lcms2-2.19.1.zip"
+    "url": "https://github.com/mm2/Little-CMS/releases/download/lcms2.20/lcms2-2.20.zip"
   },
   {
     "archive": "highway-1.4.0.tar.gz",

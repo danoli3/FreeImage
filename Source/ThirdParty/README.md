@@ -19,7 +19,7 @@ license and patent notices are in `licenses/` and installed with FreeImage.
 | JPEG XL | libjxl 0.12.0 | BSD-3-Clause, patent grant |
 | JPEG XL compression | Brotli 1.2.1 | MIT |
 | JPEG XL SIMD | Highway 1.4.0 | Apache-2.0 or BSD-3-Clause |
-| JPEG XL color management | Little CMS 2.19.1 | MIT |
+| JPEG XL color management | Little CMS 2.20 | MIT |
 
 FreeImage's own FIPL/GPL licensing does not replace these dependency licenses.
 The bundled codec archives are compiled as position-independent static

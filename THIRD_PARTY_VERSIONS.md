@@ -69,7 +69,7 @@ retain installed-SDK discovery. These archives and license copies are under
 | libjxl | 0.12.0 | JPEG XL |
 | Highway | 1.4.0 | JPEG XL SIMD |
 | Brotli | 1.2.1 | JPEG XL compression |
-| Little CMS | 2.19.1 | JPEG XL color management |
+| Little CMS | 2.20 | JPEG XL color management |
 
 FreeImage's HEIF/AVIF plugin adapts FreeImageRe's FIPL/GPLv2-licensed decoder
 at `b51d3945bfe785ad382a0969f1376aee344af8c6`; source archive bundling does
