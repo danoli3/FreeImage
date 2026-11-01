@@ -6,6 +6,8 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 
 - Add `FREEIMAGE_HEIF_EXPORT` (default ON). Turning it off builds HEIF/AVIF as read-only: the save functions are not compiled, and bundled builds skip Kvazaar and libaom's AV1 encoder.
 - Add `FREEIMAGE_JXL_EXPORT` (default ON) for read-only JPEG XL, and `FREEIMAGE_CODEC_EXPORT` (default ON) to turn off HEIF/AVIF and JPEG XL saving together. With both codecs bundled, a read-only shared library is about a third smaller.
+- Add `FREEIMAGE_STRIP` for load/save and `FreeImage_StripMetadata()` for existing bitmaps, discarding auxiliary metadata while preserving animation controls and save-source metadata. (#239)
+- Correct TIFF IPTC profile lengths for libtiff fields exposed as byte counts, preventing an out-of-bounds metadata read.
 
 ## 3.19.29 — Unreleased
 
