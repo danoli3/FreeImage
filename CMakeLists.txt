@@ -36,8 +36,8 @@ project(FreeImage VERSION ${FREEIMAGE_VERSION} LANGUAGES C CXX)
 
 # Suppress noise warnings from bundled third-party sources under MSVC (/wd is cl.exe-only, hence if(MSVC))
 if(MSVC)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4819 /wd4100 /wd4244 /wd4458 /wd4267 /wd4996 /wd4456 /wd4127 /wd4701 /wd4457 /wd4459 /wd4702 /wd4805")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4819 /wd4100 /wd4244 /wd4458 /wd4267 /wd4996 /wd4456 /wd4127 /wd4701 /wd4457 /wd4459 /wd4702 /wd4805")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4819 /wd4100 /wd4244 /wd4458 /wd4267 /wd4996 /wd4456 /wd4127 /wd4701 /wd4457 /wd4459 /wd4702 /wd4805 /wd4389 /wd4505")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4819 /wd4100 /wd4244 /wd4458 /wd4267 /wd4996 /wd4456 /wd4127 /wd4701 /wd4457 /wd4459 /wd4702 /wd4805 /wd4389 /wd4505")
 endif()
 
 # Keep the MSVC CRT selectable for consumers that need to match another
