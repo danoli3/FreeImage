@@ -25,11 +25,13 @@ these libraries has a newer stable upstream release.
 | ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
 
 All vendored versions, including OpenEXR's auxiliary codecs below, were
-rechecked against source headers on 2026-11-02 for FreeImage 3.19.30. All eight
+rechecked against source headers on 2026-11-02 for FreeImage 3.19.31. All eight
 optional codec archives were verified against the SHA-256 digests in
 `Source/ThirdParty/sources.json`; release/version files inside the archives
 were also reviewed. Little CMS 2.20 reports `LCMS_VERSION` 2200 in its public
 header and `AC_INIT(lcms2,2.20)` in its release configuration.
+
+Bundled versions are unchanged since FreeImage 3.19.30.
 
 Since 3.19.29, OpenEXR moved from 3.5.2 to 3.5.3, Little CMS from 2.19.1 to
 2.20 (`LCMS_VERSION` 2200), and libaom from 3.15.2 to 3.15.3. Other bundled
