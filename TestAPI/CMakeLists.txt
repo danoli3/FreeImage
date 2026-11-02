@@ -146,6 +146,13 @@ endif()
 
 # These tests call vendored codec APIs directly to create inputs that exercise
 # FreeImage's loaders. Those internal symbols are not part of its Windows DLL API.
+if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR)
+    add_executable(OpenJphNltTest testOpenJphNlt.cpp)
+    target_link_libraries(OpenJphNltTest PRIVATE FreeImage)
+    add_test(NAME OpenJphNltTest COMMAND OpenJphNltTest)
+    set_tests_properties(OpenJphNltTest PROPERTIES TIMEOUT 10)
+endif()
+
 if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR
    AND BUILD_LIBTIFF AND NOT USE_SYSTEM_LIBTIFF)
     add_executable(VendorCodecTest testVendorCodecs.cpp)
