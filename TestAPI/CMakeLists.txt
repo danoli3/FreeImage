@@ -118,6 +118,17 @@ if (BUILD_TESTS)
     endif()
     add_test(NAME MemWritePositionTest COMMAND MemWritePositionTest)
     set_tests_properties(MemWritePositionTest PROPERTIES TIMEOUT 10)
+
+    add_executable(BmpRleCursorTest testBmpRleCursor.cpp)
+    target_link_libraries(BmpRleCursorTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET BmpRleCursorTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:BmpRleCursorTest>
+            VERBATIM)
+    endif()
+    add_test(NAME BmpRleCursorTest COMMAND BmpRleCursorTest)
+    set_tests_properties(BmpRleCursorTest PROPERTIES TIMEOUT 60)
 endif ()
 
 if(BUILD_TESTS AND BUILD_LIBOPENJPEG)
