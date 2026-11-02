@@ -4,7 +4,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 
 ## Unreleased
 
-- Update bundled OpenJPH from 0.32.0 to 0.33.0, independently of the OpenEXR 3.5.3 snapshot. This includes the HTJ2K one-row codeblock allocation fix (CVE-2026-111151), NLT marker bounds checks, and the Win32 AVX2 and i686 SSE fixes previously carried as local patches. OpenEXR's lossy LJ2K lookup-table calls stay source compatible. (#259)
+- Update bundled OpenJPH from 0.32.0 to 0.33.0, independently of the OpenEXR 3.5.3 snapshot. This includes the HTJ2K one-row codeblock allocation fix (CVE-2026-111151), NLT marker bounds checks, and the Win32 AVX2 and i686 SSE fixes previously carried as local patches. OpenEXR's lossy LJ2K lookup-table calls stay source compatible. See [#259](https://github.com/danoli3/FreeImage/issues/259) and [#261](https://github.com/danoli3/FreeImage/pull/261).
 - Reject BMP RLE cursor moves that would wrap the signed decoder position. A wrapped RLE8 cursor made the next run write before the bitmap. Reported by ooq (jini135wii). (GHSA-7pp5-4w3w-437c)
 - Add `FREEIMAGE_HEIF_EXPORT` (default ON). Turning it off builds HEIF/AVIF as read-only: the save functions are not compiled, and bundled builds skip Kvazaar and libaom's AV1 encoder.
 - Add `FREEIMAGE_JXL_EXPORT` (default ON) for read-only JPEG XL, and `FREEIMAGE_CODEC_EXPORT` (default ON) to turn off HEIF/AVIF and JPEG XL saving together. With both codecs bundled, a read-only shared library is about a third smaller.
