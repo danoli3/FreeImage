@@ -4,6 +4,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 
 ## Unreleased
 
+- Reject BMP RLE cursor moves that would wrap the signed decoder position. A wrapped RLE8 cursor made the next run write before the bitmap. Reported by ooq (jini135wii). (GHSA-7pp5-4w3w-437c)
 - Add `FREEIMAGE_HEIF_EXPORT` (default ON). Turning it off builds HEIF/AVIF as read-only: the save functions are not compiled, and bundled builds skip Kvazaar and libaom's AV1 encoder.
 - Add `FREEIMAGE_JXL_EXPORT` (default ON) for read-only JPEG XL, and `FREEIMAGE_CODEC_EXPORT` (default ON) to turn off HEIF/AVIF and JPEG XL saving together. With both codecs bundled, a read-only shared library is about a third smaller.
 - Add `FREEIMAGE_STRIP` for load/save and `FreeImage_StripMetadata()` for existing bitmaps, discarding auxiliary metadata while preserving animation controls and save-source metadata. (#239)
