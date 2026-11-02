@@ -7,7 +7,7 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 BMP RLE security fix and bundled OpenJPH update.
 
 - Update bundled OpenJPH from 0.32.0 to 0.33.0, independently of the OpenEXR 3.5.3 snapshot. This includes the HTJ2K one-row codeblock allocation fix (CVE-2026-111151), NLT marker bounds checks, and the Win32 AVX2 and i686 SSE fixes previously carried as local patches. OpenEXR's lossy LJ2K lookup-table calls stay source compatible. (#259)
-- Fix signed integer overflow in the BMP RLE8 decoder that could cause an out-of-bounds heap write when loading a crafted BMP. Reject overflowing cursor moves in both RLE8 and RLE4 decoding. Reported by ooq (jini135wii). See [GHSA-7pp5-4w3w-437c](https://github.com/danoli3/FreeImage/security/advisories/GHSA-7pp5-4w3w-437c).
+- Fix signed integer overflow in the BMP RLE8 decoder that could cause an out-of-bounds heap write when loading a crafted BMP. Reject overflowing cursor moves in both RLE8 and RLE4 decoding. Thanks to [jini135wii (ooq)](https://github.com/jini135wii) for reporting this vulnerability. See the [report (GHSA-7pp5-4w3w-437c)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-7pp5-4w3w-437c).
 
 ## 3.19.30 — 2 Nov 2026
 
