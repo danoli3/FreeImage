@@ -505,10 +505,10 @@ jobs:
           "-DCMAKE_C_FLAGS=-fsanitize=address -g"
           "-DCMAKE_CXX_FLAGS=-fsanitize=address -g"
           -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address
-      - name: Build codec, PBM RLE and large-file regression tests
-        run: cmake --build build-simd --target VendorCodecTest IffPbmRleTest LargeFileTIFFTest -j2
+      - name: Build codec, NLT marker, PBM RLE and large-file regression tests
+        run: cmake --build build-simd --target VendorCodecTest OpenJphNltTest IffPbmRleTest LargeFileTIFFTest -j2
       - name: Verify runtime dispatch and codec round trips
-        run: ctest --test-dir build-simd -R 'VendorCodecTest|IffPbmRleTest|LargeFileTIFFTest' --output-on-failure --verbose
+        run: ctest --test-dir build-simd -R 'VendorCodecTest|OpenJphNltTest|IffPbmRleTest|LargeFileTIFFTest' --output-on-failure --verbose
 
   android-api25:
     name: Android API 25 (${{ matrix.abi }})

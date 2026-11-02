@@ -47,7 +47,7 @@ Supporting libraries are bundled alongside the format libraries:
 | Used by | Bundled libraries |
 |---|---|
 | PNG, TIFF and other compressed formats | zlib 1.3.2 |
-| OpenEXR | Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.32.0 |
+| OpenEXR | Imath 3.2.3, libdeflate 1.26, Zstandard 1.5.7, OpenJPH 0.33.0 |
 | HEIF/HEIC/HIF | libde265 1.1.3 (HEVC decoding), Kvazaar 2.3.2 (HEVC encoding) |
 | AVIF | libaom 3.15.3 (AV1 decoding/encoding; enabled by default with bundled HEIF) |
 | JPEG XL | Highway 1.4.0, Brotli 1.2.1, Little CMS 2.20 |

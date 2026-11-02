@@ -262,7 +262,7 @@ write_body() {
     {
         printf '%s\n\n' "$MARKER"
         printf '%s\n' "A scheduled check compared the versions in \`Source/\` with each project's latest stable release."
-        printf '%s\n\n' "This compares stable upstream versions; compatibility and branch policy still need review. Zstandard and OpenJPH snapshots follow OpenEXR and are reported for visibility."
+        printf '%s\n\n' "This compares stable upstream versions; compatibility and branch policy still need review. Zstandard follows OpenEXR releases and is reported for visibility. OpenJPH is checked against its own releases."
         printf '%s\n\n' "### Updates available"
         printf '%s\n' "| Library | Vendored | Latest upstream |"
         printf '%s\n' "| --- | --- | --- |"

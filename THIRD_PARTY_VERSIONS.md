@@ -41,7 +41,7 @@ OpenEXR, LibDeflate and LibTIFF4 were previously re-synced for #137; OpenEXR
 
 The scheduled checker now covers 20 directly vendored and archive-bundled
 libraries, with separate tables for updates and current versions. OpenEXR's
-Zstandard/OpenJPH snapshots follow OpenEXR's releases; LibJXR remains an
+Zstandard follows OpenEXR's releases; OpenJPH is updated separately below; LibJXR remains an
 unversioned snapshot without a maintained upstream release feed. The
 latest-upstream column above retains the previous release review; the
 version/hash audit does not assert that every bundled dependency is the
@@ -52,9 +52,13 @@ OpenEXR 3.5.3 also brings these upstream-vendored auxiliary codecs:
 | Library | Path | Vendored | Version source |
 |---|---|---|---|
 | Zstandard | `Source/OpenEXR/Zstd` | 1.5.7 | `lib/zstd.h` |
-| OpenJPH | `Source/OpenEXR/OpenJPH` | 0.32.0 | `openjph/ojph_version.h` |
+| OpenJPH | `Source/OpenEXR/OpenJPH` | 0.33.0 | `openjph/ojph_version.h` |
 
-These snapshots follow OpenEXR's release rather than being updated independently.
+Zstandard follows OpenEXR's release. OpenJPH was updated independently to
+0.33.0 on 2026-11-03 for #259. That release fixes the HTJ2K one-row codeblock
+heap overflow (CVE-2026-111151) and the NLT marker over-read. Its source file
+lists are unchanged; FreeImage's x86 dispatch opt-in and ARM64EC guards are
+retained.
 See [vendor integration notes](scripts/vendor/NOTES.md) for source provenance,
 configuration choices, and local patches to preserve in the next update.
 
