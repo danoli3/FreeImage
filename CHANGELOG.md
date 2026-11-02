@@ -98,6 +98,7 @@ PBM decoder security fixes, 32-bit compatibility, and installable Linux packages
 - Set CMake target VERSION and SOVERSION properties for shared-library builds. See [#157](https://github.com/danoli3/FreeImage/pull/157).
 - Add installable Arch Linux, Debian 13 and Ubuntu 24.04 packages with opt-in Linux library layout, pkg-config/CMake consumer checks, and system codec dependencies. Fix shared OpenJPEG imports and prevent bundled Imath headers from shadowing system OpenEXR. See [#160](https://github.com/danoli3/FreeImage/pull/160).
 - Numeric release tags now build and attach Linux packages, an exact source archive, a generated Arch recipe and SHA256SUMS-linux.txt to the matching GitHub release after all package jobs pass. This does not publish an AUR package or establish an apt repository.
+- Mark the checked-out workspace as a trusted Git directory in Linux package containers, allowing release identity checks and package builds to read repository metadata.
 - Bundled codec versions are unchanged from 3.19.21: OpenEXR 3.5.2, Imath 3.2.3, libdeflate 1.26, libpng 1.6.59, libtiff 4.7.2, IJG JPEG 10, OpenJPEG 2.5.4, LibRaw 0.22.2, WebP 1.6.0 and zlib 1.3.2. OpenEXR's Zstandard 1.5.7 and OpenJPH 0.32.0 snapshots are unchanged.
 
 ## 3.19.21 — 8 Oct 2026
