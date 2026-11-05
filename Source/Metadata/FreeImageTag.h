@@ -318,8 +318,8 @@ size_t FreeImage_GetTagMemorySize(FITAG *tag);
 */
 typedef struct tagTagInfo {
 	WORD tag;			// Tag ID (required)
-	char *fieldname;	// Field name (required)
-	char *description;	// Field description (may be NULL)
+	const char *fieldname;	// Field name (required)
+	const char *description;	// Field description (may be NULL)
 } TagInfo;
 
 
@@ -379,20 +379,11 @@ public:
 	};
 
 private:
-
-	typedef std::map<WORD, TagInfo*> TAGINFO;
-	typedef std::map<int, TAGINFO*>  TABLEMAP;
-
-	/// store hash tables for all known tag info tables
-	TABLEMAP _table_map;
-
-private:
 	/**
 	Constructor (private)<br>
-	This is where the tag info tables are initialized.
-	@see addMetadataModel
+	The tag info tables have static storage and need no initialization.
 	*/
-	TagLib();
+	TagLib() {}
 
 	/// Assignement operator (disabled)
 	void operator=(TagLib&);
@@ -400,17 +391,10 @@ private:
 	/// Copy constructor (disabled)
 	TagLib(const TagLib&);
 	
-	/** 
-	Used in the constructor to initialize the tag tables
-	@param md_model Internal metadata model
-	@param tag_table Tag info table
-	@return Returns TRUE if successful, returns FALSE otherwise
-	*/
-	BOOL addMetadataModel(MDMODEL md_model, TagInfo *tag_table);
 
 public:
 	/// Destructor
-	~TagLib();
+	~TagLib() {}
 
 	/**
 	@return Returns a reference to the TagLib instance

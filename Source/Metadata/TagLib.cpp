@@ -44,7 +44,7 @@
  --------------------------------------------------------------------------
  1) add a table identifier in the TagLib class definition (see enum MDMODEL)
  2) declare the tag table as static and use a 0/NULL value as last entry
- 3) initialize the table in TagLib::TagLib
+ 3) keep the rows sorted by tag ID and add the table to getTagTable
  4) provide a conversion in TagLib::getFreeImageModel
 */
 
@@ -52,7 +52,7 @@
 // EXIF standard tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   exif_exif_tag_table[] =
   {
     { 0x0100, (char *) "ImageWidth", (char *) "Image width"},
@@ -85,6 +85,7 @@ static TagInfo
 	{ 0x013C, (char *) "HostComputer", (char *) "Host computer used to generate the image"},
     { 0x013E, (char *) "WhitePoint", (char *) "White point chromaticity"},
     { 0x013F, (char *) "PrimaryChromaticities", (char *) "Chromaticities of primaries"},
+	{ 0x0152, (char *) "ExtraSamples", (char *) "Description of extra components"},
     { 0x0156, (char *) "TransferRange", (char *) NULL},
     { 0x0200, (char *) "JPEGProc", (char *) NULL},
     { 0x0201, (char *) "JPEGInterchangeFormat", (char *) "Offset to JPEG SOI"},
@@ -93,6 +94,10 @@ static TagInfo
     { 0x0212, (char *) "YCbCrSubSampling", (char *) "Subsampling ratio of Y to C"},
     { 0x0213, (char *) "YCbCrPositioning", (char *) "Y and C positioning"},
     { 0x0214, (char *) "ReferenceBlackWhite", (char *) "Pair of black and white reference values"},
+
+	// These tags are not part of the Exiv v2.3 specifications but are often loaded by applications as Exif data
+	{ 0x4746, (char *) "Rating", (char *) "Rating tag used by Windows"},
+	{ 0x4749, (char *) "RatingPercent", (char *) "Rating tag used by Windows, value in percent"},
     { 0x828D, (char *) "CFARepeatPatternDim", (char *) NULL},
     { 0x828E, (char *) "CFAPattern", (char *) NULL},
     { 0x828F, (char *) "BatteryLevel", (char *) NULL},
@@ -142,6 +147,11 @@ static TagInfo
 	{ 0x9403, (char *) "WaterDepth", (char *) "Depth under water in metres, negative for above water"},
 	{ 0x9404, (char *) "Acceleration", (char *) "Directionless camera acceleration in units of mGal, or 10^-5 m/s2"},
 	{ 0x9405, (char *) "CameraElevationAngle", (char *) "Angle of orientation of the camera (imaging optical axis) in degrees"},
+	{ 0x9C9B, (char *) "XPTitle", (char *) "Title tag used by Windows, encoded in UCS2"},
+	{ 0x9C9C, (char *) "XPComment", (char *) "Comment tag used by Windows, encoded in UCS2"},
+	{ 0x9C9D, (char *) "XPAuthor", (char *) "Author tag used by Windows, encoded in UCS2"},
+	{ 0x9C9E, (char *) "XPKeywords", (char *) "Keywords tag used by Windows, encoded in UCS2"},
+	{ 0x9C9F, (char *) "XPSubject", (char *) "Subject tag used by Windows, encoded in UCS2"},
     { 0xA000, (char *) "FlashPixVersion", (char *) "Supported Flashpix version"},
     { 0xA001, (char *) "ColorSpace", (char *) "Color space information"},
     { 0xA002, (char *) "PixelXDimension", (char *) "Valid image width"},
@@ -182,16 +192,6 @@ static TagInfo
 	{ 0xA461, (char *) "SourceImageNumberOfCompositeImage", (char *) "Source image number of composite image" },
 	{ 0xA462, (char *) "SourceExposureTimesOfCompositeImage", (char *) "Source exposure times of composite image" },
 
-	// These tags are not part of the Exiv v2.3 specifications but are often loaded by applications as Exif data
-	{ 0x4746, (char *) "Rating", (char *) "Rating tag used by Windows"},
-	{ 0x4749, (char *) "RatingPercent", (char *) "Rating tag used by Windows, value in percent"},
-	{ 0x9C9B, (char *) "XPTitle", (char *) "Title tag used by Windows, encoded in UCS2"},
-	{ 0x9C9C, (char *) "XPComment", (char *) "Comment tag used by Windows, encoded in UCS2"},
-	{ 0x9C9D, (char *) "XPAuthor", (char *) "Author tag used by Windows, encoded in UCS2"},
-	{ 0x9C9E, (char *) "XPKeywords", (char *) "Keywords tag used by Windows, encoded in UCS2"},
-	{ 0x9C9F, (char *) "XPSubject", (char *) "Subject tag used by Windows, encoded in UCS2"},
-	{ 0x0152, (char *) "ExtraSamples", (char *) "Description of extra components"},
-
 	{ 0x0000, (char *) NULL, (char *) NULL}
   };
 
@@ -199,7 +199,7 @@ static TagInfo
 // EXIF GPS tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   exif_gps_tag_table[] =
   {
     { 0x0000, (char *) "GPSVersionID", (char *) "GPS tag version"},
@@ -241,7 +241,7 @@ static TagInfo
 // EXIF interoperability tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   exif_interop_tag_table[] =
   {
     { 0x0001, (char *) "InteroperabilityIndex", (char *) "Interoperability Identification"},
@@ -259,7 +259,7 @@ static TagInfo
 /**
 Canon maker note
 */
-static TagInfo
+static const TagInfo
   exif_canon_tag_table[] =
   {
     { 0x0001, (char *) "CanonCameraSettings", (char *) "Canon CameraSettings Tags"},
@@ -318,6 +318,36 @@ static TagInfo
     { 0x00B6, (char *) "PreviewImageInfo", (char *) NULL},
     { 0x00D0, (char *) "VRDOffset", (char *) "Offset of VRD 'recipe data' if it exists"},
     { 0x00E0, (char *) "SensorInfo", (char *) NULL},
+
+	// Fields under tag 0x0012 (we add 0x1200 to make unique tag id)
+    { 0x1200 + 0, (char *) "AFInfo:NumAFPoints", (char *) NULL},
+    { 0x1200 + 1, (char *) "AFInfo:ValidAFPoints", (char *) NULL},
+    { 0x1200 + 2, (char *) "AFInfo:CanonImageWidth", (char *) NULL},
+    { 0x1200 + 3, (char *) "AFInfo:CanonImageHeight", (char *) NULL},
+    { 0x1200 + 4, (char *) "AFInfo:AFImageWidth", (char *) NULL},
+    { 0x1200 + 5, (char *) "AFInfo:AFImageHeight", (char *) NULL},
+    { 0x1200 + 6, (char *) "AFInfo:AFAreaWidth", (char *) NULL},
+    { 0x1200 + 7, (char *) "AFInfo:AFAreaHeight", (char *) NULL},
+    { 0x1200 + 8, (char *) "AFInfo:AFAreaXPositions", (char *) NULL},
+    { 0x1200 + 9, (char *) "AFInfo:AFAreaYPositions", (char *) NULL},
+    { 0x1200 + 10, (char *) "AFInfo:AFPointsInFocus", (char *) NULL},
+    { 0x1200 + 11, (char *) "AFInfo:PrimaryAFPoint?", (char *) NULL},
+    { 0x1200 + 12, (char *) "AFInfo:PrimaryAFPoint", (char *) NULL},
+	{ 0x1200 + 13, (char *) "AFInfo:0x000D", (char *) NULL},
+	{ 0x1200 + 14, (char *) "AFInfo:0x000E", (char *) NULL},
+	{ 0x1200 + 15, (char *) "AFInfo:0x000F", (char *) NULL},
+	{ 0x1200 + 16, (char *) "AFInfo:0x0010", (char *) NULL},
+	{ 0x1200 + 17, (char *) "AFInfo:0x0011", (char *) NULL},
+	{ 0x1200 + 18, (char *) "AFInfo:0x0012", (char *) NULL},
+	{ 0x1200 + 19, (char *) "AFInfo:0x0013", (char *) NULL},
+	{ 0x1200 + 20, (char *) "AFInfo:0x0014", (char *) NULL},
+	{ 0x1200 + 21, (char *) "AFInfo:0x0015", (char *) NULL},
+	{ 0x1200 + 22, (char *) "AFInfo:0x0016", (char *) NULL},
+	{ 0x1200 + 23, (char *) "AFInfo:0x0017", (char *) NULL},
+	{ 0x1200 + 24, (char *) "AFInfo:0x0018", (char *) NULL},
+	{ 0x1200 + 25, (char *) "AFInfo:0x0019", (char *) NULL},
+	{ 0x1200 + 26, (char *) "AFInfo:0x001A", (char *) NULL},
+	{ 0x1200 + 27, (char *) "AFInfo:0x001B", (char *) NULL},
     { 0x4001, (char *) "ColorData", (char *) "Canon ColorData Tags"},
     { 0x4002, (char *) "CRWParam?", (char *) NULL},
     { 0x4003, (char *) "ColorInfo", (char *) NULL},
@@ -425,36 +455,6 @@ static TagInfo
 	{ 0xC400 + 32, (char *) "ShotInfo:0x0020", (char *) NULL},
     { 0xC400 + 33, (char *) "ShotInfo:FlashOutput", (char *) NULL},
 
-	// Fields under tag 0x0012 (we add 0x1200 to make unique tag id)
-    { 0x1200 + 0, (char *) "AFInfo:NumAFPoints", (char *) NULL},
-    { 0x1200 + 1, (char *) "AFInfo:ValidAFPoints", (char *) NULL},
-    { 0x1200 + 2, (char *) "AFInfo:CanonImageWidth", (char *) NULL},
-    { 0x1200 + 3, (char *) "AFInfo:CanonImageHeight", (char *) NULL},
-    { 0x1200 + 4, (char *) "AFInfo:AFImageWidth", (char *) NULL},
-    { 0x1200 + 5, (char *) "AFInfo:AFImageHeight", (char *) NULL},
-    { 0x1200 + 6, (char *) "AFInfo:AFAreaWidth", (char *) NULL},
-    { 0x1200 + 7, (char *) "AFInfo:AFAreaHeight", (char *) NULL},
-    { 0x1200 + 8, (char *) "AFInfo:AFAreaXPositions", (char *) NULL},
-    { 0x1200 + 9, (char *) "AFInfo:AFAreaYPositions", (char *) NULL},
-    { 0x1200 + 10, (char *) "AFInfo:AFPointsInFocus", (char *) NULL},
-    { 0x1200 + 11, (char *) "AFInfo:PrimaryAFPoint?", (char *) NULL},
-    { 0x1200 + 12, (char *) "AFInfo:PrimaryAFPoint", (char *) NULL},
-	{ 0x1200 + 13, (char *) "AFInfo:0x000D", (char *) NULL},
-	{ 0x1200 + 14, (char *) "AFInfo:0x000E", (char *) NULL},
-	{ 0x1200 + 15, (char *) "AFInfo:0x000F", (char *) NULL},
-	{ 0x1200 + 16, (char *) "AFInfo:0x0010", (char *) NULL},
-	{ 0x1200 + 17, (char *) "AFInfo:0x0011", (char *) NULL},
-	{ 0x1200 + 18, (char *) "AFInfo:0x0012", (char *) NULL},
-	{ 0x1200 + 19, (char *) "AFInfo:0x0013", (char *) NULL},
-	{ 0x1200 + 20, (char *) "AFInfo:0x0014", (char *) NULL},
-	{ 0x1200 + 21, (char *) "AFInfo:0x0015", (char *) NULL},
-	{ 0x1200 + 22, (char *) "AFInfo:0x0016", (char *) NULL},
-	{ 0x1200 + 23, (char *) "AFInfo:0x0017", (char *) NULL},
-	{ 0x1200 + 24, (char *) "AFInfo:0x0018", (char *) NULL},
-	{ 0x1200 + 25, (char *) "AFInfo:0x0019", (char *) NULL},
-	{ 0x1200 + 26, (char *) "AFInfo:0x001A", (char *) NULL},
-	{ 0x1200 + 27, (char *) "AFInfo:0x001B", (char *) NULL},
-
 	// Fields under tag 0x00A0 (we add 0xCA00 to make unique tag id)
     { 0xCA00 + 1, (char *) "ProcessingInfo:ToneCurve", (char *) NULL},
     { 0xCA00 + 2, (char *) "ProcessingInfo:Sharpness", (char *) NULL},
@@ -494,7 +494,7 @@ static TagInfo
 /**
 Casio type 1 maker note
 */
-static TagInfo
+static const TagInfo
   exif_casio_type1_tag_table[] =
   {
     { 0x0001, (char *) "RecordingMode", (char *) NULL},
@@ -521,7 +521,7 @@ static TagInfo
 /**
 Casio type 2 maker note
 */
-static TagInfo
+static const TagInfo
   exif_casio_type2_tag_table[] =
   {
     { 0x0002, (char *) "PreviewImageSize", (char *) NULL},
@@ -577,7 +577,7 @@ static TagInfo
 /**
 FujiFilm maker note
 */
-static TagInfo
+static const TagInfo
   exif_fujifilm_tag_table[] =
   {
     { 0x0000, (char *) "Version", (char *) NULL},
@@ -625,7 +625,7 @@ static TagInfo
 /**
 Kyocera maker note
 */
-static TagInfo
+static const TagInfo
   exif_kyocera_tag_table[] =
   {
     { 0x0001, (char *) "ThumbnailImage", (char *) NULL},
@@ -636,7 +636,7 @@ static TagInfo
 /**
 Olympus Type 1 / Epson / Agfa maker note
 */
-static TagInfo
+static const TagInfo
   exif_olympus_type1_tag_table[] =
   {
     { 0x0000, (char *) "MakerNoteVersion", (char *) NULL},
@@ -746,7 +746,7 @@ static TagInfo
 /**
 Minolta maker note
 */
-static TagInfo
+static const TagInfo
   exif_minolta_tag_table[] =
   {
     { 0x0000, (char *) "MakerNoteVersion", (char *) NULL},
@@ -788,7 +788,7 @@ offset 0x08. This is the same as Olympus except start string.
 /**
 TYPE 1 is for E-Series cameras prior to (not including) E990
 */
-static TagInfo
+static const TagInfo
   exif_nikon_type1_tag_table[] =
   {
     { 0x0002, (char *) "FamilyID", (char *) NULL},
@@ -806,7 +806,7 @@ static TagInfo
 /**
 Nikon type 2 maker note
 */
-static TagInfo
+static const TagInfo
   exif_nikon_type2_tag_table[] =
   {
     { 0x0001, (char *) "MakerNoteVersion", (char *) NULL},
@@ -840,7 +840,7 @@ static TagInfo
 The type-3 directory is for D-Series cameras such as the D1 and D100.
 see http://www.timelesswanderings.net/equipment/D100/NEF.html
 */
-static TagInfo
+static const TagInfo
   exif_nikon_type3_tag_table[] =
   {
     { 0x0001, (char *) "MakerNoteVersion", (char *) NULL},
@@ -939,7 +939,7 @@ static TagInfo
 /**
 Panasonic / Leica maker note
 */
-static TagInfo
+static const TagInfo
   exif_panasonic_tag_table[] =
   {
     { 0x0001, (char *) "ImageQuality", (char *) NULL},
@@ -1021,7 +1021,7 @@ static TagInfo
 /**
 Pentax (Asahi) maker note type 1
 */
-static TagInfo
+static const TagInfo
   exif_asahi_tag_table[] =
   {
     { 0x0001, (char *) "Capture Mode", (char *) NULL},
@@ -1044,7 +1044,7 @@ static TagInfo
 /**
 Pentax maker note type 2
 */
-static TagInfo
+static const TagInfo
   exif_pentax_tag_table[] =
   {
     { 0x0000, (char *) "PentaxVersion", (char *) NULL},
@@ -1177,7 +1177,7 @@ static TagInfo
 /**
 Sony maker note
 */
-static TagInfo
+static const TagInfo
   exif_sony_tag_table[] =
   {
     { 0x0102, (char *) "Quality", (char *) NULL},
@@ -1235,7 +1235,7 @@ static TagInfo
 /**
 Sigma SD1 maker note
 */
-static TagInfo
+static const TagInfo
   exif_sigma_sd1_tag_table[] =
   {
     { 0x0002, (char *) "SerialNumber", (char *) NULL},
@@ -1285,7 +1285,7 @@ static TagInfo
 Sigma / Foveon maker note (others than SD1 models)
 NB: many tags are not consistent between different models
 */
-static TagInfo
+static const TagInfo
   exif_sigma_foveon_tag_table[] =
   {
     { 0x0002, (char *) "SerialNumber", (char *) NULL},
@@ -1336,19 +1336,19 @@ static TagInfo
 /**
 Apple iOS maker note
 */
-static TagInfo
-exif_apple_ios_tag_table[] =
-{
+static const TagInfo
+  exif_apple_ios_tag_table[] =
+  {
 	// tag definition is unknown, just record the tag ID
 	{ 0x0000, (char *)NULL, (char *)NULL}
-};
+  };
 
 
 // --------------------------------------------------------------------------
 // IPTC tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   iptc_tag_table[] =
   {
 	  // IPTC-NAA IIM version 4
@@ -1431,7 +1431,7 @@ static TagInfo
 // GeoTIFF tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   geotiff_tag_table[] =
   {
     { 0x830E, (char *) "GeoPixelScale", (char *) NULL},
@@ -1449,7 +1449,7 @@ static TagInfo
 // Animation tags definition
 // --------------------------------------------------------------------------
 
-static TagInfo
+static const TagInfo
   animation_tag_table[] =
   {
     { 0x0001, (char *) "LogicalWidth", (char *) "Logical width"},
@@ -1470,78 +1470,88 @@ static TagInfo
 // --------------------------------------------------------------------------
 
 
-/**
-This is where the tag info tables are initialized
-*/
-TagLib::TagLib() {
-	// initialize all known metadata models
-	// ====================================
+namespace {
 
-	// Exif
-	addMetadataModel(TagLib::EXIF_MAIN, exif_exif_tag_table);
-	addMetadataModel(TagLib::EXIF_EXIF, exif_exif_tag_table);
-	addMetadataModel(TagLib::EXIF_GPS, exif_gps_tag_table);
-	addMetadataModel(TagLib::EXIF_INTEROP, exif_interop_tag_table);
-
-	// Exif maker note
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_CANON, exif_canon_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_CASIOTYPE1, exif_casio_type1_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_CASIOTYPE2, exif_casio_type2_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_FUJIFILM, exif_fujifilm_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_KYOCERA, exif_kyocera_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_MINOLTA, exif_minolta_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_NIKONTYPE1, exif_nikon_type1_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_NIKONTYPE2, exif_nikon_type2_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_NIKONTYPE3, exif_nikon_type3_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_OLYMPUSTYPE1, exif_olympus_type1_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_PANASONIC, exif_panasonic_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_ASAHI, exif_asahi_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_PENTAX, exif_pentax_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_SONY, exif_sony_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_SIGMA_SD1, exif_sigma_sd1_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_SIGMA_FOVEON, exif_sigma_foveon_tag_table);
-	addMetadataModel(TagLib::EXIF_MAKERNOTE_APPLE_IOS, exif_apple_ios_tag_table);
-
-	// IPTC/NAA
-	addMetadataModel(TagLib::IPTC, iptc_tag_table);
-
-	// GeoTIFF
-	addMetadataModel(TagLib::GEOTIFF, geotiff_tag_table);
-
-	// Animation
-	addMetadataModel(TagLib::ANIMATION, animation_tag_table);
-}
-
-BOOL TagLib::addMetadataModel(MDMODEL md_model, TagInfo *tag_table) {
-	// check that the model doesn't already exist
-	if((_table_map.find(md_model) == _table_map.end()) && (tag_table != NULL)) {
-
-		// add the tag description table
-		TAGINFO *info_map = new(std::nothrow) TAGINFO();
-		if(!info_map) return FALSE;
-
-		for(int i = 0; ; i++) {
-			if((tag_table[i].tag == 0) && (tag_table[i].fieldname == NULL))
-				break;
-			(*info_map)[tag_table[i].tag] = &tag_table[i];
-		}
-
-		// add the metadata model
-		_table_map[md_model] = info_map;
-
-		return TRUE;
+// Table entries are sorted by tag ID. The final sentinel is not part of the lookup.
+const TagInfo* getTagTable(TagLib::MDMODEL model, size_t& count) {
+	switch(model) {
+		case TagLib::EXIF_MAIN:
+		case TagLib::EXIF_EXIF:
+			count = sizeof(exif_exif_tag_table) / sizeof(exif_exif_tag_table[0]) - 1;
+			return exif_exif_tag_table;
+		case TagLib::EXIF_GPS:
+			count = sizeof(exif_gps_tag_table) / sizeof(exif_gps_tag_table[0]) - 1;
+			return exif_gps_tag_table;
+		case TagLib::EXIF_INTEROP:
+			count = sizeof(exif_interop_tag_table) / sizeof(exif_interop_tag_table[0]) - 1;
+			return exif_interop_tag_table;
+		case TagLib::EXIF_MAKERNOTE_CANON:
+			count = sizeof(exif_canon_tag_table) / sizeof(exif_canon_tag_table[0]) - 1;
+			return exif_canon_tag_table;
+		case TagLib::EXIF_MAKERNOTE_CASIOTYPE1:
+			count = sizeof(exif_casio_type1_tag_table) / sizeof(exif_casio_type1_tag_table[0]) - 1;
+			return exif_casio_type1_tag_table;
+		case TagLib::EXIF_MAKERNOTE_CASIOTYPE2:
+			count = sizeof(exif_casio_type2_tag_table) / sizeof(exif_casio_type2_tag_table[0]) - 1;
+			return exif_casio_type2_tag_table;
+		case TagLib::EXIF_MAKERNOTE_FUJIFILM:
+			count = sizeof(exif_fujifilm_tag_table) / sizeof(exif_fujifilm_tag_table[0]) - 1;
+			return exif_fujifilm_tag_table;
+		case TagLib::EXIF_MAKERNOTE_KYOCERA:
+			count = sizeof(exif_kyocera_tag_table) / sizeof(exif_kyocera_tag_table[0]) - 1;
+			return exif_kyocera_tag_table;
+		case TagLib::EXIF_MAKERNOTE_MINOLTA:
+			count = sizeof(exif_minolta_tag_table) / sizeof(exif_minolta_tag_table[0]) - 1;
+			return exif_minolta_tag_table;
+		case TagLib::EXIF_MAKERNOTE_NIKONTYPE1:
+			count = sizeof(exif_nikon_type1_tag_table) / sizeof(exif_nikon_type1_tag_table[0]) - 1;
+			return exif_nikon_type1_tag_table;
+		case TagLib::EXIF_MAKERNOTE_NIKONTYPE2:
+			count = sizeof(exif_nikon_type2_tag_table) / sizeof(exif_nikon_type2_tag_table[0]) - 1;
+			return exif_nikon_type2_tag_table;
+		case TagLib::EXIF_MAKERNOTE_NIKONTYPE3:
+			count = sizeof(exif_nikon_type3_tag_table) / sizeof(exif_nikon_type3_tag_table[0]) - 1;
+			return exif_nikon_type3_tag_table;
+		case TagLib::EXIF_MAKERNOTE_OLYMPUSTYPE1:
+			count = sizeof(exif_olympus_type1_tag_table) / sizeof(exif_olympus_type1_tag_table[0]) - 1;
+			return exif_olympus_type1_tag_table;
+		case TagLib::EXIF_MAKERNOTE_PANASONIC:
+			count = sizeof(exif_panasonic_tag_table) / sizeof(exif_panasonic_tag_table[0]) - 1;
+			return exif_panasonic_tag_table;
+		case TagLib::EXIF_MAKERNOTE_ASAHI:
+			count = sizeof(exif_asahi_tag_table) / sizeof(exif_asahi_tag_table[0]) - 1;
+			return exif_asahi_tag_table;
+		case TagLib::EXIF_MAKERNOTE_PENTAX:
+			count = sizeof(exif_pentax_tag_table) / sizeof(exif_pentax_tag_table[0]) - 1;
+			return exif_pentax_tag_table;
+		case TagLib::EXIF_MAKERNOTE_SONY:
+			count = sizeof(exif_sony_tag_table) / sizeof(exif_sony_tag_table[0]) - 1;
+			return exif_sony_tag_table;
+		case TagLib::EXIF_MAKERNOTE_SIGMA_SD1:
+			count = sizeof(exif_sigma_sd1_tag_table) / sizeof(exif_sigma_sd1_tag_table[0]) - 1;
+			return exif_sigma_sd1_tag_table;
+		case TagLib::EXIF_MAKERNOTE_SIGMA_FOVEON:
+			count = sizeof(exif_sigma_foveon_tag_table) / sizeof(exif_sigma_foveon_tag_table[0]) - 1;
+			return exif_sigma_foveon_tag_table;
+		case TagLib::EXIF_MAKERNOTE_APPLE_IOS:
+			count = sizeof(exif_apple_ios_tag_table) / sizeof(exif_apple_ios_tag_table[0]) - 1;
+			return exif_apple_ios_tag_table;
+		case TagLib::IPTC:
+			count = sizeof(iptc_tag_table) / sizeof(iptc_tag_table[0]) - 1;
+			return iptc_tag_table;
+		case TagLib::GEOTIFF:
+			count = sizeof(geotiff_tag_table) / sizeof(geotiff_tag_table[0]) - 1;
+			return geotiff_tag_table;
+		case TagLib::ANIMATION:
+			count = sizeof(animation_tag_table) / sizeof(animation_tag_table[0]) - 1;
+			return animation_tag_table;
 	}
-
-	return FALSE;
+	count = 0;
+	return NULL;
 }
 
-TagLib::~TagLib() {
-	// delete metadata models
-	for(TABLEMAP::iterator i = _table_map.begin(); i != _table_map.end(); i++) {
-		TAGINFO *info_map = (*i).second;
-		delete info_map;
-	}
-}
+} // namespace
+
 
 
 TagLib& 
@@ -1550,14 +1560,20 @@ TagLib::instance() {
 	return s;
 }
 
-const TagInfo* 
+const TagInfo*
 TagLib::getTagInfo(MDMODEL md_model, WORD tagID) {
-
-	if(_table_map.find(md_model) != _table_map.end()) {
-
-		TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
-		if(info_map->find(tagID) != info_map->end()) {
-			return (*info_map)[tagID];
+	size_t count;
+	const TagInfo* table = getTagTable(md_model, count);
+	while(count != 0) {
+		const size_t step = count / 2;
+		const TagInfo* entry = table + step;
+		if(entry->tag < tagID) {
+			table = entry + 1;
+			count -= step + 1;
+		} else if(entry->tag > tagID) {
+			count = step;
+		} else {
+			return entry;
 		}
 	}
 	return NULL;
@@ -1591,15 +1607,12 @@ TagLib::getTagDescription(MDMODEL md_model, WORD tagID) {
 }
 
 int TagLib::getTagID(MDMODEL md_model, const char *key) {
-
-	if(_table_map.find(md_model) != _table_map.end()) {
-
-		TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
-		for(TAGINFO::iterator i = info_map->begin(); i != info_map->end(); i++) {
-			const TagInfo *info = (*i).second;
-			if(info && (strcmp(info->fieldname, key) == 0)) {
-				return (int)info->tag;
-			}
+	size_t count;
+	const TagInfo* table = getTagTable(md_model, count);
+	for(size_t i = 0; i < count; ++i) {
+		if(strcmp(table[i].fieldname, key) == 0) {
+			// Keep the first (lowest tag ID) match when field names repeat.
+			return (int)table[i].tag;
 		}
 	}
 	return -1;
