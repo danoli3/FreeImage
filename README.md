@@ -60,6 +60,10 @@ licenses and build requirements.
 https://sourceforge.net/projects/freeimage
 Original library can be found : https://freeimage.sourceforge.io 
 
+The [upstream patch archive](upstream-patches/README.md) lists submitted patches,
+what they fix, and fork changes needing submission review. See also the
+[SourceForge submission index](SOURCEFORGE_SVN_PATCHES.md).
+
 ## Status
 
 [![CMake build](https://github.com/danoli3/FreeImage/actions/workflows/cmake.yml/badge.svg)](https://github.com/danoli3/FreeImage/actions/workflows/cmake.yml)

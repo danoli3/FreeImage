@@ -2,6 +2,8 @@ name: "CMake build"
 
 on:
   push:
+    paths-ignore:
+      - upstream-patches/**
     # unscoped push: would also fire for every push to an open PR's branch,
     # duplicating the pull_request run below for the same commit. Scoping
     # to master keeps a post-merge signal without doubling PR CI - the
@@ -10,6 +12,8 @@ on:
     branches:
       - master
   pull_request:
+    paths-ignore:
+      - upstream-patches/**
   workflow_dispatch:
 
 defaults:
