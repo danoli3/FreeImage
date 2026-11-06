@@ -423,9 +423,9 @@ processCanonMakerNoteTag(FIBITMAP *dib, FITAG *tag) {
 		// process as a normal tag
 
 		// get the tag key and description
-		const char *key = s.getTagFieldName(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey);
+		const char *description;
+		const char *key = s.getTagFields(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey, &description);
 		FreeImage_SetTagKey(tag, key);
-		const char *description = s.getTagDescription(TagLib::EXIF_MAKERNOTE_CANON, tag_id);
 		FreeImage_SetTagDescription(tag, description);
 
 		// store the tag
@@ -452,9 +452,9 @@ processCanonMakerNoteTag(FIBITMAP *dib, FITAG *tag) {
 		FreeImage_SetTagValue(canonTag, &pvalue[i]);
 
 		// get the tag key and description
-		const char *key = s.getTagFieldName(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey);
+		const char *description;
+		const char *key = s.getTagFields(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey, &description);
 		FreeImage_SetTagKey(canonTag, key);
-		const char *description = s.getTagDescription(TagLib::EXIF_MAKERNOTE_CANON, tag_id);
 		FreeImage_SetTagDescription(canonTag, description);
 
 		// store the tag
@@ -576,9 +576,9 @@ processExifTag(FIBITMAP *dib, FITAG *tag, char *pval, BOOL msb_order, TagLib::MD
 		WORD tag_id = FreeImage_GetTagID(tag);
 
 		// get the tag key and description
-		const char *key = s.getTagFieldName(md_model, tag_id, defaultKey);
+		const char *description;
+		const char *key = s.getTagFields(md_model, tag_id, defaultKey, &description);
 		FreeImage_SetTagKey(tag, key);
-		const char *description = s.getTagDescription(md_model, tag_id);
 		FreeImage_SetTagDescription(tag, description);
 
 		// store the tag

@@ -57,6 +57,9 @@ default: all
 
 all: dist
 
+# Metadata rows are included separately from the implementation.
+Source/Metadata/TagLib.o-i386 Source/Metadata/TagLib.o-x86_64: Source/Metadata/TagLibData.h
+
 # ONLY STATIC AND 64 BIT // START ---
 
 dist: FreeImage

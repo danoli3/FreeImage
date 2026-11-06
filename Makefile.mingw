@@ -94,6 +94,9 @@ default: all
 
 all: mkdist
 
+# Metadata rows are included separately from the implementation.
+Source/Metadata/TagLib.o: Source/Metadata/TagLibData.h
+
 rebuild: clean all
 
 mkdist: FreeImage $(TARGETDIST)
