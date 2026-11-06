@@ -314,22 +314,12 @@ size_t FreeImage_GetTagMemorySize(FITAG *tag);
 // --------------------------------------------------------------------------
 
 /**
-	Structure to hold a tag information
-*/
-typedef struct tagTagInfo {
-	WORD tag;			// Tag ID (required)
-	const char *fieldname;	// Field name (required)
-	const char *description;	// Field description (may be NULL)
-} TagInfo;
-
-
-/**
 Class to hold tag information (based on Meyers' Singleton).<br>
 
 Sample usage :<br>
 <code>
 TagLib& s = TagLib::instance();
-TagInfo *tag_info = s.getTagInfo(EXIF_MAIN, 0x0100);
+const char *name = s.getTagFieldName(TagLib::EXIF_MAIN, 0x0100, NULL);
 </code>
 
 Note on multi-threaded applications : 
@@ -400,14 +390,6 @@ public:
 	@return Returns a reference to the TagLib instance
 	*/
 	static TagLib& instance();
-
-	/**
-	Given a tag ID, returns its TagInfo descriptor
-	@param md_model Internal metadata model
-	@param tagID tag ID
-	@return Returns the TagInfo descriptor if successful, returns NULL otherwise
-	*/
-	const TagInfo* getTagInfo(MDMODEL md_model, WORD tagID);
 
 	/**
 	Given a tag ID, returns its tag field name. 

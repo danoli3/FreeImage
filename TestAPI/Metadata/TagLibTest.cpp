@@ -28,40 +28,81 @@
 #error This test requires assertions
 #endif
 
+// Compare every decoded string with its source literal, checking each pool's
+// bounds and terminators independently of the decoding helper.
+static void checkString(const TagTable& table, size_t poolSize, WORD offset, const char* expected) {
+	assert(offset < poolSize);
+	if(expected) {
+		assert(offset != 0);
+		assert(memchr(table.strings + offset, 0, poolSize - offset) != NULL);
+		assert(strcmp(getTagString(table, offset), expected) == 0);
+	} else {
+		assert(offset == 0);
+		assert(getTagString(table, offset) == NULL);
+	}
+}
+
+static void checkTagStrings(const TagTable& table, size_t poolSize, const TagEntry& entry,
+	WORD id, const char* name, const char* description) {
+	assert(entry.tag == id);
+	checkString(table, poolSize, entry.fieldnameOffset, name);
+	checkString(table, poolSize, entry.descriptionOffset, description);
+}
+
+static void checkStringPools() {
+#define FI_TAG_TABLE_BEGIN(table) { \
+	const TagTable view = makeTagTable(table##Data::entries, table##Data::strings); \
+	const size_t poolSize = sizeof(table##Data::strings); \
+	const TagEntry* entry = view.entries;
+#define FI_TAG_TABLE_END(table) \
+	assert(entry == view.entries + view.count); }
+#define FI_TAG(id, name) checkTagStrings(view, poolSize, *entry++, id, name, NULL);
+#define FI_TAG_DESC(id, name, description) checkTagStrings(view, poolSize, *entry++, id, name, description);
+#include "../../Source/Metadata/TagLibData.h"
+#undef FI_TAG_TABLE_BEGIN
+#undef FI_TAG_TABLE_END
+#undef FI_TAG
+#undef FI_TAG_DESC
+}
+
 int main() {
+	checkStringPools();
 	TagLib& tags = TagLib::instance();
 	unsigned checked = 0;
 	for(int value = TagLib::EXIF_MAIN; value <= TagLib::ANIMATION; ++value) {
 		const TagLib::MDMODEL model = static_cast<TagLib::MDMODEL>(value);
-		size_t count = 0;
-		const TagInfo* table = getTagTable(model, count);
-		assert(table != NULL);
+		const TagTable table = getTagTable(model);
+		const size_t count = table.count;
+		assert(table.entries != NULL);
+		assert(table.strings != NULL);
 		// Apple iOS currently registers an empty table.
 		assert(count != 0 || model == TagLib::EXIF_MAKERNOTE_APPLE_IOS);
 		if(count == 0) assert(tags.getTagID(model, NULL) == -1);
-		assert(table[count].fieldname == NULL);
-		assert(table[count].description == NULL);
+		assert(table.entries[count].fieldnameOffset == 0);
+		assert(table.entries[count].descriptionOffset == 0);
+		assert(getTagString(table, table.entries[count].fieldnameOffset) == NULL);
+		assert(getTagString(table, table.entries[count].descriptionOffset) == NULL);
 		for(size_t i = 0; i < count; ++i) {
-			assert(table[i].fieldname != NULL);
-			assert(i == 0 || table[i - 1].tag < table[i].tag);
-			assert(tags.getTagInfo(model, table[i].tag) == &table[i]);
-			assert(tags.getTagFieldName(model, table[i].tag, NULL) == table[i].fieldname);
-			assert(tags.getTagDescription(model, table[i].tag) == table[i].description);
+			assert(getTagString(table, table.entries[i].fieldnameOffset) != NULL);
+			assert(i == 0 || table.entries[i - 1].tag < table.entries[i].tag);
+			assert(findTag(table, table.entries[i].tag) == &table.entries[i]);
+			assert(tags.getTagFieldName(model, table.entries[i].tag, NULL) == getTagString(table, table.entries[i].fieldnameOffset));
+			assert(tags.getTagDescription(model, table.entries[i].tag) == getTagString(table, table.entries[i].descriptionOffset));
 			// Duplicate names must continue to return the lowest numeric ID.
 			size_t first = 0;
-			while(strcmp(table[first].fieldname, table[i].fieldname) != 0) {
+			while(strcmp(getTagString(table, table.entries[first].fieldnameOffset), getTagString(table, table.entries[i].fieldnameOffset)) != 0) {
 				++first;
 			}
-			assert(tags.getTagID(model, table[i].fieldname) == table[first].tag);
+			assert(tags.getTagID(model, getTagString(table, table.entries[i].fieldnameOffset)) == table.entries[first].tag);
 		}
 		// A linear walk is the oracle for every hit, gap and endpoint.
 		size_t next = 0;
 		for(unsigned id = 0; id <= 0xFFFF; ++id) {
-			const TagInfo* expected = NULL;
-			if(next < count && table[next].tag == id) {
-				expected = &table[next++];
+			const TagEntry* expected = NULL;
+			if(next < count && table.entries[next].tag == id) {
+				expected = &table.entries[next++];
 			}
-			assert(tags.getTagInfo(model, static_cast<WORD>(id)) == expected);
+			assert(findTag(table, static_cast<WORD>(id)) == expected);
 			++checked;
 		}
 		assert(next == count);
@@ -83,7 +124,7 @@ int main() {
 		assert(tags.getFreeImageModel(model) == expectedModel);
 	}
 	const TagLib::MDMODEL unknown = static_cast<TagLib::MDMODEL>(TagLib::ANIMATION + 1);
-	assert(tags.getTagInfo(unknown, 0) == NULL);
+	assert(findTag(getTagTable(unknown), 0) == NULL);
 	assert(tags.getTagID(unknown, NULL) == -1);
 	assert(tags.getTagDescription(unknown, 0) == NULL);
 	assert(tags.getFreeImageModel(unknown) == FIMD_NODATA);
@@ -91,5 +132,5 @@ int main() {
 	assert(tags.getTagFieldName(unknown, 0x1234, fallback) == fallback);
 	assert(strcmp(fallback, "Tag 0x1234") == 0);
 	assert(tags.getTagFieldName(unknown, 0x1234, NULL) == NULL);
-	printf("PASS %u lookups, sorted tables, reverse names, models and fallbacks\n", checked);
+	printf("PASS %u lookups, sorted tables, string offsets, reverse names, models and fallbacks\n", checked);
 }
