@@ -68,6 +68,7 @@ static void checkStringPools() {
 int main() {
 	checkStringPools();
 	TagLib& tags = TagLib::instance();
+	const char* (TagLib::*fieldName)(TagLib::MDMODEL, WORD, char*) = &TagLib::getTagFieldName;
 	unsigned checked = 0;
 	for(int value = TagLib::EXIF_MAIN; value <= TagLib::ANIMATION; ++value) {
 		const TagLib::MDMODEL model = static_cast<TagLib::MDMODEL>(value);
@@ -103,6 +104,25 @@ int main() {
 				expected = &table.entries[next++];
 			}
 			assert(findTag(table, static_cast<WORD>(id)) == expected);
+			// The combined lookup must assign both results, including on misses.
+			const char *description = "unchanged";
+			const char *name = tags.getTagFields(model, static_cast<WORD>(id), NULL, &description);
+			assert(name == (expected ? getTagString(table, expected->fieldnameOffset) : NULL));
+			assert(name == (tags.*fieldName)(model, static_cast<WORD>(id), NULL));
+			assert(description == (expected ? getTagString(table, expected->descriptionOffset) : NULL));
+			char fallback[16] = "unchanged";
+			description = "unchanged";
+			name = tags.getTagFields(model, static_cast<WORD>(id), fallback, &description);
+			assert(description == tags.getTagDescription(model, static_cast<WORD>(id)));
+			if(expected) {
+				assert(name == getTagString(table, expected->fieldnameOffset));
+				assert(strcmp(fallback, "unchanged") == 0);
+			} else {
+				char unknownName[16];
+				sprintf(unknownName, "Tag 0x%04X", id);
+				assert(name == fallback);
+				assert(strcmp(fallback, unknownName) == 0);
+			}
 			++checked;
 		}
 		assert(next == count);
@@ -132,5 +152,12 @@ int main() {
 	assert(tags.getTagFieldName(unknown, 0x1234, fallback) == fallback);
 	assert(strcmp(fallback, "Tag 0x1234") == 0);
 	assert(tags.getTagFieldName(unknown, 0x1234, NULL) == NULL);
+	const char *description = "unchanged";
+	assert(tags.getTagFields(unknown, 0x1234, fallback, &description) == fallback);
+	assert(strcmp(fallback, "Tag 0x1234") == 0);
+	assert(description == NULL);
+	description = "unchanged";
+	assert(tags.getTagFields(unknown, 0x1234, NULL, &description) == NULL);
+	assert(description == NULL);
 	printf("PASS %u lookups, sorted tables, string offsets, reverse names, models and fallbacks\n", checked);
 }

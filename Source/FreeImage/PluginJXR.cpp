@@ -452,7 +452,8 @@ ReadPropVariant(WORD tag_id, const DPKPROPVARIANT & varSrc, FIBITMAP *dib) {
 
 	// get the tag key
 	TagLib& s = TagLib::instance();
-	const char *key = s.getTagFieldName(TagLib::EXIF_MAIN, tag_id, NULL);
+	const char *description;
+	const char *key = s.getTagFields(TagLib::EXIF_MAIN, tag_id, NULL, &description);
 	if(!key) {
 		return FALSE;
 	}
@@ -498,8 +499,6 @@ ReadPropVariant(WORD tag_id, const DPKPROPVARIANT & varSrc, FIBITMAP *dib) {
 				assert(FALSE); // This case is not handled
 				break;
 		}
-		// get the tag desctiption
-		const char *description = s.getTagDescription(TagLib::EXIF_MAIN, tag_id);
 		FreeImage_SetTagDescription(tag, description);
 
 		// store the tag

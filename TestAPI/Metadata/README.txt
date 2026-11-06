@@ -21,4 +21,7 @@ and public-model conversion described in TagLib.cpp.
 
 The test checks every source string against its decoded value, each pool's
 bounds and terminators, all 16-bit IDs, sorted tables, duplicate-name behavior,
-stable returned pointers, unknown models and fallback strings.
+stable returned pointers, unknown models and fallback strings. It also checks
+getTagFields against the original three-argument getTagFieldName for every ID,
+with and without a fallback
+buffer, including clearing the description output when none is available.

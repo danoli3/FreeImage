@@ -198,11 +198,19 @@ TagLib::instance() {
 	return s;
 }
 
-const char* 
+const char*
 TagLib::getTagFieldName(MDMODEL md_model, WORD tagID, char *defaultKey) {
+	return getTagFields(md_model, tagID, defaultKey, NULL);
+}
+
+const char*
+TagLib::getTagFields(MDMODEL md_model, WORD tagID, char *defaultKey, const char **description) {
 
 	const TagTable table = getTagTable(md_model);
 	const TagEntry *info = findTag(table, tagID);
+	if(description != NULL) {
+		*description = info ? getTagString(table, info->descriptionOffset) : NULL;
+	}
 	if(NULL == info) {
 		if(defaultKey != NULL) {
 			sprintf(defaultKey, "Tag 0x%04X", tagID);

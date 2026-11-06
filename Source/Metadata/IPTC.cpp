@@ -178,9 +178,9 @@ read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen) {
 		}
 		else {
 			// get the tag key and description
-			const char *key = tag_lib.getTagFieldName(TagLib::IPTC, tag_id, defaultKey);
+			const char *description;
+			const char *key = tag_lib.getTagFields(TagLib::IPTC, tag_id, defaultKey, &description);
 			FreeImage_SetTagKey(tag, key);
-			const char *description = tag_lib.getTagDescription(TagLib::IPTC, tag_id);
 			FreeImage_SetTagDescription(tag, description);
 
 			// store the tag
@@ -200,8 +200,9 @@ read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen) {
 	if(Keywords.length()) {
 		FreeImage_SetTagType(tag, FIDT_ASCII);
 		FreeImage_SetTagID(tag, TAG_KEYWORDS);
-		FreeImage_SetTagKey(tag, tag_lib.getTagFieldName(TagLib::IPTC, TAG_KEYWORDS, defaultKey));
-		FreeImage_SetTagDescription(tag, tag_lib.getTagDescription(TagLib::IPTC, TAG_KEYWORDS));
+		const char *description;
+		FreeImage_SetTagKey(tag, tag_lib.getTagFields(TagLib::IPTC, TAG_KEYWORDS, defaultKey, &description));
+		FreeImage_SetTagDescription(tag, description);
 		FreeImage_SetTagLength(tag, (DWORD)Keywords.length());
 		FreeImage_SetTagCount(tag, (DWORD)Keywords.length());
 		FreeImage_SetTagValue(tag, (char*)Keywords.c_str());
@@ -212,8 +213,9 @@ read_iptc_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen) {
 	if(SupplementalCategory.length()) {
 		FreeImage_SetTagType(tag, FIDT_ASCII);
 		FreeImage_SetTagID(tag, TAG_SUPPLEMENTAL_CATEGORIES);
-		FreeImage_SetTagKey(tag, tag_lib.getTagFieldName(TagLib::IPTC, TAG_SUPPLEMENTAL_CATEGORIES, defaultKey));
-		FreeImage_SetTagDescription(tag, tag_lib.getTagDescription(TagLib::IPTC, TAG_SUPPLEMENTAL_CATEGORIES));
+		const char *description;
+		FreeImage_SetTagKey(tag, tag_lib.getTagFields(TagLib::IPTC, TAG_SUPPLEMENTAL_CATEGORIES, defaultKey, &description));
+		FreeImage_SetTagDescription(tag, description);
 		FreeImage_SetTagLength(tag, (DWORD)SupplementalCategory.length());
 		FreeImage_SetTagCount(tag, (DWORD)SupplementalCategory.length());
 		FreeImage_SetTagValue(tag, (char*)SupplementalCategory.c_str());

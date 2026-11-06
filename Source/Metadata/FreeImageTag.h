@@ -403,6 +403,13 @@ public:
 	const char* getTagFieldName(MDMODEL md_model, WORD tagID, char *defaultKey);
 
 	/**
+	Return a tag's field name and description from one lookup.
+	The return value and defaultKey buffer follow getTagFieldName's rules.
+	If description is not NULL, it receives the description, or NULL if unavailable.
+	*/
+	const char* getTagFields(MDMODEL md_model, WORD tagID, char *defaultKey, const char **description);
+
+	/**
 	Given a tag ID, returns its description. 
 	When the tag has no description, a NULL value is returned.
 	@param md_model Internal metadata model
