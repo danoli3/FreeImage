@@ -22,7 +22,7 @@ these libraries has a newer stable upstream release.
 | LibTIFF4 | `Source/LibTIFF4` | 4.7.2 | 4.7.2 (2026-06-27) | up to date; full library sync | `tiffvers.h` |
 | LibWebP | `Source/LibWebP` | 1.6.0 (30-Jun-2025) | 1.6.0 | up to date | `NEWS` |
 | LibJXR | `Source/LibJXR` | unversioned jxrlib snapshot | n/a — unmaintained (last active fork: [4creators/jxrlib](https://github.com/4creators/jxrlib)) | no upstream to track | `README` |
-| ZLib | `Source/ZLib` | 1.3.2 | 1.3.2 | up to date | `zlib.h` |
+| ZLib | `Source/ZLib` | 1.4 | 1.4 (2026-11-04) | up to date | `zlib.h` |
 
 All vendored versions, including OpenEXR's auxiliary codecs below, were
 rechecked against source headers on 2026-11-02 for FreeImage 3.19.31. All eight
@@ -31,7 +31,8 @@ optional codec archives were verified against the SHA-256 digests in
 were also reviewed. Little CMS 2.20 reports `LCMS_VERSION` 2200 in its public
 header and `AC_INIT(lcms2,2.20)` in its release configuration.
 
-Bundled versions are unchanged since FreeImage 3.19.30.
+ZLib was updated from 1.3.2 to 1.4 on 2026-11-09. Other bundled versions
+are unchanged since FreeImage 3.19.30.
 
 Since 3.19.29, OpenEXR moved from 3.5.2 to 3.5.3, Little CMS from 2.19.1 to
 2.20 (`LCMS_VERSION` 2200), and libaom from 3.15.2 to 3.15.3. Other bundled

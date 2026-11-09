@@ -144,6 +144,13 @@ if(BUILD_TESTS AND BUILD_LIBOPENJPEG)
     set_tests_properties(J2KCallbacksTest PROPERTIES TIMEOUT 30)
 endif()
 
+if(BUILD_TESTS AND FREEIMAGE_STATIC AND FreeImage_ZLIB_SRCS)
+    add_executable(ZLibTest testZLib.cpp)
+    target_link_libraries(ZLibTest PRIVATE FreeImage)
+    add_test(NAME ZLibTest COMMAND ZLibTest)
+    set_tests_properties(ZLibTest PROPERTIES TIMEOUT 10)
+endif()
+
 # These tests call vendored codec APIs directly to create inputs that exercise
 # FreeImage's loaders. Those internal symbols are not part of its Windows DLL API.
 if(BUILD_TESTS AND FREEIMAGE_STATIC AND BUILD_OPENEXR AND NOT USE_SYSTEM_OPENEXR)
