@@ -35,6 +35,7 @@
 #pragma warning (disable : 4786) // identifier was truncated to 'number' characters
 #endif
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "FreeImage.h"
@@ -64,7 +65,9 @@ struct TagEntry {
 #define FI_TAG_TABLE_BEGIN(table) \
 	namespace table##Data { struct Strings { char nullString[1];
 #define FI_TAG_TABLE_END(table) \
-	}; typedef char TagStringOffsetsFitInWord[(sizeof(Strings) <= 0x10000) ? 1 : -1]; }
+	}; typedef char TagStringOffsetsFitInWord[(sizeof(Strings) <= 0x10000) ? 1 : -1]; \
+	/* Offset zero must be the leading empty string, and the pool must start at the struct address. */ \
+	typedef char TagStringPoolStartsAtZero[(offsetof(Strings, nullString) == 0) ? 1 : -1]; }
 #define FI_TAG(id, name) char name_##id[sizeof(name)];
 #define FI_TAG_DESC(id, name, description) \
 	FI_TAG(id, name) char description_##id[sizeof(description)];
@@ -106,7 +109,9 @@ struct TagTable {
 
 template<size_t N, typename Strings>
 TagTable makeTagTable(const TagEntry (&entries)[N], const Strings& strings) {
-	const TagTable table = { entries, N - 1, reinterpret_cast<const char*>(&strings) };
+	// Strings is a standard-layout struct of char arrays, so its address is also the
+	// address of the first byte of the pool that the offsets index into.
+	const TagTable table = { entries, N - 1, static_cast<const char*>(static_cast<const void*>(&strings)) };
 	return table;
 }
 
@@ -188,6 +193,20 @@ const TagEntry* findTag(const TagTable& table, WORD tagID) {
 	return NULL;
 }
 
+#ifndef NDEBUG
+bool checkTagTablesSorted() {
+	for(int model = TagLib::EXIF_MAIN; model <= TagLib::ANIMATION; ++model) {
+		const TagTable table = getTagTable(static_cast<TagLib::MDMODEL>(model));
+		for(size_t i = 1; i < table.count; ++i) {
+			if(table.entries[i - 1].tag >= table.entries[i].tag) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+#endif
+
 } // namespace
 
 
@@ -195,6 +214,14 @@ const TagEntry* findTag(const TagTable& table, WORD tagID) {
 TagLib&
 TagLib::instance() {
 	static TagLib s;
+#ifndef NDEBUG
+	// Binary search needs strictly increasing tag IDs, so check every table once
+	// in debug builds. This catches a misplaced row in TagLibData.h without
+	// needing the standalone TagLibTest.
+	static const bool tablesAreSorted = checkTagTablesSorted();
+	assert(tablesAreSorted);
+	(void)tablesAreSorted;
+#endif
 	return s;
 }
 
@@ -236,9 +263,13 @@ TagLib::getTagDescription(MDMODEL md_model, WORD tagID) {
 }
 
 int TagLib::getTagID(MDMODEL md_model, const char *key) {
+	if(key == NULL) {
+		return -1;
+	}
 	const TagTable table = getTagTable(md_model);
 	for(size_t i = 0; i < table.count; ++i) {
-		if(strcmp(getTagString(table, table.entries[i].fieldnameOffset), key) == 0) {
+		const char *name = getTagString(table, table.entries[i].fieldnameOffset);
+		if(name != NULL && strcmp(name, key) == 0) {
 			// Keep the first (lowest tag ID) match when field names repeat.
 			return (int)table.entries[i].tag;
 		}
