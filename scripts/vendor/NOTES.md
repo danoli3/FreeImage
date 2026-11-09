@@ -4,9 +4,22 @@ Current vendored releases (issue #137, updated for issue #148):
 
 | Library | Upstream tag | Commit | Library sources |
 |---|---|---|---|
+| zlib | `v1.4` | `99623ef7097352da7993ba614161fd6a311e046e` | root library sources and headers |
 | libdeflate | `v1.26` | `92e6a0db9fa848d742f9eb286c92afc60f2c3dda` | `common_defs.h`, `libdeflate.h`, `lib/` |
 | libtiff | `v4.7.2` | `d01a94be176f5f6a87f7ee1c0b32e65416aa2b4d` | `libtiff/`, plus `port/libport.h` |
 | OpenEXR | `v3.5.3` | `3950290530c4fd4776667d0dc4d65a9d003eb936` | `src/lib/{Iex,IlmThread,OpenEXR,OpenEXRCore}` |
+
+zlib 1.4 was imported from the official `zlib-1.4.tar.gz` release asset
+(SHA-256 `02dd159783677a749c04adbdd02b55b8a2bcc7e054f51b76b549199a916ad584`).
+All previously tracked files in `Source/ZLib` were refreshed byte-for-byte;
+the prior 1.3.2 snapshot had no local changes. The library source lists are
+unchanged in both CMake and Makefile.srcs. Keep `HAVE_UNISTD_H` on non-Windows
+builds because FreeImage compiles the sources directly, bypassing zlib's
+configuration checks. zlib's standalone CMake library-name changes do not
+affect the FreeImage target. Windows code directly using the old 1.3.2
+`z_off_t`/gzip API must be recompiled with the new headers; 1.4 restores the
+default offset type to `long` and supports opt-in 64-bit offsets. FreeImage's
+public zlib wrappers do not expose that type.
 
 OpenEXR's `OpenEXR` library directory maps to `Source/OpenEXR/IlmImf`.
 Its installed-style `Imath/` include prefixes are removed because this fork
