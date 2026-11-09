@@ -140,6 +140,7 @@ option(BUILD_JXR "Build JPEG-XR support" ${BUILD_JXR_DEFAULT})
 option(BUILD_TESTS "Build the test suite" OFF)
 option(FREEIMAGE_VS_ALL_PLATFORMS "Generate a portable Visual Studio solution for all Windows architectures" OFF)
 option(FREEIMAGE_OPENJPH_SIMD "Enable runtime-dispatched x86 SIMD in bundled OpenJPH" ON)
+option(FREEIMAGE_MSVC_VECTOR_ALGORITHMS "Allow MSVC STL manually vectorized algorithms" ON)
 option(FREEIMAGE_METADATA_STRIP "Build FREEIMAGE_STRIP and FreeImage_StripMetadata support" ON)
 option(BUILD_ZLIB "Build zlib from source or link" ON)
 option(BUILD_LIBPNG "Build libpng from source or link" ON)
@@ -1470,6 +1471,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Preprocessor definitions
+if(MSVC AND NOT FREEIMAGE_MSVC_VECTOR_ALGORITHMS)
+    # All bundled codecs are compiled into this target. Propagate the same
+    # setting to C++ consumers: MSVC requires consistency across linked TUs.
+    # Leave the macro undefined when ON so the STL retains its platform defaults.
+    target_compile_definitions(${PROJECT_NAME} PUBLIC
+        $<$<COMPILE_LANGUAGE:CXX>:_USE_STD_VECTOR_ALGORITHMS=0>)
+endif()
 target_compile_definitions(${PROJECT_NAME} PUBLIC
     DISABLE_PERF_MEASUREMENT
     $<$<NOT:$<BOOL:${USE_SYSTEM_LIBOPENJPEG}>>:OPJ_STATIC>

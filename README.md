@@ -113,6 +113,8 @@ ctest --test-dir build-vs2022-x64 -C Debug --output-on-failure
 See the [Visual Studio and CMake build guide](doc/visual-studio.md) for tool
 installation, Win32/ARM64 builds, a combined platform dropdown, DLLs and installation.
 See [Generate Visual Studio project files](#generate-visual-studio-project-files) below for opening the solution directly in the IDE.
+For unresolved MSVC STL symbols when linking a prebuilt library, see
+[Windows linker troubleshooting](#windows-linker-troubleshooting).
 
 To select the MSVC C runtime, pass `-DFREEIMAGE_MSVC_RUNTIME=MD` for the
 dynamic CRT (`/MDd` in Debug and `/MD` in Release), or
@@ -302,6 +304,137 @@ target_link_libraries(<your_target> PRIVATE FreeImage::FreeImage)
 ```
 
 For `find_package` to work, simply set `CMAKE_PREFIX_PATH` to the directory where the compiled binaries are installed (the `install_dir` folder from above).
+
+## Windows linker troubleshooting
+
+If a prebuilt `FreeImage.lib` or `FreeImageD.lib` fails to link with `LNK2019`
+or `LNK2001` for symbols such as `__std_search_1`,
+`__std_find_last_trivial_1`, or `__std_find_last_of_trivial_pos_1`, the library
+may have been built with newer Microsoft C++ build tools than the application
+uses. See [issue #266](https://github.com/danoli3/FreeImage/issues/266).
+These are Microsoft STL implementation helpers; both builds saying
+"Visual Studio 2022 / v143" does not guarantee matching minor toolset versions.
+
+**Use the same MSVC build-tool version as the prebuilt library, or a newer
+compatible version, for the application's final link.** Updating only the
+Visual C++ Redistributable does not update the compiler, linker or development
+libraries.
+
+1. Save your work and close Visual Studio. Open **Visual Studio Installer**
+   and choose **Update** for the Visual Studio or Build Tools installation
+   used by the application.
+2. Under **Modify**, ensure **Desktop development with C++** and the required
+   MSVC tools for your target architecture are installed. For a VS2022/v143
+   package, install the latest available **MSVC v143 - VS 2022 C++ x64/x86
+   build tools** component (or the corresponding ARM tools). Compare the
+   selected toolset version with the package's build log; if that package was
+   built with newer tools than your installation supports, use a newer
+   supported installation or rebuild FreeImage with your toolset.
+3. Reopen the solution. Under **Project > Properties > Configuration
+   Properties > General > Platform Toolset**, select the intended installed
+   toolset for all relevant configurations and projects. Check for an older
+   `VCToolsVersion` pinned in `.vcxproj` or imported `.props` files, and for
+   custom library paths that select an older MSVC installation.
+4. Open a new **Developer Command Prompt** for that installation if building
+   from the command line. Use `where cl`, `where link` and `cl /Bv` to inspect
+   the tools selected in that shell; also check the actual project's build
+   log. Clean and rebuild the solution. For CMake, configure in a new build
+   directory so cached compiler or toolset selections are not reused.
+
+If updating is not possible, rebuild FreeImage and the application with the
+same installed toolset, matching architecture, Debug/Release configuration
+and runtime-library settings (`/MD`, `/MDd`, `/MT` or `/MTd`). If the toolset
+versions already match, enable the linker's `/VERBOSE:LIB` option to check
+which C++ libraries are actually selected.
+
+Microsoft documents the [toolset compatibility rules](https://learn.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017#restrictions-on-binary-compatibility)
+and [Visual Studio update steps](https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio).
+Libraries built with `/GL` or linked with `/LTCG` require the exact same build
+tools, including minor versions, for compilation and the final link.
+
+### Disabling MSVC STL vectorized algorithms
+
+To build FreeImage with `_USE_STD_VECTOR_ALGORITHMS=0`, use the CMake option:
+
+```bat
+cmake -S . -B build-no-stl-vector -DFREEIMAGE_MSVC_VECTOR_ALGORITHMS=OFF
+cmake --build build-no-stl-vector --config Debug --parallel
+```
+
+Or add this before `add_subdirectory()` in a parent `CMakeLists.txt`:
+
+```cmake
+set(FREEIMAGE_MSVC_VECTOR_ALGORITHMS OFF CACHE BOOL "Disable MSVC STL vectorized algorithms")
+add_subdirectory(path/to/FreeImage)
+target_link_libraries(myApp PRIVATE FreeImage)
+```
+
+The option defaults to `ON`, leaving the STL's platform defaults unchanged.
+When `OFF` in an MSVC-ABI build (including clang-cl), FreeImage defines the
+macro for all its C++ sources, including bundled codecs, and propagates it to
+C++ targets linking FreeImage through CMake, including the installed
+`FreeImage::FreeImage` target. Other toolchains are unaffected.
+
+[Microsoft requires the same macro value across linked translation units](https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms).
+Rebuild the affected libraries and application. Independently built libraries,
+`USE_SYSTEM_*` dependencies, and projects linking a raw `.lib` need the same
+setting in their own builds. This disables the STL's manual vectorization;
+compiler auto-vectorization and codec SIMD remain enabled. It may reduce
+algorithm performance and does not make newer-toolset binaries compatible
+with older MSVC tools or fix `__std_init_once_link_alternate_names_and_abort`.
+The installed static-package toolset compatibility check still applies.
+
+### Building for Visual Studio 2019 / v142
+
+Changing a consuming project's `PlatformToolset` from `v143` to `v142` does
+not rebuild its precompiled `.lib` files. The same mismatch can report
+`__std_find_trivial_1`, `__std_max_element_4`, or
+`__std_init_once_link_alternate_names_and_abort`. In openFrameworks, errors
+from both `openframeworksLib_debug.lib` and `FreeImageD.lib` require rebuilding
+both libraries and any other newer static dependencies, then the application.
+The last symbol is threading support; disabling STL vector algorithms cannot
+remove every dependency on a newer runtime.
+
+For a v142 application, build FreeImage and its bundled codecs with v142 in
+a fresh build directory. The `vs2019` preset requires Visual Studio 2019;
+`vs2022-v142` uses Visual Studio 2022 with the optional **MSVC v142 - VS 2019
+C++ x64/x86 build tools** component installed. The IDE hosting the build may
+be newer than the compiler selected by the preset. Presets require CMake 3.21+.
+
+```bat
+cmake --preset vs2019
+cmake --build build-vs2019 --config Debug --parallel
+ctest --test-dir build-vs2019 -C Debug --output-on-failure
+cmake --install build-vs2019 --config Debug --prefix install-v142-debug
+```
+
+With VS2022 as the host, use `cmake --preset vs2022-v142` and the corresponding
+`build-vs2022-v142` directory in the remaining commands. Both presets select
+x64, v142, C++17, a static FreeImage build and no CMake IPO. Repeat for Release
+with a separate installation prefix. Match the application's architecture,
+configuration and CRT (`/MDd` for Debug and `/MD` for Release by default).
+Do not add `/GL` to distributed static libraries intended for multiple
+compatible toolset versions. If using `USE_SYSTEM_*`, those external libraries
+also need a compatible toolset; the preset cannot rebuild them.
+
+Installed CMake packages record FreeImage's producer compiler version and
+reject an older selected MSVC compiler for a static package during
+`find_package(FreeImage CONFIG)`, with rebuild instructions. This check does
+not cover raw `.lib` files, external dependencies, custom linker overrides or
+clang-cl toolset selection. The Windows v142 CI job builds bundled codecs,
+runs the tests, installs the library, and links and runs the installed-package
+consumer with both v142 and v143, in Debug and Release.
+
+For binary distributors, make the oldest supported toolset the build baseline,
+or publish separate packages labelled with architecture, toolset/compiler
+version, configuration and CRT. Keep those packages in distinct directories
+and test each package with its oldest supported consumer. An openFrameworks
+v142 distribution must ship compatible dependency binaries and rebuild the
+core with v142; changing FreeImage alone cannot fix errors from the core.
+A v143-only distribution should report that requirement before compiling.
+Do not use `/FORCE` to work around missing runtime symbols: it cannot supply
+the implementations, and the resulting executable can be invalid. `LNK4075`
+about `/INCREMENTAL` is a separate warning caused by that flag combination.
 
 ## Running tests
 
