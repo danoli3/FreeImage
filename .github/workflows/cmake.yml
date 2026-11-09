@@ -189,6 +189,35 @@ jobs:
       - name: Test toolset mismatch diagnostics
         run: cmake -DTEST_BINARY_DIR="${{ runner.temp }}/msvc-package-check" -P packaging/tests/test-msvc-compatibility.cmake
 
+  libjpeg-turbo:
+    name: libjpeg-turbo (static=${{ matrix.static }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        static: ["ON", "OFF"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install libjpeg-turbo development files
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-dev ninja-build
+      - name: Configure
+        run: >-
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_TESTS=ON -DUSE_LIBJPEG_TURBO=ON
+          -DFREEIMAGE_STATIC=${{ matrix.static }}
+          -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/freeimage-turbo
+      - name: Build
+        run: cmake --build build --parallel 4
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Install and test CMake package
+        run: |
+          cmake --install build
+          cmake -S packaging/tests -B consumer -G Ninja -DCMAKE_PREFIX_PATH=${{ runner.temp }}/freeimage-turbo
+          cmake --build consumer
+          ./consumer/smoke
+
   windows-msys2:
     # Dedicated job (rather than another `build` matrix entry) because it
     # needs the msys2 shell and an explicitly installed, current mingw-w64

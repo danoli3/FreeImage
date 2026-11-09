@@ -87,6 +87,35 @@ floating-point image types. Check `FreeImage_GetImageType()` before display
 conversion; HDR previews require an explicit tone-mapping policy. The example
 provides a 24-bit RGB preview without changing the native decoded pixels.
 
+### Using libjpeg-turbo (optional)
+
+The default JPEG backend is bundled IJG libjpeg. To use an installed
+[libjpeg-turbo](https://libjpeg-turbo.org/) instead:
+
+```bash
+cmake -S . -B build-turbo -DUSE_LIBJPEG_TURBO=ON \
+  -DCMAKE_PREFIX_PATH=/path/to/libjpeg-turbo -DBUILD_TESTS=ON \
+  -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-turbo --config Debug --parallel
+ctest --test-dir build-turbo -C Debug --output-on-failure
+```
+
+For Homebrew, the prefix is `$(brew --prefix jpeg-turbo)`. If the library is
+already on CMake's search path, omit `CMAKE_PREFIX_PATH`. You can also set
+`JPEG_INCLUDE_DIR` and `JPEG_LIBRARY` explicitly; select the library that
+implements the libjpeg API (`jpeg`), rather than `turbojpeg`.
+
+`USE_LIBJPEG_TURBO` defaults to `OFF`, requires `BUILD_LIBJPEG=ON`, and selects
+the external JPEG path even when `USE_SYSTEM_LIBJPEG=OFF`. Configuration fails
+if the selected library is not libjpeg-turbo. No dependency is downloaded.
+`USE_SYSTEM_LIBJPEG=ON` remains available for either IJG libjpeg or libjpeg-turbo
+without requiring a particular implementation.
+
+Normal JPEG loading and saving use the existing FreeImage API. As with other
+external JPEG builds, FreeImage's lossless JPEG rotation, flipping and cropping
+functions currently return `FALSE`, because the build does not include the
+`transupp` helpers. Keep the bundled backend if you need those operations.
+
 ### Platform-specific examples
 
 **Linux (gcc) / macOS (clang)**

@@ -178,6 +178,9 @@ option(USE_SYSTEM_ZLIB "Link against system zlib instead of the bundled copy" ${
 option(USE_SYSTEM_LIBPNG "Link against system libpng instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
 option(USE_SYSTEM_LIBTIFF "Link against system libtiff instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
 option(USE_SYSTEM_LIBJPEG "Link against system libjpeg instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
+# Explicitly require libjpeg-turbo through its compatible libjpeg API. This
+# selects an installed library independently of the USE_SYSTEM_* defaults.
+option(USE_LIBJPEG_TURBO "Use installed libjpeg-turbo instead of bundled IJG libjpeg" OFF)
 option(USE_SYSTEM_LIBOPENJPEG "Link against system openjpeg instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
 option(USE_SYSTEM_WEBP "Link against system libwebp instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
 option(USE_SYSTEM_LIBRAWLITE "Link against system libraw instead of the bundled copy" ${FREEIMAGE_SYSTEM_DEFAULT})
@@ -317,12 +320,49 @@ set(FreeImage_SOURCES
     ./Source/Quantizers.h ./Source/ToneMapping.h ./Source/Utilities.h ./TestAPI/TestSuite.h
 )
 
+if(USE_LIBJPEG_TURBO AND NOT BUILD_LIBJPEG)
+    message(FATAL_ERROR "USE_LIBJPEG_TURBO requires BUILD_LIBJPEG=ON")
+endif()
+
 if(BUILD_LIBJPEG)
-    if(USE_SYSTEM_LIBJPEG)
+    if(USE_SYSTEM_LIBJPEG OR USE_LIBJPEG_TURBO)
         find_package(JPEG REQUIRED)
+        if(USE_LIBJPEG_TURBO)
+            include(CMakePushCheckState)
+            include(CheckCSourceCompiles)
+            cmake_push_check_state(RESET)
+            set(CMAKE_REQUIRED_LIBRARIES JPEG::JPEG)
+            # Recheck when the user changes JPEG_INCLUDE_DIR/JPEG_LIBRARY
+            # in an existing build directory.
+            unset(FREEIMAGE_HAVE_LIBJPEG_TURBO CACHE)
+            check_c_source_compiles("
+                #include <stddef.h>
+                #include <stdio.h>
+                #include <jpeglib.h>
+                #ifndef LIBJPEG_TURBO_VERSION
+                #error libjpeg-turbo is required
+                #endif
+                int main(void) {
+                    struct jpeg_error_mgr err;
+                    jpeg_std_error(&err);
+                    return 0;
+                }" FREEIMAGE_HAVE_LIBJPEG_TURBO)
+            cmake_pop_check_state()
+            if(NOT FREEIMAGE_HAVE_LIBJPEG_TURBO)
+                message(FATAL_ERROR
+                    "USE_LIBJPEG_TURBO requires libjpeg-turbo headers and library. "
+                    "Set CMAKE_PREFIX_PATH to its installation prefix, or set "
+                    "JPEG_INCLUDE_DIR and JPEG_LIBRARY explicitly.")
+            endif()
+            message(STATUS "JPEG backend: libjpeg-turbo (${JPEG_LIBRARIES})")
+        else()
+            message(STATUS "JPEG backend: system libjpeg (${JPEG_LIBRARIES})")
+        endif()
+        message(STATUS "Lossless JPEG transforms are unavailable with an external JPEG library")
         list(APPEND FreeImage_LIBS JPEG::JPEG)
         add_definitions(-DFREEIMAGE_SYSTEM_LIBJPEG)
     else()
+        message(STATUS "JPEG backend: bundled IJG libjpeg")
         set(FreeImage_LIBJPEG_SRCS
             Source/LibJPEG/jaricom.c Source/LibJPEG/jcapimin.c
             Source/LibJPEG/jcapistd.c Source/LibJPEG/jcarith.c Source/LibJPEG/jccoefct.c
