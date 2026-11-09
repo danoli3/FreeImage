@@ -67,6 +67,7 @@ static void checkStringPools() {
 
 int main() {
 	checkStringPools();
+	assert(checkTagTablesSorted());
 	TagLib& tags = TagLib::instance();
 	const char* (TagLib::*fieldName)(TagLib::MDMODEL, WORD, char*) = &TagLib::getTagFieldName;
 	unsigned checked = 0;
@@ -78,7 +79,7 @@ int main() {
 		assert(table.strings != NULL);
 		// Apple iOS currently registers an empty table.
 		assert(count != 0 || model == TagLib::EXIF_MAKERNOTE_APPLE_IOS);
-		if(count == 0) assert(tags.getTagID(model, NULL) == -1);
+		assert(tags.getTagID(model, NULL) == -1);
 		assert(table.entries[count].fieldnameOffset == 0);
 		assert(table.entries[count].descriptionOffset == 0);
 		assert(getTagString(table, table.entries[count].fieldnameOffset) == NULL);
