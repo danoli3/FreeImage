@@ -1508,6 +1508,14 @@ endif()
 # Apple-specific settings
 if (APPLE)
     set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
+    # Platform/feature guards intentionally leave some bundled sources empty.
+    # Silence only libtool's empty-object warning when Xcode archives them.
+    # Ninja/Makefile generators may use ar, which rejects this libtool flag.
+    # Consumers that repack FreeImage.a need the same option on their target.
+    if(FREEIMAGE_STATIC AND CMAKE_GENERATOR STREQUAL "Xcode")
+        set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY
+            STATIC_LIBRARY_OPTIONS -no_warning_for_no_symbols)
+    endif()
     if(BUILD_PLATFORM_APPLE_IOS)
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_THUMB_SUPPORT "NO")
     endif()
