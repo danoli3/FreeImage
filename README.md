@@ -334,6 +334,7 @@ target_link_libraries(<your_target> PRIVATE FreeImage::FreeImage)
 
 For `find_package` to work, simply set `CMAKE_PREFIX_PATH` to the directory where the compiled binaries are installed (the `install_dir` folder from above).
 
+<<<<<<< HEAD
 ## Windows linker troubleshooting
 
 If a prebuilt `FreeImage.lib` or `FreeImageD.lib` fails to link with `LNK2019`
@@ -464,6 +465,40 @@ A v143-only distribution should report that requirement before compiling.
 Do not use `/FORCE` to work around missing runtime symbols: it cannot supply
 the implementations, and the resulting executable can be invalid. `LNK4075`
 about `/INCREMENTAL` is a separate warning caused by that flag combination.
+=======
+## Apple archive warnings about objects with no symbols
+
+Apple's `libtool` can report `FreeImage.a(...o) has no symbols` when creating
+or combining static libraries. Some bundled source files intentionally
+compile to empty objects because their platform or optional feature is not
+enabled, such as a Windows semaphore implementation on iOS. This diagnostic
+alone does not indicate missing FreeImage functions.
+
+The CMake Xcode build suppresses this specific warning on the static
+FreeImage target. If another target later repacks `FreeImage.a`, configure
+that target too; archive options are not stored in the `.a` file or inherited
+by consumers. For another CMake target:
+
+```cmake
+if(APPLE AND CMAKE_GENERATOR STREQUAL "Xcode")
+    set_property(TARGET MyStaticLibrary APPEND PROPERTY
+        STATIC_LIBRARY_OPTIONS -no_warning_for_no_symbols)
+endif()
+```
+
+For a native Xcode static-library target, set **Other Librarian Flags**
+(`OTHER_LIBTOOLFLAGS`) in its build settings or shared `.xcconfig`:
+
+```text
+OTHER_LIBTOOLFLAGS = $(inherited) -no_warning_for_no_symbols
+```
+
+In openFrameworks, apply this to the core static-library target that combines
+FreeImage, Cairo and oF objects. Setting it only on the application target
+will not affect a separate nested `xcodebuild` invocation for the core.
+This flag belongs to Apple's archive tool, not compiler flags or
+`OTHER_LDFLAGS`; do not pass it to `ar` in a Ninja/Makefile build. It suppresses
+only empty-object warnings and leaves other archive diagnostics enabled.
 
 ## Running tests
 
