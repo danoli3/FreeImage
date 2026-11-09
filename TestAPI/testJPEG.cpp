@@ -199,8 +199,49 @@ void testJPEGSameFile(const char *src_file) {
 // Main test function
 // ----------------------------------------------------------
 
+// Exercise the codec independently of the optional lossless-transform helpers.
+static void testJPEGCodec() {
+	FIBITMAP *source = FreeImage_Allocate(37, 23, 24);
+	assert(source);
+	for(unsigned y = 0; y < 23; ++y) {
+		BYTE *row = FreeImage_GetScanLine(source, y);
+		for(unsigned x = 0; x < 37; ++x) {
+			row[3*x + FI_RGBA_RED] = 210;
+			row[3*x + FI_RGBA_GREEN] = 100;
+			row[3*x + FI_RGBA_BLUE] = 40;
+		}
+	}
+	const int flags[] = {JPEG_QUALITYSUPERB, JPEG_QUALITYSUPERB | JPEG_PROGRESSIVE};
+	for(unsigned i = 0; i < sizeof(flags)/sizeof(flags[0]); ++i) {
+		FIMEMORY *stream = FreeImage_OpenMemory();
+		assert(stream);
+		BOOL saved = FreeImage_SaveToMemory(FIF_JPEG, source, stream, flags[i]);
+		assert(saved);
+		FreeImage_SeekMemory(stream, 0, SEEK_SET);
+		FIBITMAP *decoded = FreeImage_LoadFromMemory(FIF_JPEG, stream);
+		assert(decoded);
+		assert(FreeImage_GetWidth(decoded) == 37);
+		assert(FreeImage_GetHeight(decoded) == 23);
+		assert(FreeImage_GetBPP(decoded) == 24);
+		BYTE *pixel = FreeImage_GetScanLine(decoded, 11) + 3*18;
+		assert(abs((int)pixel[FI_RGBA_RED] - 210) <= 3);
+		assert(abs((int)pixel[FI_RGBA_GREEN] - 100) <= 3);
+		assert(abs((int)pixel[FI_RGBA_BLUE] - 40) <= 3);
+		FreeImage_Unload(decoded);
+		FreeImage_CloseMemory(stream);
+	}
+	FreeImage_Unload(source);
+}
+
 void testJPEG() {
+	testJPEGCodec();
 	const char *src_file = "exif.jpg";
+#ifdef FREEIMAGE_SYSTEM_LIBJPEG
+	BOOL transformed = FreeImage_JPEGTransform(src_file, "test.jpg", FIJPEG_OP_ROTATE_90, TRUE);
+	assert(transformed == FALSE);
+	printf("Lossless JPEG transforms unavailable with external libjpeg; codec tests passed.\n");
+	return;
+#endif
 
 	printf("testJPEG (should throw exceptions) ...\n");
 
