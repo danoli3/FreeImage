@@ -2,6 +2,16 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
+## 3.19.32 — 9 Nov 2026
+
+zlib 1.4, MSVC v142 packaging support and an optional libjpeg-turbo build.
+
+- Update bundled zlib from 1.3.2 to 1.4. (#270)
+- Harden the TagLib metadata constant tables: debug builds verify the tables are sorted, and lookups reject NULL keys and names. (#271)
+- Add `FREEIMAGE_MSVC_VECTOR_ALGORITHMS` and the `vs2019-v142`/`vs2022-v142` presets so a v142 application can link a package built with matching tools, and make the installed package report a toolset mismatch with repair instructions instead of failing at link time (#266). (#272)
+- Add `USE_LIBJPEG_TURBO` (default OFF) to build against a system libjpeg-turbo through the libjpeg API. Lossless JPEG transforms are unavailable in this mode. (#273)
+- Silence Apple libtool "has no symbols" warnings for static Xcode builds. (#274)
+
 ## 3.19.31 — Unreleased
 
 BMP RLE security fix and bundled OpenJPH update.
