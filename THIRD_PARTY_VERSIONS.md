@@ -31,8 +31,8 @@ optional codec archives were verified against the SHA-256 digests in
 were also reviewed. Little CMS 2.20 reports `LCMS_VERSION` 2200 in its public
 header and `AC_INIT(lcms2,2.20)` in its release configuration.
 
-ZLib was updated from 1.3.2 to 1.4 on 2026-11-09. Other bundled versions
-are unchanged since FreeImage 3.19.30.
+Since 3.19.31, ZLib moved from 1.3.2 to 1.4. Other bundled versions
+are unchanged.
 
 Since 3.19.29, OpenEXR moved from 3.5.2 to 3.5.3, Little CMS from 2.19.1 to
 2.20 (`LCMS_VERSION` 2200), and libaom from 3.15.2 to 3.15.3. Other bundled
