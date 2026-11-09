@@ -78,6 +78,9 @@ default: all
 
 all: dist
 
+# Metadata rows are included separately from the implementation.
+Source/Metadata/TagLib.o: Source/Metadata/TagLibData.h
+
 dist: FreeImage
 	mkdir -p Dist
 	cp *.a Dist/

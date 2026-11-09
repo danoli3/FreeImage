@@ -44,6 +44,20 @@ if (BUILD_TESTS)
 
     add_test(NAME MainTestSuite WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/TestAPI COMMAND $<TARGET_FILE:MainTestSuite>)
 
+    # Compile TagLib directly to check private table invariants without
+    # exposing them through FreeImage's public API or linking its codecs.
+    add_executable(TagLibTest Metadata/TagLibTest.cpp)
+    target_include_directories(TagLibTest PRIVATE ${PROJECT_SOURCE_DIR}/Source)
+    target_compile_definitions(TagLibTest PRIVATE FREEIMAGE_LIB)
+    set_target_properties(TagLibTest PROPERTIES CXX_STANDARD 98 CXX_STANDARD_REQUIRED YES)
+    if(MSVC)
+        target_compile_options(TagLibTest PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(TagLibTest PRIVATE -UNDEBUG)
+    endif()
+    add_test(NAME TagLibTest COMMAND TagLibTest)
+    set_tests_properties(TagLibTest PROPERTIES TIMEOUT 60)
+
     add_executable(LargeFileTIFFTest testLargeFileTIFF.cpp)
     target_link_libraries(LargeFileTIFFTest PRIVATE FreeImage)
     if(UNIX AND NOT APPLE)

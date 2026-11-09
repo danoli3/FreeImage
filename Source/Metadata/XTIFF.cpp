@@ -185,8 +185,9 @@ tiff_read_geotiff_profile(TIFF *tif, FIBITMAP *dib) {
 
 				FreeImage_SetTagType(tag, (FREE_IMAGE_MDTYPE)fieldInfo->field_type);
 				FreeImage_SetTagID(tag, tag_id);
-				FreeImage_SetTagKey(tag, tag_lib.getTagFieldName(TagLib::GEOTIFF, tag_id, defaultKey));
-				FreeImage_SetTagDescription(tag, tag_lib.getTagDescription(TagLib::GEOTIFF, tag_id));
+				const char *description;
+				FreeImage_SetTagKey(tag, tag_lib.getTagFields(TagLib::GEOTIFF, tag_id, defaultKey, &description));
+				FreeImage_SetTagDescription(tag, description);
 				FreeImage_SetTagLength(tag, (DWORD)strlen(params) + 1);
 				FreeImage_SetTagCount(tag, FreeImage_GetTagLength(tag));
 				FreeImage_SetTagValue(tag, params);
@@ -211,8 +212,9 @@ tiff_read_geotiff_profile(TIFF *tif, FIBITMAP *dib) {
 
 				FreeImage_SetTagType(tag, tag_type);
 				FreeImage_SetTagID(tag, tag_id);
-				FreeImage_SetTagKey(tag, tag_lib.getTagFieldName(TagLib::GEOTIFF, tag_id, defaultKey));
-				FreeImage_SetTagDescription(tag, tag_lib.getTagDescription(TagLib::GEOTIFF, tag_id));
+				const char *description;
+				FreeImage_SetTagKey(tag, tag_lib.getTagFields(TagLib::GEOTIFF, tag_id, defaultKey, &description));
+				FreeImage_SetTagDescription(tag, description);
 				FreeImage_SetTagLength(tag, FreeImage_TagDataWidth(tag_type) * tag_count);
 				FreeImage_SetTagCount(tag, tag_count);
 				FreeImage_SetTagValue(tag, data);
@@ -291,7 +293,8 @@ tiff_read_exif_tag(TIFF *tif, uint32_t tag_id, FIBITMAP *dib, TagLib::MDMODEL md
 	TagLib& tagLib = TagLib::instance();
 
 	// get the tag key - use NULL to avoid reading GeoTIFF tags
-	const char *key = tagLib.getTagFieldName(md_model, (WORD)tag_id, NULL);
+	const char *description;
+	const char *key = tagLib.getTagFields(md_model, (WORD)tag_id, NULL, &description);
 	if(key == NULL) {
 		return TRUE;
 	}
@@ -575,7 +578,6 @@ tiff_read_exif_tag(TIFF *tif, uint32_t tag_id, FIBITMAP *dib, TagLib::MDMODEL md
 		break;
 	}
 
-	const char *description = tagLib.getTagDescription(md_model, (WORD)tag_id);
 	if(description) {
 		FreeImage_SetTagDescription(fitag, description);
 	}

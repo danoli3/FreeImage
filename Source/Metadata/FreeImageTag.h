@@ -314,22 +314,12 @@ size_t FreeImage_GetTagMemorySize(FITAG *tag);
 // --------------------------------------------------------------------------
 
 /**
-	Structure to hold a tag information
-*/
-typedef struct tagTagInfo {
-	WORD tag;			// Tag ID (required)
-	char *fieldname;	// Field name (required)
-	char *description;	// Field description (may be NULL)
-} TagInfo;
-
-
-/**
 Class to hold tag information (based on Meyers' Singleton).<br>
 
 Sample usage :<br>
 <code>
 TagLib& s = TagLib::instance();
-TagInfo *tag_info = s.getTagInfo(EXIF_MAIN, 0x0100);
+const char *name = s.getTagFieldName(TagLib::EXIF_MAIN, 0x0100, NULL);
 </code>
 
 Note on multi-threaded applications : 
@@ -379,20 +369,11 @@ public:
 	};
 
 private:
-
-	typedef std::map<WORD, TagInfo*> TAGINFO;
-	typedef std::map<int, TAGINFO*>  TABLEMAP;
-
-	/// store hash tables for all known tag info tables
-	TABLEMAP _table_map;
-
-private:
 	/**
 	Constructor (private)<br>
-	This is where the tag info tables are initialized.
-	@see addMetadataModel
+	The tag info tables have static storage and need no initialization.
 	*/
-	TagLib();
+	TagLib() {}
 
 	/// Assignement operator (disabled)
 	void operator=(TagLib&);
@@ -400,30 +381,15 @@ private:
 	/// Copy constructor (disabled)
 	TagLib(const TagLib&);
 	
-	/** 
-	Used in the constructor to initialize the tag tables
-	@param md_model Internal metadata model
-	@param tag_table Tag info table
-	@return Returns TRUE if successful, returns FALSE otherwise
-	*/
-	BOOL addMetadataModel(MDMODEL md_model, TagInfo *tag_table);
 
 public:
 	/// Destructor
-	~TagLib();
+	~TagLib() {}
 
 	/**
 	@return Returns a reference to the TagLib instance
 	*/
 	static TagLib& instance();
-
-	/**
-	Given a tag ID, returns its TagInfo descriptor
-	@param md_model Internal metadata model
-	@param tagID tag ID
-	@return Returns the TagInfo descriptor if successful, returns NULL otherwise
-	*/
-	const TagInfo* getTagInfo(MDMODEL md_model, WORD tagID);
 
 	/**
 	Given a tag ID, returns its tag field name. 
@@ -435,6 +401,13 @@ public:
 	@return Returns the tag field name if successful, returns an 'unknown tag' string contained in defaultKey otherwise
 	*/
 	const char* getTagFieldName(MDMODEL md_model, WORD tagID, char *defaultKey);
+
+	/**
+	Return a tag's field name and description from one lookup.
+	The return value and defaultKey buffer follow getTagFieldName's rules.
+	If description is not NULL, it receives the description, or NULL if unavailable.
+	*/
+	const char* getTagFields(MDMODEL md_model, WORD tagID, char *defaultKey, const char **description);
 
 	/**
 	Given a tag ID, returns its description. 
