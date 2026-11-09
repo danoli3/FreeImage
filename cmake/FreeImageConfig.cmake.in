@@ -1,5 +1,30 @@
 @PACKAGE_INIT@
 
+# Keep the producer version in the installed package: v143/v142 alone do
+# not identify the STL implementation used to compile a static archive.
+set(FreeImage_BUILD_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
+set(FreeImage_BUILD_CXX_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@")
+set(FreeImage_BUILD_STATIC @FREEIMAGE_STATIC@)
+if(FreeImage_BUILD_STATIC AND FreeImage_BUILD_CXX_COMPILER_ID STREQUAL "MSVC")
+    # CMake links a C++ archive with the C++ toolchain when available.
+    if(DEFINED CMAKE_CXX_COMPILER_ID)
+        set(_fi_language CXX)
+    else()
+        set(_fi_language C)
+    endif()
+    if(CMAKE_${_fi_language}_COMPILER_ID STREQUAL "MSVC"
+       AND CMAKE_${_fi_language}_COMPILER_VERSION VERSION_LESS FreeImage_BUILD_CXX_COMPILER_VERSION)
+        set(FreeImage_FOUND FALSE)
+        set(FreeImage_NOT_FOUND_MESSAGE
+            "This static FreeImage package was built with MSVC ${FreeImage_BUILD_CXX_COMPILER_VERSION}, but the selected ${_fi_language} compiler is MSVC ${CMAKE_${_fi_language}_COMPILER_VERSION}. An older toolset cannot consume newer MSVC static objects. Rebuild FreeImage and its dependencies with your toolset (use the vs2019 or vs2022-v142 preset for v142), or select build tools at least as new as the package producer. Changing PlatformToolset does not rebuild precompiled libraries. See https://github.com/danoli3/FreeImage/issues/266.")
+        unset(_fi_language)
+        return()
+    endif()
+    unset(_fi_language)
+endif()
+
+@PACKAGE_INIT@
+
 include("${CMAKE_CURRENT_LIST_DIR}/FreeImageCodecs.cmake")
 
 if(@BUILD_LIBJXL@)

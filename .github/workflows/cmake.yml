@@ -143,6 +143,52 @@ jobs:
           if (!(Test-Path "$prefix/bin/FreeImage.pdb")) { throw "Linker PDB was not installed beside the DLL" }
           if ((Get-Item "$prefix/bin/FreeImage.pdb").Length -eq 0) { throw "Linker PDB is empty" }
 
+  windows-v142:
+    # A modern host IDE must not silently raise the binary package's toolset
+    # floor. Exercise the installed archive with old AND new consumers (#266).
+    name: Windows v142 package (${{ matrix.config }})
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure v142 library and bundled codecs
+        run: >-
+          cmake --preset vs2022-v142
+          -DFREEIMAGE_MSVC_VECTOR_ALGORITHMS=OFF
+          -DCMAKE_INSTALL_PREFIX="${{ runner.temp }}/freeimage-v142"
+      - name: Verify selected compiler
+        run: |
+          $compiler = Get-Content build-vs2022-v142/CMakeFiles/*/CMakeCXXCompiler.cmake -Raw
+          if ($compiler -notmatch 'set\(CMAKE_CXX_COMPILER_VERSION "19\.29\.') {
+            throw "Expected the VS2019 16.11 (v142) compiler, not the host IDE's default"
+          }
+      - name: Build and test with v142
+        run: |
+          cmake --build build-vs2022-v142 --config ${{ matrix.config }} --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build-vs2022-v142 -C ${{ matrix.config }} --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --install build-vs2022-v142 --config ${{ matrix.config }}
+      - name: Link and run installed package with v142 and v143
+        run: |
+          foreach ($toolset in @("v142", "v143")) {
+            cmake -S packaging/tests -B "consumer-$toolset" -G "Visual Studio 17 2022" -A x64 -T $toolset -DCMAKE_PREFIX_PATH="${{ runner.temp }}/freeimage-v142"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            cmake --build "consumer-$toolset" --config ${{ matrix.config }}
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            & "./consumer-$toolset/${{ matrix.config }}/smoke.exe"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Test toolset mismatch diagnostics
+        run: cmake -DTEST_BINARY_DIR="${{ runner.temp }}/msvc-package-check" -P packaging/tests/test-msvc-compatibility.cmake
+
   windows-msys2:
     # Dedicated job (rather than another `build` matrix entry) because it
     # needs the msys2 shell and an explicitly installed, current mingw-w64

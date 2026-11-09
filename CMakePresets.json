@@ -7,6 +7,34 @@
     },
     "configurePresets": [
         {
+            "name": "vs2019",
+            "displayName": "Visual Studio 2019 (v142, x64)",
+            "description": "Builds the library and bundled codecs with VS2019 tools. Requires Visual Studio 2019 with the v142 C++ tools installed.",
+            "generator": "Visual Studio 16 2019",
+            "architecture": "x64",
+            "toolset": "v142",
+            "binaryDir": "${sourceDir}/build-vs2019",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "BUILD_TESTS": "ON",
+                "FREEIMAGE_STATIC": "ON",
+                "CMAKE_CXX_STANDARD": "17",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "OFF"
+            }
+        },
+        {
+            "name": "vs2022-v142",
+            "inherits": "vs2019",
+            "displayName": "Visual Studio 2022 with VS2019 tools (v142, x64)",
+            "description": "Produces v142 binaries using VS2022 as the build host. Install the optional MSVC v142 - VS 2019 C++ x64/x86 build tools component first.",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build-vs2022-v142"
+        },
+        {
             "name": "vs2022",
             "displayName": "Visual Studio 2022",
             "description": "Generates a Visual Studio 2022 solution under build-vs2022/",
