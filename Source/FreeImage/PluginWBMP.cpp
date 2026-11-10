@@ -246,7 +246,9 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 			// FixHeaderField
 
-			io->read_proc(&header.FixHeaderField, 1, 1, handle);
+			if (io->read_proc(&header.FixHeaderField, 1, 1, handle) != 1) {
+				throw FI_MSG_ERROR_PARSING;
+			}
 
 			// ExtHeaderFields
 			// 1 = more will follow, 0 = last octet
@@ -255,7 +257,9 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				header.ExtHeaderFields = 0x80;
 
 				while(header.ExtHeaderFields & 0x80) {
-					io->read_proc(&header.ExtHeaderFields, 1, 1, handle);
+					if (io->read_proc(&header.ExtHeaderFields, 1, 1, handle) != 1) {
+						throw FI_MSG_ERROR_PARSING;
+					}
 
 					readExtHeader(io, handle, header.ExtHeaderFields);
 				}

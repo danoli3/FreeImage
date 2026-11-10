@@ -123,6 +123,17 @@ if (BUILD_TESTS)
     add_test(NAME RasWordLoopTest COMMAND RasWordLoopTest)
     set_tests_properties(RasWordLoopTest PROPERTIES TIMEOUT 10)
 
+    add_executable(WbmpTruncatedTest testWbmpTruncated.cpp)
+    target_link_libraries(WbmpTruncatedTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET WbmpTruncatedTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:WbmpTruncatedTest>
+            VERBATIM)
+    endif()
+    add_test(NAME WbmpTruncatedTest COMMAND WbmpTruncatedTest)
+    set_tests_properties(WbmpTruncatedTest PROPERTIES TIMEOUT 5)
+
     add_executable(MemWritePositionTest testMemWritePosition.cpp)
     target_link_libraries(MemWritePositionTest PRIVATE FreeImage)
     if(WIN32 AND NOT FREEIMAGE_STATIC)
