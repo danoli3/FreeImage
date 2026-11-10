@@ -123,6 +123,17 @@ if (BUILD_TESTS)
     add_test(NAME RasWordLoopTest COMMAND RasWordLoopTest)
     set_tests_properties(RasWordLoopTest PROPERTIES TIMEOUT 10)
 
+    add_executable(HdrDimensionsTest testHdrDimensions.cpp)
+    target_link_libraries(HdrDimensionsTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET HdrDimensionsTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:HdrDimensionsTest>
+            VERBATIM)
+    endif()
+    add_test(NAME HdrDimensionsTest COMMAND HdrDimensionsTest)
+    set_tests_properties(HdrDimensionsTest PROPERTIES TIMEOUT 10)
+
     add_executable(WbmpTruncatedTest testWbmpTruncated.cpp)
     target_link_libraries(WbmpTruncatedTest PRIVATE FreeImage)
     if(WIN32 AND NOT FREEIMAGE_STATIC)

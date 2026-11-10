@@ -192,6 +192,7 @@ rgbe_ReadHeader(FreeImageIO *io, fi_handle handle, unsigned *width, unsigned *he
 	char buf[HDR_MAXLINE];
 	float tempf;
 	int i;
+	int parsed_width, parsed_height;
 	BOOL bFormatFound = FALSE;
 	BOOL bHeaderFound = FALSE;
 
@@ -260,11 +261,16 @@ rgbe_ReadHeader(FreeImageIO *io, fi_handle handle, unsigned *width, unsigned *he
 	}
 
 	// get the image width & height
-	if(sscanf(buf,"-Y %d +X %d", height, width) < 2) {
-		if(sscanf(buf,"+X %d +Y %d", height, width) < 2) {
+	if(sscanf(buf,"-Y %d +X %d", &parsed_height, &parsed_width) < 2) {
+		if(sscanf(buf,"+X %d +Y %d", &parsed_height, &parsed_width) < 2) {
 			return rgbe_Error(rgbe_format_error, "missing image size specifier");
 		}
 	}
+	if(parsed_width <= 0 || parsed_height <= 0) {
+		return rgbe_Error(rgbe_format_error, "invalid image dimensions");
+	}
+	*width = (unsigned)parsed_width;
+	*height = (unsigned)parsed_height;
 
 	return TRUE;
 }
