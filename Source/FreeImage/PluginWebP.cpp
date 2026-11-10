@@ -485,6 +485,10 @@ EncodeImage(FIMEMORY *hmem, FIBITMAP *dib, int flags) {
 		} else if((flags & 0x7F) > 0) {
 			// lossy encoding
 			config.lossless = 0;
+			if((flags & WEBP_SHARPYUV) == WEBP_SHARPYUV) {
+				picture.use_argb = 1; // WebPEncode does the ARGB->YUV conversion, honouring use_sharp_yuv
+				config.use_sharp_yuv = 1;
+			}
 			// quality is between 1 (smallest file) and 100 (biggest) - default to 75
 			config.quality = (float)(flags & 0x7F);
 			if(config.quality > 100) {

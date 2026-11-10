@@ -78,6 +78,7 @@ void testMultiPageMemory(const char *lpszPathName);
 // ==========================================================
 
 void testJPEG();
+void testWebPSharpYUV();
 
 // Channels test suite
 // ==========================================================

@@ -12,6 +12,7 @@ add_executable(MainTestSuite
     testPlugins.cpp
     testThumbnail.cpp
     testTools.cpp
+    testWebPSharpYUV.cpp
     testWrappedBuffer.cpp
 )
 

@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
 
 	// test JPEG lossless transform & cropping
 	testJPEG();
+	testWebPSharpYUV();
 
 	// test get/set channel
 	testImageChannels(width, height);
