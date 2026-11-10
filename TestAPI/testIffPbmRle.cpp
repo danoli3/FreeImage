@@ -59,8 +59,11 @@ static void rejectShortRead(const char *name, const Bytes &body, unsigned declar
     if (body.size() & 1)
         file.pop_back();
     // Keep a BODY budget available when the underlying read actually hits EOF.
-    for (unsigned i = 0; i < 4; ++i)
+    const unsigned formSize = 40 + declaredSize + (declaredSize & 1);
+    for (unsigned i = 0; i < 4; ++i) {
+        file[4 + i] = static_cast<BYTE>(formSize >> (24 - 8 * i));
         file[44 + i] = static_cast<BYTE>(declaredSize >> (24 - 8 * i));
+    }
     if (load(file))
         throw std::runtime_error(std::string(name) + ": short read was accepted");
 }
@@ -79,7 +82,29 @@ static void valid(const char *name, unsigned width, unsigned height, const Bytes
 }
 
 static void run(const std::string &name) {
-    if (name == "empty")
+    if (name == "form-sizes") {
+        for (unsigned size = 0; size < 4; ++size) {
+            Bytes file = {'F', 'O', 'R', 'M', 0, 0, 0, static_cast<BYTE>(size),
+                          'I', 'L', 'B', 'M'};
+            if (load(file))
+                throw std::runtime_error("FORM size below four was accepted");
+        }
+        Bytes file = {'F', 'O', 'R', 'M', 0, 0, 0, 5, 'I', 'L', 'B', 'M',
+                      'J', 'U', 'N', 'K', 0, 0, 0, 0};
+        if (load(file))
+            throw std::runtime_error("undersized FORM chunk budget was accepted");
+    } else if (name == "valid-junk") {
+        Bytes file = makePbm(3, 1, {128, 3, 1, 2, 3, 0});
+        const BYTE junk[] = {'J', 'U', 'N', 'K', 0, 0, 0, 0};
+        file.insert(file.begin() + 40, junk, junk + sizeof(junk));
+        const unsigned formSize = static_cast<unsigned>(file.size() - 8);
+        for (unsigned i = 0; i < 4; ++i)
+            file[4 + i] = static_cast<BYTE>(formSize >> (24 - 8 * i));
+        Bitmap image = load(file);
+        if (!image || FreeImage_GetWidth(image.get()) != 3 ||
+            FreeImage_GetHeight(image.get()) != 1)
+            throw std::runtime_error("valid zero-length JUNK chunk was rejected");
+    } else if (name == "empty")
         reject("empty", 4, 1, {});
     else if (name == "literal")
         reject("literal", 4, 1, {3, 17, 34});
@@ -122,7 +147,7 @@ int main(int argc, char **argv) {
         if (argc == 2)
             run(argv[1]);
         else
-            for (const char *name : {"empty", "literal", "repeat", "eof-command", "eof-literal",
+            for (const char *name : {"form-sizes", "valid-junk", "empty", "literal", "repeat", "eof-command", "eof-literal",
                                      "eof-repeat", "noops-eof", "noops", "row-noops",
                                      "body-boundary", "valid-literal", "valid-repeat"})
                 run(name);

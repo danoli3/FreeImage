@@ -27,6 +27,8 @@
 #include "FreeImage.h"
 #include "Utilities.h"
 
+#include <limits.h>
+
 // ----------------------------------------------------------
 //  Internal typedefs and structures
 // ----------------------------------------------------------
@@ -204,7 +206,8 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 		DWORD type, size;
 
-		io->read_proc(&type, 4, 1, handle);
+		if(io->read_proc(&type, 4, 1, handle) != 1)
+			return NULL;
 #ifndef FREEIMAGE_BIGENDIAN
 		SwapLong(&type);
 #endif
@@ -212,12 +215,14 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		if(type != ID_FORM)
 			return NULL;
 
-		io->read_proc(&size, 4, 1, handle);
+		if(io->read_proc(&size, 4, 1, handle) != 1)
+			return NULL;
 #ifndef FREEIMAGE_BIGENDIAN
 		SwapLong(&size);
 #endif
 
-		io->read_proc(&type, 4, 1, handle);
+		if(io->read_proc(&type, 4, 1, handle) != 1)
+			return NULL;
 #ifndef FREEIMAGE_BIGENDIAN
 		SwapLong(&type);
 #endif
@@ -225,24 +230,37 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		if((type != ID_ILBM) && (type != ID_PBM))
 			return NULL;
 
+		if(size < 4)
+			return NULL;
 		size -= 4;
 
 		unsigned width = 0, height = 0, planes = 0, depth = 0, comp = 0;
 
 		while (size) {
-			DWORD ch_type,ch_size;
+			if(size < 8)
+				break;
 
-			io->read_proc(&ch_type, 4, 1, handle);
+			DWORD ch_type, ch_size;
+
+			if(io->read_proc(&ch_type, 4, 1, handle) != 1)
+				break;
 #ifndef FREEIMAGE_BIGENDIAN
 			SwapLong(&ch_type);
 #endif
 
-			io->read_proc(&ch_size,4,1,handle );
+			if(io->read_proc(&ch_size, 4, 1, handle) != 1)
+				break;
 #ifndef FREEIMAGE_BIGENDIAN
 			SwapLong(&ch_size);
 #endif
 
-			unsigned ch_end = (unsigned)(io->tell_proc(handle) + ch_size);
+			const DWORD padded_size = ch_size + (ch_size & 1);
+			if(padded_size < ch_size || padded_size > size - 8 || padded_size > LONG_MAX)
+				break;
+			const long chunk_start = io->tell_proc(handle);
+			if(chunk_start < 0 || chunk_start > LONG_MAX - (long)padded_size)
+				break;
+			const long ch_end = chunk_start + (long)padded_size;
 
 			if (ch_type == ID_BMHD) {			// Bitmap Header
 				if (dib)
@@ -435,16 +453,12 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				}
 			}
 
-			// Every odd-length chunk is followed by a 0 pad byte.  This pad
-			//  byte is not counted in ch_size.
-			if (ch_size & 1) {
-				ch_size++;
-				ch_end++;
-			}
+			const long current = io->tell_proc(handle);
+			if(current < chunk_start || current > ch_end ||
+				io->seek_proc(handle, ch_end - current, SEEK_CUR) != 0)
+				break;
 
-			io->seek_proc(handle, ch_end - io->tell_proc(handle), SEEK_CUR);
-
-			size -= ch_size + 8;
+			size -= padded_size + 8;
 		}
 
 		if (dib)
