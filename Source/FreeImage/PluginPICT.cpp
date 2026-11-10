@@ -86,8 +86,10 @@ static const int outputMessageSize = 256;
 
 static BYTE
 Read8(FreeImageIO *io, fi_handle handle) {
-	BYTE i = 0;
-	io->read_proc(&i, 1, 1, handle);
+	BYTE i;
+	if(io->read_proc(&i, 1, 1, handle) != 1) {
+		throw "unexpected end of PICT file";
+	}
 	return i;
 }
 
@@ -1192,9 +1194,9 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			}
 			else if (opcode == 0x8200) {
 				// jpeg
-				long opLen = Read32( io, handle );
+				unsigned opLen = Read32( io, handle );
 				BOOL found = FALSE;
-				int i = 0;
+				unsigned i = 0;
 				
 				// skip to JPEG header.
 				while ( !found && i < opLen ) {
@@ -1204,7 +1206,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 //					io->seek_proc( handle, 122, SEEK_CUR );
 //					found = TRUE;
 					BYTE data[ 2 ];
-					if( io->read_proc( data, 2, 1, handle ) ) {
+					if( io->read_proc( data, 2, 1, handle ) == 1 ) {
 						io->seek_proc( handle, -2, SEEK_CUR );
 						
 						if ( data[0] == 0xFF && data[1] == 0xD8 ) {
@@ -1213,6 +1215,8 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 							Read8( io, handle );
 							i++;
 						}
+					} else {
+						throw "unexpected end of PICT QuickTime data";
 					}
 				}
 				

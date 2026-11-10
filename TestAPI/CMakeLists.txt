@@ -134,6 +134,17 @@ if (BUILD_TESTS)
     add_test(NAME WbmpTruncatedTest COMMAND WbmpTruncatedTest)
     set_tests_properties(WbmpTruncatedTest PROPERTIES TIMEOUT 5)
 
+    add_executable(PictTruncatedTest testPictTruncated.cpp)
+    target_link_libraries(PictTruncatedTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET PictTruncatedTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:PictTruncatedTest>
+            VERBATIM)
+    endif()
+    add_test(NAME PictTruncatedTest COMMAND PictTruncatedTest)
+    set_tests_properties(PictTruncatedTest PROPERTIES TIMEOUT 5)
+
     add_executable(MemWritePositionTest testMemWritePosition.cpp)
     target_link_libraries(MemWritePositionTest PRIVATE FreeImage)
     if(WIN32 AND NOT FREEIMAGE_STATIC)
