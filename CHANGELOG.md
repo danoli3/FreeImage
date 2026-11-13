@@ -2,6 +2,16 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
+## 3.19.33 — 13 Nov 2026
+
+JPEG XR metadata security fix, malformed-input hardening, and a SharpYUV WebP save flag.
+
+- Fix a heap buffer overflow when loading a crafted JPEG XR file built with `BUILD_JXR=ON`. `ReadBinaryData()` sized its buffer as `uCount + 2` in 32-bit arithmetic, so a metadata count of 0xFFFFFFFE or 0xFFFFFFFF wrapped to a 0 or 1 byte allocation while the stream was still asked for the full count. The count is now widened to `size_t` before the terminator room is added, and counts that would overflow `size_t` are rejected. Thanks to [marcellomaugeri](https://github.com/marcellomaugeri) for reporting this vulnerability. See the [report (GHSA-gwj3-px9g-x6gf)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-gwj3-px9g-x6gf). Add `JxrMetadataCountTest`, which reproduces the overflow under AddressSanitizer without the fix.
+- Reject truncated WBMP extension headers and truncated PICT input instead of reading uninitialised values. Use unsigned operation lengths in the PICT QuickTime path.
+- Validate IFF FORM and chunk sizes, including odd-length padding and offset overflow, before skipping chunks.
+- Reject non-positive HDR image dimensions.
+- Add the `WEBP_SHARPYUV` save flag for SharpYUV RGB to YUV conversion in lossy WebP. Combine it with a quality value.
+
 ## 3.19.32 — 9 Nov 2026
 
 zlib 1.4, MSVC v142 packaging support and an optional libjpeg-turbo build.

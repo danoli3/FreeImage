@@ -31,6 +31,10 @@ optional codec archives were verified against the SHA-256 digests in
 were also reviewed. Little CMS 2.20 reports `LCMS_VERSION` 2200 in its public
 header and `AC_INIT(lcms2,2.20)` in its release configuration.
 
+Since 3.19.32, no vendored library changed version. The only vendored source
+touched is `Source/LibJXR/jxrgluelib/JXRMeta.c`, which carries a local fix for
+GHSA-gwj3-px9g-x6gf (`ReadBinaryData` size wrap); preserve it when re-syncing jxrlib.
+
 Since 3.19.31, ZLib moved from 1.3.2 to 1.4. Other bundled versions
 are unchanged.
 
