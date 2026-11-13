@@ -2,6 +2,12 @@
 
 Release notes for this fork, newest first. The 3.19 line starts from upstream FreeImage 3.19.0 on SVN.
 
+## 3.19.34 — Unreleased
+
+JPEG XR signature security fixes.
+
+- Fix an out-of-bounds stack read when loading a crafted JPEG XR file built with `BUILD_JXR=ON`. `ReadContainer()` and `ReadWMIHeader()` read the two-byte container signature and the eight-byte codestream signature into stack buffers and passed them to `strstr()`, which needs a null terminator. File-controlled nonzero bytes removed the terminator, so the search ran past the buffer. Both signatures are now compared with `memcmp()` over their fixed length. Thanks to [marcellomaugeri](https://github.com/marcellomaugeri) for reporting these vulnerabilities. See the reports ([GHSA-2jrc-675j-96jw](https://github.com/danoli3/FreeImage/security/advisories/GHSA-2jrc-675j-96jw), [GHSA-994h-2f6q-8wh6](https://github.com/danoli3/FreeImage/security/advisories/GHSA-994h-2f6q-8wh6)). Add `JxrSignatureTest`, which reproduces both reads under AddressSanitizer without the fix.
+
 ## 3.19.33 — 13 Nov 2026
 
 Security fixes for JPEG XR, HDR, IFF, PICT and WBMP loading, and a SharpYUV WebP save flag.

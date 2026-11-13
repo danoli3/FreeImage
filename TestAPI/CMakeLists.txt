@@ -205,6 +205,19 @@ if(BUILD_TESTS AND BUILD_JXR)
     set_tests_properties(JxrMetadataCountTest PROPERTIES TIMEOUT 30)
 endif()
 
+if(BUILD_TESTS AND BUILD_JXR)
+    add_executable(JxrSignatureTest testJxrSignature.cpp)
+    target_link_libraries(JxrSignatureTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET JxrSignatureTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:JxrSignatureTest>
+            VERBATIM)
+    endif()
+    add_test(NAME JxrSignatureTest COMMAND JxrSignatureTest)
+    set_tests_properties(JxrSignatureTest PROPERTIES TIMEOUT 30)
+endif()
+
 if(BUILD_TESTS AND FREEIMAGE_STATIC AND FreeImage_ZLIB_SRCS)
     add_executable(ZLibTest testZLib.cpp)
     target_link_libraries(ZLibTest PRIVATE FreeImage)
