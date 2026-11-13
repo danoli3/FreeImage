@@ -4,12 +4,13 @@ Release notes for this fork, newest first. The 3.19 line starts from upstream Fr
 
 ## 3.19.33 — 13 Nov 2026
 
-JPEG XR metadata security fix, malformed-input hardening, and a SharpYUV WebP save flag.
+Security fixes for JPEG XR, HDR, IFF, PICT and WBMP loading, and a SharpYUV WebP save flag.
 
 - Fix a heap buffer overflow when loading a crafted JPEG XR file built with `BUILD_JXR=ON`. `ReadBinaryData()` sized its buffer as `uCount + 2` in 32-bit arithmetic, so a metadata count of 0xFFFFFFFE or 0xFFFFFFFF wrapped to a 0 or 1 byte allocation while the stream was still asked for the full count. The count is now widened to `size_t` before the terminator room is added, and counts that would overflow `size_t` are rejected. Thanks to [marcellomaugeri](https://github.com/marcellomaugeri) for reporting this vulnerability. See the [report (GHSA-gwj3-px9g-x6gf)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-gwj3-px9g-x6gf). Add `JxrMetadataCountTest`, which reproduces the overflow under AddressSanitizer without the fix.
-- Reject truncated WBMP extension headers and truncated PICT input instead of reading uninitialised values. Use unsigned operation lengths in the PICT QuickTime path.
-- Validate IFF FORM and chunk sizes, including odd-length padding and offset overflow, before skipping chunks.
-- Reject non-positive HDR image dimensions.
+- Fix an infinite loop when loading a truncated PICT file: `Read8()` returned a synthetic zero at end of file, which the header-padding loop treated as padding forever. Reads that fail now stop parsing, and the QuickTime operation length is unsigned. Thanks to [michaelknap](https://github.com/michaelknap) for reporting this vulnerability. See the [report (GHSA-q9vw-fx7r-5qmp)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-q9vw-fx7r-5qmp).
+- Fix an infinite loop when loading a WBMP file that ends inside the extension header: a failed read left the continuation bit set, so the parser never advanced. Every header read must now return its byte. Thanks to [michaelknap](https://github.com/michaelknap) for reporting this vulnerability. See the [report (GHSA-65pp-rfw7-4xq6)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-65pp-rfw7-4xq6).
+- Fix an infinite loop when loading a crafted IFF file. A FORM size below the four-byte type, or a chunk larger than the remaining FORM, wrapped the unsigned size counter. FORM and chunk sizes, odd-length padding and offsets are now validated before chunks are skipped. Thanks to [michaelknap](https://github.com/michaelknap) for reporting this vulnerability. See the [report (GHSA-jxrm-w825-p3xp)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-jxrm-w825-p3xp).
+- Fix an out-of-bounds heap write when loading a Radiance HDR file with a negative height or width. The header dimensions were parsed through signed `%d` into unsigned values and are now rejected unless positive. Thanks to [michaelknap](https://github.com/michaelknap) for reporting this vulnerability. See the [report (GHSA-hv6w-96fr-cc96)](https://github.com/danoli3/FreeImage/security/advisories/GHSA-hv6w-96fr-cc96).
 - Add the `WEBP_SHARPYUV` save flag for SharpYUV RGB to YUV conversion in lossy WebP. Combine it with a quality value.
 
 ## 3.19.32 — 9 Nov 2026
