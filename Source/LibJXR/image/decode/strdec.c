@@ -3160,7 +3160,8 @@ Int ReadWMIHeader(CWMImageInfo* pII, CWMIStrCodecParam *pSCP, CCoreParameters *p
 // 0
 	/** signature **/
 	Call(pWS->Read(pWS, szMS, sizeof(szMS)));
-	FailIf(szMS != (U8 *)strstr((char *)szMS, "WMPHOTO"), WMP_errUnsupportedFormat);
+	// szMS is not null terminated, so compare bytes instead of using strstr
+	FailIf(0 != memcmp(szMS, "WMPHOTO", sizeof("WMPHOTO") - 1), WMP_errUnsupportedFormat);
 	//================================
 	Call(attach_SB(pSB, pWS));
 
