@@ -673,8 +673,17 @@ ERR ReadBinaryData(__in_ecount(1) struct WMPStream* pWS,
 {
     ERR err = WMP_errSuccess;
     U8 *pbData = NULL;
+    size_t cbData = 0;
 
-    Call(PKAlloc((void **) &pbData, uCount + 2)); // Allocate buffer to store data with space for an added ascii or unicode null
+    // uCount comes straight from the file. Widen it before adding the room for
+    // the terminating null: in U32 arithmetic uCount + 2 wrapped for counts of
+    // 0xFFFFFFFE and above, so a tiny buffer was allocated while the Read below
+    // still used the full uCount (heap overflow). The check also covers targets
+    // where size_t is 32 bits wide.
+    FailIf((size_t) uCount > ((size_t) -1) - 2, WMP_errBufferOverflow);
+    cbData = (size_t) uCount + 2;
+
+    Call(PKAlloc((void **) &pbData, cbData)); // Allocate buffer to store data with space for an added ascii or unicode null
     if (uCount <= 4)
     {
         unsigned int i;

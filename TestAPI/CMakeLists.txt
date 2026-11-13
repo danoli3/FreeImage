@@ -192,6 +192,19 @@ if(BUILD_TESTS AND BUILD_LIBOPENJPEG)
     set_tests_properties(J2KCallbacksTest PROPERTIES TIMEOUT 30)
 endif()
 
+if(BUILD_TESTS AND BUILD_JXR)
+    add_executable(JxrMetadataCountTest testJxrMetadataCount.cpp)
+    target_link_libraries(JxrMetadataCountTest PRIVATE FreeImage)
+    if(WIN32 AND NOT FREEIMAGE_STATIC)
+        add_custom_command(TARGET JxrMetadataCountTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:FreeImage> $<TARGET_FILE_DIR:JxrMetadataCountTest>
+            VERBATIM)
+    endif()
+    add_test(NAME JxrMetadataCountTest COMMAND JxrMetadataCountTest)
+    set_tests_properties(JxrMetadataCountTest PROPERTIES TIMEOUT 30)
+endif()
+
 if(BUILD_TESTS AND FREEIMAGE_STATIC AND FreeImage_ZLIB_SRCS)
     add_executable(ZLibTest testZLib.cpp)
     target_link_libraries(ZLibTest PRIVATE FreeImage)
