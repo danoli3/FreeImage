@@ -268,6 +268,7 @@ TIFFFdOpen(thandle_t handle, const char *name, const char *mode) {
 	return tif;
 }
 
++#ifndef FREEIMAGE_SYSTEM_LIBTIFF
 // ----------------------------------------------------------
 //   TIFF library FreeImage-specific routines.
 // ----------------------------------------------------------
@@ -311,6 +312,7 @@ int
 _TIFFmemcmp(const void* p1, const void* p2, tmsize_t c) {
 	return memcmp(p1, p2, (size_t)c);
 }
++#endif // FREEIMAGE_SYSTEM_LIBTIFF
 
 // ----------------------------------------------------------
 //   in FreeImage warnings and errors are disabled
