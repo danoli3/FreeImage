@@ -555,9 +555,9 @@ endif()
 
 if(BUILD_JXR)
     if(USE_SYSTEM_JXR)
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(JXR REQUIRED IMPORTED_TARGET libjxr)
-        list(APPEND FreeImage_LIBS PkgConfig::JXR)
+        find_package(JXR REQUIRED)
+        list(APPEND FreeImage_LIBS ${JXR_LIBRARIES})
+        include_directories(${JXR_INCLUDE_DIRS})
         add_definitions(-DFREEIMAGE_SYSTEM_JXR -DINCLUDE_LIB_JXR)
     else()
     # Keep this list aligned with the LibJXR entries in Makefile.srcs.
@@ -870,13 +870,6 @@ if(BUILD_LIBRAWLITE)
     endif()
 endif()
 
-    set(FreeImage_OPENEXR_HALF_SRCS
-        ./Source/OpenEXR/Half/ImathConfig.h ./Source/OpenEXR/Half/ImathExport.h 
-        ./Source/OpenEXR/Half/ImathNamespace.h ./Source/OpenEXR/Half/ImathPlatform.h 
-        ./Source/OpenEXR/Half/half.cpp ./Source/OpenEXR/Half/half.h 
-        ./Source/OpenEXR/Half/halfFunction.h ./Source/OpenEXR/Half/halfLimits.h 
-        ./Source/OpenEXR/Half/toFloat.h 
-    )
 list(APPEND FreeImage_SOURCES ${FreeImage_OPENEXR_HALF_SRCS})
 # Not added to the global include path: half.cpp includes its own headers
 # with quotes (resolved relative to its own directory), and PluginTIFF.cpp/
@@ -1048,6 +1041,13 @@ if(BUILD_OPENEXR)
         ./Source/OpenEXR/OpenEXRCore/unpack.c
         ./Source/OpenEXR/OpenEXRCore/validation.c
         ./Source/OpenEXR/OpenEXRCore/write_header.c
+    )
+    set(FreeImage_OPENEXR_HALF_SRCS
+        ./Source/OpenEXR/Half/ImathConfig.h ./Source/OpenEXR/Half/ImathExport.h 
+        ./Source/OpenEXR/Half/ImathNamespace.h ./Source/OpenEXR/Half/ImathPlatform.h 
+        ./Source/OpenEXR/Half/half.cpp ./Source/OpenEXR/Half/half.h 
+        ./Source/OpenEXR/Half/halfFunction.h ./Source/OpenEXR/Half/halfLimits.h 
+        ./Source/OpenEXR/Half/toFloat.h 
     )
     set(FreeImage_LIBDEFLATE_SRCS
         ./Source/LibDeflate/common_defs.h
